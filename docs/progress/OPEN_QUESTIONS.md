@@ -3,7 +3,7 @@
 ## Phase 0 blockers
 None. Remote configuration and required hosted CI are resolved.
 
-## Security decisions required before Phase 1
+## Resolved Phase 1 security decision
 - Q-002: Select the initial trusted identity provider or explicitly require
   first-party credentials. Define organization identity linkage, platform-admin
   bootstrap, invitation verification and token/session trust requirements.
@@ -25,3 +25,5 @@ None. Remote configuration and required hosted CI are resolved.
 - Repository inventory: docs only; legacy code and production data not supplied.
 
 Codex must not guess business-critical answers. Record assumptions and use configurable abstractions when possible.
+
+Phase 1 final hosted run 37325939172 passes. No unresolved Phase 1 question.

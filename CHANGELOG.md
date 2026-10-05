@@ -7,6 +7,7 @@
 - Add transactional immutable audit, composite tenant foreign keys and safe rollback guards.
 - Add typed API/client contracts, administration shell and operator/auth runbook.
 - Add security/isolation API tests and real Keycloak browser acceptance to CI.
+- Accept all Phase 1 gates: 41 backend tests, 3 frontend tests; hosted run 37325939172 passes.
 
 ## 0.1.0 — Phase 0 foundation (2026-10-05)
 - Establish locked Python/FastAPI/SQLAlchemy/Alembic tooling and strict checks.

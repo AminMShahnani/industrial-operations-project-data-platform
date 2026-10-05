@@ -1,10 +1,10 @@
 # Project Status
 
-Status: PHASE 1 LOCAL GATES PASS; HOSTED CI PENDING
+Status: PHASE 1 COMPLETE ? PHASE 2 NOT STARTED
 Current phase: Phase 1 ? identity, organizations, workspaces and IAM
 Last updated: 2026-10-05
-Overall completion: 1/11 phases accepted. Phase 0: 8/8 criteria satisfied.
-Phase 1: P1-01?07 pass locally; P1-08 awaits hosted CI. Later phase detailed
+Overall completion: 2/11 phases accepted. Phase 0: 8/8 criteria satisfied.
+Phase 1: P1-01?08 pass (8/8), hosted run 37325939172 on commit 3135ff8. Later phase detailed
 criteria are not yet written; no unsupported project-wide percentage is reported.
 
 ## Completed modules
@@ -13,18 +13,18 @@ criteria are not yet written; no unsupported project-wide percentage is reported
 - Typed API/client and OIDC administration shell; provider/operator runbook.
 
 ## In progress
-- Hosted Phase 1 acceptance and final evidence record.
+- Phase 2 preparation is next; no Phase 2 feature code has started.
 
 ## Blocked
 None. Production provider configuration is deployment-owned; absent trust denies
 protected APIs. No legacy source/export has been supplied.
 
 ## Next 5 tasks
-1. Verify hosted Phase 1 CI, resolve any failures.
-2. Record accepted criteria and hosted run evidence.
-3. Commit the Phase 1 acceptance record.
-4. Read Phase 2 requirements and write acceptance criteria before feature code.
-5. Design projects/departments/master data contracts and migration rollback.
+1. Restate Phase 2 requirements and write acceptance criteria before feature code.
+2. Record project lifecycle/access and master-data schema decisions in ADRs.
+3. Add typed project/department/master-data contracts and tenant-safe migrations.
+4. Implement audited services and positive/negative authorization tests.
+5. Add administration slices and run every Phase 2 quality gate.
 
 ## Test status
 41 backend tests pass locally, no skips: unit, API isolation/security, PostgreSQL
@@ -32,8 +32,9 @@ migration roundtrip/immutability, Redis/private S3, real Keycloak PKCE browser f
 Frontend: 3 tests pass; lint, strict types and production build pass.
 Ruff lint/format, strict mypy (134 files), Alembic drift, OpenAPI drift and
 regenerated TypeScript API contract pass. Full fail-fast script passes.
-Hosted run 37325375871 passed both jobs on portability fix 569550b.
-Additional timezone validation/settings coverage awaits its own hosted run.
+Hosted run 37325939172 passes backend/frontend on final code commit 3135ff8,
+including all 41 backend tests, 3 frontend tests, real PKCE login, migrations,
+lint/types/build and API contract drift. Phase 1 accepted; Phase 2 not started.
 
 ## Migration status
 `34c1f0cc7d24` applied in development and isolated test databases. Empty migration

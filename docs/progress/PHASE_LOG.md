@@ -157,3 +157,16 @@ than 500. Its API test also covers configured branding/locale/units/timezone,
 organization update concurrency and organization admin delegation/audit identity.
 All 12 Phase 1 API tests and Linux mypy/lint/format pass. The suite now has 41
 backend tests; final corrected-head hosted acceptance remains pending.
+
+### Phase 1 final acceptance
+Hosted run: https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/37325939172
+Code commit: `3135ff8`; initial phase implementation: `879e0cb`.
+Final acceptance: P1-01 through P1-08 PASS (8/8). Both jobs succeed, including
+40 non-browser backend tests plus real Chromium/Keycloak PKCE, 3 frontend tests,
+lint/format/types/build, private infrastructure, migration roundtrip/drift,
+OpenAPI and generated TypeScript drift. Full local suite: 41 pass, zero skips.
+
+All four progress files, changelog, ADR and operator/rollback runbook maintained.
+Deferred items are explicitly assigned above and in TECH_DEBT.md; no unresolved
+Phase 1 blocker. Phase 2 has not started. This evidence is committed separately
+with a phase-oriented message after the code-head CI pass.
