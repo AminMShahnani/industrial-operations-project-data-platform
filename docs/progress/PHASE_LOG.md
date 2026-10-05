@@ -170,3 +170,33 @@ All four progress files, changelog, ADR and operator/rollback runbook maintained
 Deferred items are explicitly assigned above and in TECH_DEBT.md; no unresolved
 Phase 1 blocker. Phase 2 has not started. This evidence is committed separately
 with a phase-oriented message after the code-head CI pass.
+
+## 2026-10-05 — Phase 2 preparation
+
+Reviewed AGENTS.md and relevant source requirements: docs/03 FR-012–016,
+docs/05–08, 14, 18–20, 21–22, 25–28. Phase 1 hosted gates pass before this work.
+
+Acceptance checklist, written before Phase 2 feature code:
+- P2-01: Workspace-owned projects with typed context, dates and controlled lifecycle;
+  validated transitions and optimistic concurrency; every operational write audited.
+- P2-02: Workspace departments/teams, active membership lifecycle and immutable
+  history; membership alone never confers project access.
+- P2-03: Independent direct project memberships and department-project grants,
+  validity windows, explicit scoped roles, constrained delegation and revocation.
+- P2-04: Master-data types with bounded typed schemas/governance; records with
+  stable codes/IDs, validity/status and organization/workspace/project/global scope.
+- P2-05: CSV/XLSX import validation, duplicate detection, dry-run preview and atomic
+  apply; stable code/ID export; no arbitrary expressions or industry Core fields.
+- P2-06: Tenant/workspace relational invariants, historical reference protection,
+  migration roundtrip/drift and documented populated rollback strategy.
+- P2-07: Typed API/generated client and accessible scope-aware administration flows;
+  positive, negative, isolation, non-escalation and audit tests.
+- P2-08: All local/hosted tests, lint/types/build pass; four progress files,
+  ADRs, runbooks/changelog and phase-oriented commits updated.
+
+ADR-0007 records a proposed global reference publishing boundary. docs/14 permits
+global data but does not assign write authority. This security decision is Q-003;
+AGENTS.md requires documenting and stopping instead of guessing. No Phase 2
+feature code, permissions or migrations have been applied. Phase 2 acceptance is
+0/8; preparation only. Recommended answer: audited operator publication with
+read-only tenant access; tenant administrators retain only tenant-scoped writes.

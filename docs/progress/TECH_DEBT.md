@@ -13,3 +13,6 @@ Phase 1 introduces audited tenant persistence without an authentication bypass o
 industry coupling. Later phase namespaces remain planned ownership rather than
 completed implementations. Provider-level logout and automated invitation delivery
 remain documented provider responsibilities and Phase 6 work respectively.
+
+Phase 2 preparation adds no implementation compromise. Q-003 is a pending
+security ownership decision, tracked in OPEN_QUESTIONS.md rather than tech debt.

@@ -1,7 +1,7 @@
 # Project Status
 
-Status: PHASE 1 COMPLETE ? PHASE 2 NOT STARTED
-Current phase: Phase 1 ? identity, organizations, workspaces and IAM
+Status: PHASE 2 PREPARATION ? SECURITY DECISION PENDING
+Current phase: Phase 2 ? projects, departments and master data (preparation)
 Last updated: 2026-10-05
 Overall completion: 2/11 phases accepted. Phase 0: 8/8 criteria satisfied.
 Phase 1: P1-01?08 pass (8/8), hosted run 37325939172 on commit 3135ff8. Later phase detailed
@@ -13,14 +13,17 @@ criteria are not yet written; no unsupported project-wide percentage is reported
 - Typed API/client and OIDC administration shell; provider/operator runbook.
 
 ## In progress
-- Phase 2 preparation is next; no Phase 2 feature code has started.
+- Phase 2 acceptance checklist written (0/8 accepted); ADR-0007 proposed.
+- No Phase 2 feature code, permissions or migrations have been applied.
 
 ## Blocked
-None. Production provider configuration is deployment-owned; absent trust denies
-protected APIs. No legacy source/export has been supplied.
+Q-003: global master-data publication authority is unspecified in docs/14.
+Recommended audited operator-only publishing; tenant access read-only.
+AGENTS.md requires stopping rather than guessing security-sensitive ownership.
+Production provider configuration remains deployment-owned. No legacy export supplied.
 
 ## Next 5 tasks
-1. Restate Phase 2 requirements and write acceptance criteria before feature code.
+1. Resolve Q-003 global master-data publication authority and accept ADR-0007.
 2. Record project lifecycle/access and master-data schema decisions in ADRs.
 3. Add typed project/department/master-data contracts and tenant-safe migrations.
 4. Implement audited services and positive/negative authorization tests.
