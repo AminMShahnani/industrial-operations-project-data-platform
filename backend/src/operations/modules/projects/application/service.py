@@ -22,6 +22,11 @@ from operations.modules.workspaces.application.service import WorkspaceService
 PROJECT_PERMISSIONS = {
     ProjectRole.MANAGER: frozenset(
         {
+            "form.read",
+            "form.manage",
+            "form.publish",
+            "submission.create",
+            "submission.read",
             "project.read",
             "project.manage",
             "project.members.manage",
@@ -29,8 +34,10 @@ PROJECT_PERMISSIONS = {
             "master_data.manage",
         }
     ),
-    ProjectRole.VIEWER: frozenset({"project.read", "master_data.read"}),
-    ProjectRole.CONTRIBUTOR: frozenset({"project.read", "master_data.read"}),
+    ProjectRole.VIEWER: frozenset({"project.read", "master_data.read", "form.read"}),
+    ProjectRole.CONTRIBUTOR: frozenset(
+        {"project.read", "master_data.read", "form.read", "submission.create"}
+    ),
 }
 
 

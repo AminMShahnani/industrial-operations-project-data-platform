@@ -3,6 +3,11 @@ from dataclasses import dataclass
 from sqlalchemy.orm import Session
 
 from operations.modules.audit.infrastructure.persistence import AuditRepository
+from operations.modules.files.application.service import FileService
+from operations.modules.files.infrastructure.adapters import ClamScanner, S3Storage
+from operations.modules.files.infrastructure.persistence import FileRepository
+from operations.modules.forms.application.service import FormService
+from operations.modules.forms.infrastructure.persistence import FormRepository
 from operations.modules.iam.application.service import Authorization
 from operations.modules.iam.infrastructure.persistence import GrantRepository
 from operations.modules.identity.application.contracts import Principal
@@ -17,14 +22,20 @@ from operations.modules.organizations.application.service import OrganizationSer
 from operations.modules.organizations.infrastructure.persistence import OrganizationRepository
 from operations.modules.projects.application.service import ProjectService
 from operations.modules.projects.infrastructure.persistence import ProjectRepository
+from operations.modules.submissions.application.service import SubmissionService
+from operations.modules.submissions.infrastructure.persistence import SubmissionRepository
 from operations.modules.workspaces.application.group_service import GroupService
 from operations.modules.workspaces.application.service import WorkspaceService
 from operations.modules.workspaces.infrastructure.groups import GroupRepository
 from operations.modules.workspaces.infrastructure.persistence import WorkspaceRepository
+from operations.platform.config import Settings
 
 
 @dataclass(frozen=True)
 class Services:
+    forms: FormService
+    submissions: SubmissionService
+    files: FileService
     identity: IdentityService
     authorization: Authorization
     organizations: OrganizationService
@@ -35,7 +46,9 @@ class Services:
     master_transfer: MasterDataTransfer
 
 
-def compose(session: Session, principal: Principal | None = None) -> Services:
+def compose(
+    session: Session, principal: Principal | None = None, settings: Settings | None = None
+) -> Services:
     audit = AuditRepository(session, principal)
     identities = IdentityRepository(session)
     grants = GrantRepository(session)
@@ -59,7 +72,22 @@ def compose(session: Session, principal: Principal | None = None) -> Services:
     master_data = MasterDataService(
         data, organizations, workspaces, projects, authorization, references, audit
     )
+    forms = FormService(
+        FormRepository(session), workspaces, projects, authorization, master_data, audit, groups
+    )
+    submissions = SubmissionService(SubmissionRepository(session), forms)
+    settings = settings or Settings()  # type: ignore[call-arg]
+    files = FileService(
+        FileRepository(session),
+        submissions,
+        ClamScanner(settings.scanner_host, settings.scanner_port),
+        S3Storage(settings),
+    )
+    submissions.attachments = files
     return Services(
+        forms,
+        submissions,
+        files,
         identity,
         authorization,
         organizations,

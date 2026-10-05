@@ -16,6 +16,8 @@ class Settings(BaseSettings):
     s3_secret_key: SecretStr
     s3_bucket: str = "operations-private"
     cors_origins: list[str] = Field(default_factory=list)
+    scanner_host: str | None = None
+    scanner_port: int = Field(default=3310, ge=1, le=65535)
     otlp_endpoint: str | None = None
     oidc_issuer: str | None = None
     oidc_jwks_url: str | None = None

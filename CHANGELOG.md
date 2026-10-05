@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.4.0 - Phase 3 governed forms (2026-10-05)
+- Add immutable versioned forms, reusable pinned libraries and bounded declarative expressions.
+- Add scoped Form Studio, authoritative runtime validation, autosave and immutable submissions.
+- Add private attachments, fail-closed scanning, signed downloads and rollback compensation.
+- Add guarded migrations, ADR-0008 and operational guidance.
+- Local gates pass: 90 backend tests and 7 frontend tests; hosted acceptance pending.
+
 ## 0.3.0 - Phase 2 projects and governed master data (2026-10-05)
 - Add audited projects, controlled immutable lifecycle definitions and scoped roles.
 - Add departments/teams, independent memberships and department-project grants.

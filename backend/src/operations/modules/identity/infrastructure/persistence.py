@@ -5,6 +5,7 @@ from sqlalchemy import (
     DateTime,
     ForeignKey,
     ForeignKeyConstraint,
+    Index,
     String,
     UniqueConstraint,
     select,
@@ -26,6 +27,7 @@ class PlatformAdminRow(Base):
 class UserRow(Base):
     __tablename__ = "users"
     __table_args__ = (
+        Index("ix_users_scope_email_active", "organization_id", "email", "active", "id"),
         UniqueConstraint("organization_id", "id"),
         UniqueConstraint("organization_id", "issuer", "subject", name="uq_users_tenant_identity"),
     )

@@ -2,6 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react';
 import type { components } from './api-schema';
 import type { MethodResponse } from 'openapi-fetch';
 import type { apiClient } from './client';
+import { FormStudio } from './FormStudio';
 import { MasterDataAdmin } from './MasterDataAdmin';
 import { MemberLookup } from './MemberLookup';
 
@@ -266,6 +267,8 @@ export function ProjectAdministration({ api, organization, workspace }: { api: C
       </form>
       {lastMembership && <button disabled={busy} onClick={() => void revokeLastMembership()}>Revoke the last access grant</button>}
     </>}
+    <FormStudio key={'forms' + organization + workspace + selected} api={api} organization={organization} workspace={workspace} project={selected}
+      canManage={selected ? projectPermissions.includes('form.manage') : permissions.includes('form.manage')} canManageLibrary={permissions.includes('form.manage')} />
     <MasterDataAdmin key={organization + workspace + selected} api={api} organization={organization} workspace={workspace} project={selected}
       canManage={selected ? projectPermissions.includes('master_data.manage') : permissions.includes('master_data.manage')} />
   </section>;

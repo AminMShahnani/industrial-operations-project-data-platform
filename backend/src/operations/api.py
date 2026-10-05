@@ -68,10 +68,11 @@ Context = Annotated[RequestContext, Depends(context)]
 
 
 def services(request: Request, actor: Context) -> Iterator[Services]:
+    application: Services | None = None
     sessions: sessionmaker[Session] = request.app.state.sessions
     try:
         with sessions.begin() as session:
-            application = compose(session, actor.principal)
+            application = compose(session, actor.principal, request.app.state.settings)
             selected = request.path_params.get("organization_id")
             if selected is not None:
                 try:
@@ -85,7 +86,13 @@ def services(request: Request, actor: Context) -> Iterator[Services]:
                         request.state.actor_id = str(user.id)
             yield application
     except IntegrityError as error:
+        if application is not None:
+            application.files.compensate_rollback()
         raise ServiceError(409, "conflict") from error
+    except BaseException:
+        if application is not None:
+            application.files.compensate_rollback()
+        raise
 
 
 ServiceDependency = Annotated[Services, Depends(services, scope="function")]

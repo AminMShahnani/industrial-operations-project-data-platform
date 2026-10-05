@@ -27,6 +27,11 @@ PERMISSIONS: dict[Role, frozenset[str]] = {
             "workspace.create",
             "workspace.manage",
             "iam.grants.manage",
+            "form.read",
+            "form.manage",
+            "form.publish",
+            "submission.create",
+            "submission.read",
             "project.create",
             "project.admin",
             "department.manage",
@@ -39,6 +44,11 @@ PERMISSIONS: dict[Role, frozenset[str]] = {
             "workspace.read",
             "workspace.manage",
             "iam.grants.manage",
+            "form.read",
+            "form.manage",
+            "form.publish",
+            "submission.create",
+            "submission.read",
             "project.create",
             "department.manage",
             "master_data.read",
@@ -50,14 +60,19 @@ PERMISSIONS: dict[Role, frozenset[str]] = {
             "workspace.read",
             "workspace.manage",
             "iam.grants.manage",
+            "form.read",
+            "form.manage",
+            "form.publish",
+            "submission.create",
+            "submission.read",
             "project.create",
             "department.manage",
             "master_data.read",
             "master_data.manage",
         }
     ),
-    Role.VIEWER: frozenset({"organization.read", "workspace.read"}),
-    Role.CONTRIBUTOR: frozenset({"workspace.read"}),
+    Role.VIEWER: frozenset({"organization.read", "workspace.read", "form.read"}),
+    Role.CONTRIBUTOR: frozenset({"workspace.read", "form.read", "submission.create"}),
 }
 
 
@@ -67,6 +82,7 @@ def role_permissions(role: Role, scope_type: ScopeType) -> frozenset[str]:
             {
                 "organization.read" if scope_type == ScopeType.ORGANIZATION else "workspace.read",
                 "master_data.read",
+                "form.read",
             }
         )
     return PERMISSIONS[role]

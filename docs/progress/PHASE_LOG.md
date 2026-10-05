@@ -238,3 +238,42 @@ passes non-browser and real Keycloak browser tests, lint/types/build, migration
 upgrade/drift and generated OpenAPI/TypeScript drift.
 No Phase 2 deferred acceptance item. Future-phase work remains assigned above.
 Phase 3 not started; final acceptance is committed after code-head CI succeeds.
+
+## 2026-10-05 - Phase 3 preparation
+Sources: docs/02,03 FR-020 through FR-026 and FR-040 through FR-042/045/046,
+05-09,13-14,17-22,25-28. Phase 2 accepted before starting.
+Acceptance criteria written before feature implementation:
+- P3-01: Typed sections/component contracts cover V1 families and reusable version-pinned
+  fields/components/forms; publishing resolves references into a validated snapshot.
+- P3-02: Draft editing uses optimistic concurrency; publish preview/apply validates
+  and freezes exact versions; deprecated/retired versions preserve historical use.
+- P3-03: Bounded declarative AST evaluates defaults/visibility/requiredness/formulas,
+  rejects unsafe operators, unknown references and cycles; no arbitrary execution.
+- P3-04: Authoritative exact-version validation, scoped lookups and component permissions;
+  drafts/autosave and immutable submitted snapshots with idempotency/audit.
+- P3-05: Private scoped attachments, content/size validation, fail-closed scanning hook,
+  short-lived downloads and tenant/ownership authorization with negative tests.
+- P3-06: Accessible Form Studio palette/structure/properties/preview/history/publish and
+  runtime component families, visible errors and scoped administration.
+- P3-07: Tenant-safe migrations, database immutability/history protections, guarded rollback,
+  unit/integration/API/browser tests covering isolation, formulas, uploads and versions.
+- P3-08: Local and hosted tests/lint/types/build/contracts pass; ADR/runbook/changelog,
+  four progress files and phase-oriented commits updated. No next phase before acceptance.
+Workflow routing/approval and scheduling remain Phase 5/4 respectively, per docs/25.
+Earlier Phase 2 log prose reversing those numbers is superseded by this correction.
+
+### Phase 3 implementation and local validation
+Implemented P3-01 through P3-07: typed component families and pinned libraries;
+immutable versions with publication preview/hash and revision checks; bounded AST;
+authoritative scoped runtime and defaults; autosave, signatures and immutable
+idempotent submissions; private files with fail-closed scanning and short-lived
+downloads; Form Studio; guarded migrations and isolation/history tests.
+ADR-0008 records runtime, permissions, signature and attachment trust decisions.
+Local gates PASS: 90 backend tests without skips, 7 frontend tests, Ruff,
+strict mypy Windows/Linux (172 files), migration roundtrip/drift, OpenAPI drift,
+frontend lint/types/build and real Keycloak browser publication/autosave/submission.
+Hosted acceptance pending; none of the eight criteria is finally accepted yet.
+No Phase 3 acceptance item deferred. Authoritative shift/approved-default providers
+belong to Phase 4/5 through tested application ports; production scanner provisioning
+and retention/quotas belong to Phase 10. Failed object cleanup reconciliation is
+TD-005 for Phase 6. No legacy data migration or history deletion was performed.

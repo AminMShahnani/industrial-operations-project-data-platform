@@ -76,3 +76,23 @@ class DataReferences:
             self.require(
                 organization_id, workspace_id, project_id, record_id, registry=RegistryKind.ASSET
             )
+
+    def lookup(
+        self,
+        organization_id: UUID,
+        workspace_id: UUID,
+        project_id: UUID | None,
+        type_id: UUID,
+        cursor: UUID | None,
+    ) -> tuple[list[DataRecord], UUID | None]:
+        definition = self.store.type(organization_id, type_id) or self.store.type(None, type_id)
+        if (
+            not definition
+            or not definition.active
+            or not visible_at(definition, organization_id, workspace_id, project_id)
+        ):
+            raise ServiceError(422, "invalid_master_data_reference")
+        rows = self.store.list_records(definition.organization_id, type_id, cursor)
+        return [row for row in rows[:100] if record_active(row)], rows[99].id if len(
+            rows
+        ) > 100 else None

@@ -20,6 +20,8 @@ from operations.contracts import ServiceError
 from operations.modules.identity.application.contracts import TokenVerifier
 from operations.modules.identity.infrastructure.oidc import OidcVerifier
 from operations.phase2_api import router as phase2_router
+from operations.phase3_api import router as phase3_router
+from operations.platform.body_limit import RequestBodyLimit
 from operations.platform.config import Settings
 from operations.platform.database import create_database_engine
 from operations.platform.health import HealthResponse, InfrastructureProbe, ReadinessProbe
@@ -77,9 +79,11 @@ def create_app(
         lifespan=lifespan,
         responses={
             code: {"model": ProblemDetails, "content": {"application/problem+json": {}}}
-            for code in (401, 403, 404, 409, 422, 429, 500, 503)
+            for code in (401, 403, 404, 409, 413, 422, 429, 500, 503)
         },
     )
+    app.state.settings = settings
+    app.add_middleware(RequestBodyLimit)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origins,
@@ -185,6 +189,7 @@ def create_app(
 
     app.include_router(router)
     app.include_router(phase2_router)
+    app.include_router(phase3_router)
     return app
 
 

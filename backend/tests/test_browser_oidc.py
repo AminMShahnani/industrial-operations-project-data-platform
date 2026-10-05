@@ -190,6 +190,44 @@ def test_real_oidc_pkce_login_and_workspace_creation(monkeypatch: pytest.MonkeyP
                 with page.expect_download() as download:
                     page.get_by_role("button", name="Export CSV", exact=True).click()
                 assert download.value.suggested_filename == "master-data-1.csv"
+                page.get_by_label("Component palette", exact=True).select_option("integer")
+                page.get_by_role("button", name="Add component", exact=True).click()
+                page.get_by_label("Stable field key", exact=True).fill("count")
+                page.get_by_label("Field label", exact=True).fill("Reported count")
+                page.get_by_label("Form name", exact=True).fill("Browser report")
+                page.get_by_role("button", name="Create form draft", exact=True).click()
+                expect(
+                    page.get_by_role("status").filter(has_text="Form draft created.")
+                ).to_be_visible()
+                page.get_by_role("button", name="Preview publication", exact=True).click()
+                expect(
+                    page.get_by_role("button", name="Publish reviewed version", exact=True)
+                ).to_be_visible()
+                page.get_by_role("button", name="Publish reviewed version", exact=True).click()
+                expect(
+                    page.get_by_role("status").filter(has_text="Version published.")
+                ).to_be_visible()
+                page.get_by_role("button", name="Start submission draft", exact=True).click()
+                expect(
+                    page.get_by_role("status").filter(has_text="Submission draft created.")
+                ).to_be_visible()
+                page.get_by_label("Reported count", exact=True).fill("invalid")
+                expect(
+                    page.get_by_role("status").filter(has_text="invalid submission values")
+                ).to_be_visible()
+                page.get_by_label("Reported count", exact=True).fill("4")
+                expect(page.get_by_role("status").filter(has_text="Draft saved.")).to_be_visible()
+                page.get_by_role("button", name="Validate form", exact=True).click()
+                expect(
+                    page.get_by_role("status").filter(has_text="Validation passed.")
+                ).to_be_visible()
+                page.get_by_label("Submission reason", exact=True).fill("Browser acceptance report")
+                page.get_by_role("button", name="Submit form", exact=True).click()
+                expect(
+                    page.get_by_role("status").filter(
+                        has_text="Submission preserved as an immutable snapshot."
+                    )
+                ).to_be_visible()
                 assert page.evaluate(
                     "Object.keys(localStorage).concat(Object.keys(sessionStorage))"
                     ".every(key => !key.startsWith('oidc.user:'))"

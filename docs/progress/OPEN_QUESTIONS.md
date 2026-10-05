@@ -32,3 +32,10 @@ Phase 1 final hosted run 37325939172 passes. No unresolved Phase 1 question.
 - Q-003: User selected audited operator publication on 2026-10-05.
   Global reference data is read-only to tenants; platform administration never
   grants tenant operational access. ADR-0007 is accepted. No unresolved Phase 2 blocker.
+
+## Phase 3 decisions
+No unresolved security-sensitive Phase 3 question. ADR-0008 records scoped privacy,
+restricted fields, declarative evaluation, immutable snapshots and fail-closed files.
+Basic authenticated acknowledgement is V1; configurable signatures stay V1.5.
+Shift and previous-approved defaults have trusted ports; authoritative records are
+owned by Phase 4/5, with explicit unavailable-context errors until connected.

@@ -65,3 +65,5 @@ Development credentials in `.env.example` are local-only; secrets never belong
 in Git. Production deployment, provider provisioning, backups and UAT remain gated work.
 
 Phase 2 project, department and master-data operations: [runbook](docs/operations/PHASE_2_RUNBOOK.md).
+
+Phase 3 form, submission and file operations: [runbook](docs/operations/PHASE_3_RUNBOOK.md).
