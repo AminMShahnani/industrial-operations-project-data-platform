@@ -7,19 +7,26 @@
     "dev": "vite --host 127.0.0.1",
     "build": "tsc --noEmit && vite build",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test": "vitest run",
+    "generate:api": "openapi-typescript ../contracts/openapi.json -o src/api-schema.d.ts"
   },
   "dependencies": {
+    "oidc-client-ts": "^3.5.0",
+    "openapi-fetch": "^0.17.0",
     "react": "^19.0.0",
-    "react-dom": "^19.0.0"
+    "react-dom": "^19.0.0",
+    "react-oidc-context": "^3.3.1"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@types/react": "^19.0.0",
     "@types/react-dom": "^19.0.0",
     "eslint": "^10.12.0",
+    "openapi-typescript": "^7.13.0",
     "typescript": "^5.8.0",
     "typescript-eslint": "^8.0.0",
-    "vite": "^8.3.2"
+    "vite": "^8.3.2",
+    "vitest": "^5.0.3"
   }
 }

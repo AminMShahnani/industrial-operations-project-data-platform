@@ -1,0 +1,31 @@
+{
+  "realm": "operations",
+  "enabled": true,
+  "sslRequired": "external",
+  "registrationAllowed": false,
+  "bruteForceProtected": true,
+  "accessTokenLifespan": 300,
+  "clients": [
+    {"clientId": "operations-api", "enabled": true, "bearerOnly": true},
+    {
+      "clientId": "operations-web", "enabled": true, "publicClient": true,
+      "standardFlowEnabled": true, "implicitFlowEnabled": false,
+      "directAccessGrantsEnabled": false, "serviceAccountsEnabled": false,
+      "redirectUris": ["http://localhost:5173/", "http://127.0.0.1:5173/"],
+      "webOrigins": ["http://localhost:5173", "http://127.0.0.1:5173"],
+      "defaultClientScopes": ["basic", "profile", "email"],
+      "attributes": {"pkce.code.challenge.method": "S256"},
+      "protocolMappers": [{
+        "name": "operations-api-audience", "protocol": "openid-connect",
+        "protocolMapper": "oidc-audience-mapper",
+        "config": {"included.client.audience": "operations-api", "id.token.claim": "false", "access.token.claim": "true"}
+      }]
+    }
+  ],
+  "users": [{
+    "id": "dev-platform", "username": "dev-platform", "enabled": true,
+    "emailVerified": true, "email": "dev-platform@example.com",
+    "firstName": "Development", "lastName": "Operator",
+    "credentials": [{"type": "password", "value": "${IOP_OIDC_DEV_PASSWORD}", "temporary": false}]
+  }]
+}

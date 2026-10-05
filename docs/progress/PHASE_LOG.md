@@ -95,3 +95,51 @@ its pending Compose invocation. Existing development containers/volumes remain
 intact on the initial cached images. Clean GitHub CI verified the corrected
 RustFS setup. Re-run `docker compose up -d --wait` locally when registry downloads
 are available; local validation of the replacement is not claimed here.
+
+## 2026-10-05 — Phase 1: Identity, organizations, workspaces and IAM (started)
+
+User delegated the authentication choice. ADR-0006 selects configurable OIDC,
+explicit server-side grants, safe bootstrap/invitations and transactional audit.
+Requirements: docs/03 FR-001–011, docs/05–08, 19–20 and 22/28. Departments,
+projects and their grants remain Phase 2; no phase is skipped.
+
+Acceptance criteria, written before Phase 1 code:
+- P1-01: OIDC signature/issuer/audience/expiry/type validation; missing trust fails
+  closed; forged/expired/wrong-tenant/ID tokens tested; failure audit and rate limits.
+- P1-02: Audited operator bootstrap; platform create/suspend organizations;
+  typed settings; no implicit platform access to tenant content.
+- P1-03: Tenant identities, one-time verified-email invitations, membership
+  revocation/reactivation preserving authorship; expired/replayed/revoked invites deny.
+- P1-04: Organization/workspace scoped role presets and constrained explicit
+  grants; deny-by-default and non-escalation matrix; grant writes audited.
+- P1-05: Workspace create/read/update and manager grants; tenant-safe persistence,
+  archived/suspended resource denial, optimistic concurrency for editable records.
+- P1-06: Alembic schema, composite tenant foreign keys, immutable audit triggers;
+  empty migration roundtrip/drift; populated downgrade refuses data loss.
+- P1-07: Typed protected API and schema contract, administration shell and
+  reproducible auth/provider setup instructions, positive and negative tests.
+- P1-08: Unit/integration/API tests, lint/types and hosted CI pass; progress,
+  changelog, rollback/operations docs and phase-oriented commit updated.
+
+### Phase 1 local acceptance evidence
+P1-01?P1-07 PASS locally. P1-08 pending hosted CI; Phase 2 has not started.
+Full `scripts/check.ps1` passed: 40 backend tests without skips, 3 frontend tests,
+Ruff lint/format, strict mypy (134 files), frontend lint/types/build, Alembic
+model drift and OpenAPI drift. Real PostgreSQL/Redis/RustFS tests include empty
+migration roundtrip, composite tenant FKs, immutable audit and populated downgrade
+refusal. Real Chromium/Keycloak PKCE verifies access tokens via actual JWKS,
+workspace creation, audit identity, memory-only tokens and local sign-out.
+
+Provider test caught missing `sub` due omitted Keycloak `basic` scope; corrected
+the development realm instead of weakening API validation. Additional negative
+checks cover bearer-only transport, rate-limit denial, scope-filtered listing,
+archive denial, suspension/recovery, malformed/forged/expired/wrong-audience and
+ID tokens, invitation replay/expiry/email mismatch/revoked inviter, self-grant
+and delegated escalation, optimistic concurrency and audit failure rollback.
+
+Migration: `34c1f0cc7d24`; rollback documented in IDENTITY_RUNBOOK.md. Operational
+history is never cleared to force downgrade. No legacy source/data migration.
+Corrected local image downloads completed; all local infrastructure now healthy.
+Deferred to owning phases: project/department roles (2), notification delivery
+(6), pack/integration enablement (8/6), production deployment hardening (10).
+No Core industry semantics introduced. ADR-0006 records delegated auth choice.

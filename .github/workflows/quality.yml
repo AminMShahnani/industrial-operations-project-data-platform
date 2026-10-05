@@ -11,22 +11,32 @@ jobs:
         with:
           enable-cache: true
       - run: uv sync --frozen
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - run: npm ci --prefix frontend
       - run: cp .env.example .env
-      - run: docker compose up -d --wait
+      - run: docker compose --profile oidc-dev up -d --wait
       - run: uv run python scripts/init_storage.py
       - name: Create isolated migration test database
         run: docker compose exec -T postgres createdb -U operations operations_test
+      - name: Create isolated browser test database
+        run: docker compose exec -T postgres createdb -U operations operations_browser_test
       - run: uv run ruff check .
       - run: uv run ruff format --check .
       - run: uv run mypy
-      - run: uv run pytest
+      - run: uv run pytest -m 'not e2e'
         env:
           IOP_TEST_DATABASE_URL: postgresql+psycopg://operations:operations_dev@127.0.0.1:55432/operations_test
+      - run: uv run playwright install --with-deps chromium
+      - run: uv run pytest -m e2e
+        env:
+          IOP_BROWSER_DATABASE_URL: postgresql+psycopg://operations:operations_dev@127.0.0.1:55432/operations_browser_test
       - run: uv run alembic upgrade head
       - run: uv run alembic check
       - run: uv run python scripts/export_openapi.py --check
       - if: always()
-        run: docker compose down
+        run: docker compose --profile oidc-dev down
   frontend:
     runs-on: ubuntu-latest
     defaults:
@@ -42,4 +52,7 @@ jobs:
       - run: npm ci
       - run: npm run lint
       - run: npm run typecheck
+      - run: npm run test
+      - run: npm run generate:api
+      - run: git diff --exit-code -- src/api-schema.d.ts
       - run: npm run build

@@ -37,6 +37,22 @@ services:
       interval: 5s
       timeout: 3s
       retries: 20
+  identity:
+    image: quay.io/keycloak/keycloak@sha256:b0f60d489d51c5d113390bdf5461d4c06e6051be026c05549f2e1e10ec352bcc
+    profiles: ["oidc-dev"]
+    command: ["start-dev", "--import-realm"]
+    environment:
+      KC_HOSTNAME: http://127.0.0.1:58080
+      KC_HEALTH_ENABLED: "true"
+      IOP_OIDC_DEV_PASSWORD: ${IOP_OIDC_DEV_PASSWORD:-development-only-change-me}
+    ports: ["127.0.0.1:58080:8080"]
+    volumes: ["./infra/identity/operations-realm.json:/opt/keycloak/data/import/operations-realm.json:ro"]
+    healthcheck:
+      test: ["CMD", "bash", "-c", "exec 3<>/dev/tcp/127.0.0.1/9000; printf 'GET /health/ready HTTP/1.0\r\n\r\n' >&3; grep -q '200' <&3"]
+      interval: 5s
+      timeout: 3s
+      retries: 40
+      start_period: 40s
 volumes:
   postgres_data:
   storage_data:

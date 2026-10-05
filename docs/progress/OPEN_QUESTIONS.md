@@ -10,7 +10,7 @@ None. Remote configuration and required hosted CI are resolved.
   docs/20 permits alternatives but does not select a deployment trust model.
   Do not introduce a temporary authentication bypass to avoid this decision.
   User asked on 2026-10-05 to select configurable OIDC or first-party credentials;
-  answer pending. Phase 1 implementation has not started.
+  User delegated the choice: OIDC selected in ADR-0006; question resolved.
 
 ## Questions that do not block Phase 0
 - job queue library choice;

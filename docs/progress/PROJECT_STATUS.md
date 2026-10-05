@@ -1,50 +1,46 @@
 # Project Status
 
-Status: PHASE 0 ACCEPTED — PHASE 1 AUTHENTICATION DECISION PENDING
-Current phase: Phase 0 complete; Phase 1 not started
+Status: PHASE 1 LOCAL GATES PASS; HOSTED CI PENDING
+Current phase: Phase 1 ? identity, organizations, workspaces and IAM
 Last updated: 2026-10-05
-Overall completion: 1/11 phases accepted. Phase 0: 8/8 criteria satisfied;
-hosted CI run 37316897694 passes on commit 1d4f68e. Later-phase detailed criteria are not yet
-written, so no unsupported project-wide implementation percentage is reported.
-
-## Completed
-- Product and architecture documentation baseline.
-- Domain Pack architectural contract.
-- MVP migration assessment baseline.
-- Locked Python/FastAPI/SQLAlchemy/Alembic foundation and React/TypeScript shell.
-- Typed health/errors, correlation logs, HTTP metrics and OpenTelemetry traces.
-- Boundary checks, reversible migration baseline, private local infrastructure.
-- OpenAPI schema, CI workflow, fail-fast local gates, runbook and backlog.
+Overall completion: 1/11 phases accepted. Phase 0: 8/8 criteria satisfied.
+Phase 1: P1-01?07 pass locally; P1-08 awaits hosted CI. Later phase detailed
+criteria are not yet written; no unsupported project-wide percentage is reported.
 
 ## Completed modules
-No business module is complete. All 18 planned namespaces are scaffolded only.
+- Foundation tooling, observability, module boundaries, infrastructure and CI.
+- Phase 1 identity, organizations/settings, workspaces, scoped IAM and audit slices.
+- Typed API/client and OIDC administration shell; provider/operator runbook.
 
 ## In progress
-- Phase 1 authentication decision Q-002, requested before security implementation.
+- Hosted Phase 1 acceptance and final evidence record.
 
 ## Blocked
-- Phase 1: identity trust decision Q-002 required. User asked to select configurable
-  OIDC or first-party credentials. No authentication bypass or guessed trust model.
+None. Production provider configuration is deployment-owned; absent trust denies
+protected APIs. No legacy source/export has been supplied.
 
 ## Next 5 tasks
-1. Resolve initial authentication choice (Q-002).
-2. Record the trust, bootstrap, invitation and session/token model in an ADR.
-3. Write Phase 1 acceptance criteria and typed identity/hierarchy/IAM contracts.
-4. Add reversible tenant-scoped identity/organization/workspace/IAM/audit migrations.
-5. Implement audited services with isolation and privilege-escalation tests.
+1. Verify hosted Phase 1 CI, resolve any failures.
+2. Record accepted criteria and hosted run evidence.
+3. Commit the Phase 1 acceptance record.
+4. Read Phase 2 requirements and write acceptance criteria before feature code.
+5. Design projects/departments/master data contracts and migration rollback.
 
 ## Test status
-15 tests pass locally, including three PostgreSQL/Redis/S3 integration tests; no skips.
-Ruff lint/format, strict mypy, frontend lint/type/build and OpenAPI drift pass.
-Hosted CI run 37316897694 on commit 1d4f68e: backend and frontend both pass,
-including all 15 tests, corrected-image clean startup, signed S3 roundtrip and
-denied anonymous access. See PHASE_LOG for the earlier failure and correction.
+40 backend tests pass locally, no skips: unit, API isolation/security, PostgreSQL
+migration roundtrip/immutability, Redis/private S3, real Keycloak PKCE browser flow.
+Frontend: 3 tests pass; lint, strict types and production build pass.
+Ruff lint/format, strict mypy (134 files), Alembic drift, OpenAPI drift and
+regenerated TypeScript API contract pass. Full fail-fast script passes.
+Hosted Phase 1 CI pending; Phase 0 hosted run 37316897694 passed.
 
 ## Migration status
-`0001_foundation` at head in development. Isolated PostgreSQL upgrade/downgrade/
-upgrade and model drift checks pass. Empty baseline changes no operational data.
-No legacy source or production export was supplied; no data migration attempted.
+`34c1f0cc7d24` applied in development and isolated test databases. Empty migration
+roundtrip and schema drift pass; populated downgrade refuses before data removal.
+Audit mutation triggers and composite tenant FKs tested. No legacy migration.
+Local corrected Compose images and private RustFS bucket now verified; the earlier
+Phase 0 workstation image-download limitation has been resolved.
 
 ## Known tech debt
-TD-001–003: deployment telemetry/alerts, production web hardening and legacy
-fixtures/migration validation. Full ownership and remediation are in TECH_DEBT.md.
+TD-001?004: deployment telemetry/alerts, production web hardening, legacy fixtures
+and production identity/runtime DB role provisioning. See TECH_DEBT.md.

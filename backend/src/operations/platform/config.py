@@ -1,6 +1,7 @@
 from typing import Literal
+from urllib.parse import urlparse
 
-from pydantic import Field, SecretStr
+from pydantic import Field, SecretStr, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -16,3 +17,20 @@ class Settings(BaseSettings):
     s3_bucket: str = "operations-private"
     cors_origins: list[str] = Field(default_factory=list)
     otlp_endpoint: str | None = None
+    oidc_issuer: str | None = None
+    oidc_jwks_url: str | None = None
+    oidc_audience: str | None = None
+    oidc_profile: Literal["rfc9068", "keycloak"] = "rfc9068"
+    api_rate_limit: int = Field(default=600, ge=1, le=100000)
+    oidc_max_token_lifetime: int = Field(default=3600, ge=30, le=3600)
+
+    @model_validator(mode="after")
+    def validate_trust(self) -> Settings:
+        configured = [self.oidc_issuer, self.oidc_jwks_url, self.oidc_audience]
+        if any(configured) and not all(configured):
+            raise ValueError("OIDC issuer, JWKS URL and audience must be configured together")
+        if self.environment == "production":
+            for endpoint in (self.oidc_issuer, self.oidc_jwks_url):
+                if endpoint and urlparse(endpoint).scheme != "https":
+                    raise ValueError("Production OIDC trust endpoints require HTTPS")
+        return self

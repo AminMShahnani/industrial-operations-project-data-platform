@@ -5,13 +5,14 @@ import boto3
 import pytest
 from alembic import command
 from alembic.config import Config
+from alembic.script import ScriptDirectory
 from botocore import UNSIGNED
 from botocore.config import Config as S3Config
 from botocore.exceptions import ClientError
 from fastapi.testclient import TestClient
 from operations.main import create_app
 from operations.platform.config import Settings
-from operations.platform.database import create_database_engine
+from operations.platform.database import Base, create_database_engine
 from operations.platform.health import InfrastructureProbe
 from pydantic import SecretStr
 from sqlalchemy import inspect, text
@@ -36,15 +37,21 @@ def test_migration_roundtrip(
     engine = create_database_engine(infrastructure_settings)
     try:
         # Refuse destructive test operations against any database with business tables.
-        assert set(inspect(engine).get_table_names()) <= {"alembic_version"}, (
-            "Migration roundtrip requires an isolated empty test database"
+        tables = set(inspect(engine).get_table_names()) - {"alembic_version"}
+        assert tables <= set(Base.metadata.tables), (
+            "Unexpected tables: not an isolated test database"
         )
+        with engine.connect() as connection:
+            for table in tables:
+                assert connection.scalar(text(f"SELECT count(*) FROM {table}")) == 0, (
+                    "Migration roundtrip requires empty test tables"
+                )
         config = Config("alembic.ini")
         command.upgrade(config, "head")
         command.check(config)
         with engine.connect() as connection:
             assert connection.scalar(text("SELECT version_num FROM alembic_version")) == (
-                "0001_foundation"
+                ScriptDirectory.from_config(config).get_current_head()
             )
         command.downgrade(config, "base")
         with engine.connect() as connection:

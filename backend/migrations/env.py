@@ -1,4 +1,5 @@
 from alembic import context
+from operations import model_registry as model_registry
 from operations.platform.config import Settings
 from operations.platform.database import Base
 from sqlalchemy import create_engine, pool

@@ -11,12 +11,19 @@ from fastapi.responses import JSONResponse
 from opentelemetry.propagate import extract
 from prometheus_client import CONTENT_TYPE_LATEST
 from pydantic import BaseModel
+from redis import Redis
+from sqlalchemy.orm import sessionmaker
 from starlette.exceptions import HTTPException
 
+from operations.api import router
+from operations.contracts import ServiceError
+from operations.modules.identity.application.contracts import TokenVerifier
+from operations.modules.identity.infrastructure.oidc import OidcVerifier
 from operations.platform.config import Settings
 from operations.platform.database import create_database_engine
 from operations.platform.health import HealthResponse, InfrastructureProbe, ReadinessProbe
 from operations.platform.logging import configure_logging
+from operations.platform.rate_limit import RequestLimiter
 from operations.platform.telemetry import HttpTelemetry
 
 
@@ -32,29 +39,35 @@ def create_app(
     settings: Settings,
     probe: ReadinessProbe | None = None,
     telemetry: HttpTelemetry | None = None,
+    verifier: TokenVerifier | None = None,
 ) -> FastAPI:
     monitoring = telemetry or HttpTelemetry(settings.otlp_endpoint)
 
     @asynccontextmanager
     async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         configure_logging()
-        if probe is not None:
-            app.state.probe = probe
-            try:
-                yield
-            finally:
-                monitoring.close()
-            return
         engine = create_database_engine(settings)
+        app.state.sessions = sessionmaker(engine, expire_on_commit=False)
+        app.state.verifier = verifier or OidcVerifier(settings)
+        rate_redis = Redis.from_url(
+            settings.redis_url.get_secret_value(),
+            socket_timeout=2,
+            socket_connect_timeout=2,
+        )
+        app.state.limiter = RequestLimiter(rate_redis, settings.api_rate_limit)
         infrastructure: InfrastructureProbe | None = None
         try:
-            infrastructure = InfrastructureProbe(engine, settings)
-            app.state.probe = infrastructure
+            if probe is None:
+                infrastructure = InfrastructureProbe(engine, settings)
+                app.state.probe = infrastructure
+            else:
+                app.state.probe = probe
             yield
         finally:
             if infrastructure is not None:
                 infrastructure.close()
             engine.dispose()
+            rate_redis.close()
             monitoring.close()
 
     app = FastAPI(
@@ -63,14 +76,14 @@ def create_app(
         lifespan=lifespan,
         responses={
             code: {"model": ProblemDetails, "content": {"application/problem+json": {}}}
-            for code in (404, 422, 500)
+            for code in (401, 403, 404, 409, 422, 429, 500, 503)
         },
     )
     app.add_middleware(
         CORSMiddleware,
         allow_origins=settings.cors_origins,
-        allow_methods=["GET"],
-        allow_headers=["X-Request-ID", "X-Correlation-ID"],
+        allow_methods=["GET", "POST", "PUT"],
+        allow_headers=["Authorization", "Content-Type", "X-Request-ID", "X-Correlation-ID"],
         expose_headers=["X-Request-ID", "X-Correlation-ID"],
     )
 
@@ -86,6 +99,7 @@ def create_app(
     ) -> Response:
         request.state.request_id = identifier(request.headers.get("X-Request-ID"))
         correlation_id = identifier(request.headers.get("X-Correlation-ID"))
+        request.state.correlation_id = correlation_id
         started = perf_counter()
         with monitoring.tracer.start_as_current_span(
             "http.request",
@@ -114,6 +128,8 @@ def create_app(
                 "duration_ms": round(duration * 1000, 2),
                 "trace_id": trace_id,
                 "error_code": getattr(request.state, "error_code", None),
+                "organization_id": getattr(request.state, "organization_id", None),
+                "actor_id": getattr(request.state, "actor_id", None),
             },
         )
         return response
@@ -131,6 +147,15 @@ def create_app(
     @app.exception_handler(HTTPException)
     async def http_error(request: Request, exc: HTTPException) -> JSONResponse:
         return problem(request, exc.status_code, "Request failed", "http_error")
+
+    @app.exception_handler(ServiceError)
+    async def service_error(request: Request, exc: ServiceError) -> JSONResponse:
+        response = problem(request, exc.status, "Request failed", exc.code)
+        if exc.status == 401:
+            response.headers["WWW-Authenticate"] = "Bearer"
+        if exc.status == 429:
+            response.headers["Retry-After"] = "60"
+        return response
 
     @app.exception_handler(RequestValidationError)
     async def validation_error(request: Request, exc: RequestValidationError) -> JSONResponse:
@@ -157,6 +182,7 @@ def create_app(
         response.status_code = 200 if ready else 503
         return HealthResponse(status="ready" if ready else "unavailable", dependencies=dependencies)
 
+    app.include_router(router)
     return app
 
 
