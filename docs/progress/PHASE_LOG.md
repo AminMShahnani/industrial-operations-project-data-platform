@@ -225,3 +225,16 @@ Deferred to owning phases: forms (3), workflow/milestones (4), tasks (5), automa
 and integrations (6), large asynchronous transfer/reporting jobs (7), pack registry
 and industry definitions (8), production deployment/load/legacy cutover (10).
 No deferred Phase 2 acceptance requirement and no unresolved security blocker.
+
+### Phase 2 final acceptance
+Hosted run: https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/37350474988
+Code commit: `5c0d19b`. Backend and frontend jobs PASS.
+P2-01 through P2-08 PASS (8/8): project lifecycle/audit; departments/teams;
+independent scoped membership/grants; governed typed master data; safe atomic
+imports/paged exports; relational/history/migration protection; typed API/UI;
+all local and hosted quality gates, ADR/runbook/changelog/progress evidence.
+Local suite: 63 backend tests with no skips and 5 frontend tests. Hosted Linux
+passes non-browser and real Keycloak browser tests, lint/types/build, migration
+upgrade/drift and generated OpenAPI/TypeScript drift.
+No Phase 2 deferred acceptance item. Future-phase work remains assigned above.
+Phase 3 not started; final acceptance is committed after code-head CI succeeds.

@@ -7,7 +7,8 @@
 - Add audited operator-only global publication and read-only tenant reference access.
 - Add immutable relational history, guarded rollback and typed administration UI.
 - Add isolation, permission, migration and real browser acceptance coverage.
-- Phase acceptance pending final hosted quality gates.
+- Accept all 8 Phase 2 criteria: 63 backend tests, 5 frontend tests; hosted run
+  37350474988 passes backend/frontend on code commit 5c0d19b.
 
 ## 0.2.0 — Phase 1 identity and scoped administration (2026-10-05)
 - Add configurable OIDC access-token verification and browser Authorization Code + PKCE.
