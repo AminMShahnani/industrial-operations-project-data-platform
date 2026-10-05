@@ -71,3 +71,21 @@ Verified local cache digests were not portable registry references. MinIO images
 were unavailable from Docker Hub/Quay. ADR-0005 records corrected PostgreSQL/Redis
 pins and a separate RustFS development volume, preserving the old volume.
 Phase completion remains pending replacement validation and a successful CI run.
+
+### Phase 0 acceptance — 2026-10-05
+Commit `1d4f68e` passed hosted run:
+https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/37316897694
+
+Both backend and frontend jobs passed. Backend clean Compose startup validates
+the corrected registry pins; all 15 tests pass, including PostgreSQL migration
+roundtrip, Redis, signed object storage roundtrip, denied anonymous downloads,
+and real API readiness. Ruff lint/format, strict mypy (including migrations),
+Alembic upgrade/drift, OpenAPI drift and frontend lint/types/build all pass.
+
+Final acceptance: P0-01 through P0-08 PASS (8/8). Phase 0 complete. The initial
+checkpoint is `70db7b1`, infrastructure correction is `1d4f68e`; this completion
+record is committed separately. No business data was migrated or deleted.
+
+Deferred items remain assigned to their owning phases as listed above. Phase 1
+has not started: Q-002 authentication choice was requested before security work,
+per AGENTS.md's security-ambiguity stop condition.

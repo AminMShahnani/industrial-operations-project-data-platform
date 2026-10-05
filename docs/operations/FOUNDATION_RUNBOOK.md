@@ -44,8 +44,9 @@ Never run tests against a production database.
 `uv.lock`, `frontend/package-lock.json` and image digests capture dependencies.
 CI uses frozen/clean installs, separate database tests and OpenAPI drift checks.
 The workspace initially had no Git remote; GitHub origin is now configured.
-Local gate evidence is recorded separately from hosted CI; a green hosted run is required for phase
-completion under docs/28. Do not equate a workflow file with a successful CI run.
+Local gate evidence is recorded separately from hosted CI; a green hosted run is
+required for phase completion under docs/28. Run 37316897694 passes both jobs on
+commit 1d4f68e, including clean startup of registry-pinned images.
 
 ## Later operational requirements
 Production secret management, TLS, private metrics exposure, collector deployment,

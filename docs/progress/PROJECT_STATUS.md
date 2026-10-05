@@ -1,10 +1,10 @@
 # Project Status
 
-Status: PHASE 0 LOCALLY VERIFIED — REQUIRED CI EVIDENCE PENDING
-Current phase: Phase 0 (Phase 1 not started)
+Status: PHASE 0 ACCEPTED — PHASE 1 AUTHENTICATION DECISION PENDING
+Current phase: Phase 0 complete; Phase 1 not started
 Last updated: 2026-10-05
-Overall completion: 0/11 phases accepted. Phase 0: 7/8 criteria locally satisfied
-after checkpoint commit; P0-07 awaits CI. Later-phase detailed criteria are not yet
+Overall completion: 1/11 phases accepted. Phase 0: 8/8 criteria satisfied;
+hosted CI run 37316897694 passes on commit 1d4f68e. Later-phase detailed criteria are not yet
 written, so no unsupported project-wide implementation percentage is reported.
 
 ## Completed
@@ -20,25 +20,25 @@ written, so no unsupported project-wide implementation percentage is reported.
 No business module is complete. All 18 planned namespaces are scaffolded only.
 
 ## In progress
-- Phase 0 hosted CI verification and final acceptance.
+- Phase 1 authentication decision Q-002, requested before security implementation.
 
 ## Blocked
-- Hosted CI backend infrastructure failure: correcting registry references
-  and validating RustFS development storage (ADR-0005). GitHub origin is configured.
-- Phase 1: gated by Phase 0 acceptance; identity trust decision Q-002 also required.
+- Phase 1: identity trust decision Q-002 required. User asked to select configurable
+  OIDC or first-party credentials. No authentication bypass or guessed trust model.
 
 ## Next 5 tasks
-1. Validate corrected image pins and RustFS, then push the Phase 0 CI fix.
-2. Resolve any CI failures and record successful evidence before accepting Phase 0.
-3. Resolve initial identity trust/bootstrap requirements and record an ADR.
-4. Write Phase 1 acceptance criteria and typed identity/hierarchy/IAM contracts.
-5. Add Phase 1 tenant-scoped migrations, audited services and negative security tests.
+1. Resolve initial authentication choice (Q-002).
+2. Record the trust, bootstrap, invitation and session/token model in an ADR.
+3. Write Phase 1 acceptance criteria and typed identity/hierarchy/IAM contracts.
+4. Add reversible tenant-scoped identity/organization/workspace/IAM/audit migrations.
+5. Implement audited services with isolation and privilege-escalation tests.
 
 ## Test status
 15 tests pass locally, including three PostgreSQL/Redis/S3 integration tests; no skips.
 Ruff lint/format, strict mypy, frontend lint/type/build and OpenAPI drift pass.
-Hosted CI run 37316167433: frontend passed; backend failed at Docker startup.
-See PHASE_LOG for corrective decisions and verification evidence.
+Hosted CI run 37316897694 on commit 1d4f68e: backend and frontend both pass,
+including all 15 tests, corrected-image clean startup, signed S3 roundtrip and
+denied anonymous access. See PHASE_LOG for the earlier failure and correction.
 
 ## Migration status
 `0001_foundation` at head in development. Isolated PostgreSQL upgrade/downgrade/
