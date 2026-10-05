@@ -79,7 +79,7 @@ def test_real_oidc_pkce_login_and_workspace_creation(monkeypatch: pytest.MonkeyP
             "VITE_OIDC_CLIENT_ID": "operations-web",
         }
     )
-    creation_flags = subprocess.CREATE_NO_WINDOW if os.name == "nt" else 0
+    creation_flags = int(getattr(subprocess, "CREATE_NO_WINDOW", 0)) if os.name == "nt" else 0
     api = subprocess.Popen(
         [
             str(Path(".venv/Scripts/python.exe" if os.name == "nt" else ".venv/bin/python")),

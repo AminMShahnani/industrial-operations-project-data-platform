@@ -11,6 +11,7 @@ $qualityCommands = @(
     @('run', 'ruff', 'check', '.'),
     @('run', 'ruff', 'format', '--check', '.'),
     @('run', 'mypy'),
+    @('run', 'mypy', '--platform', 'linux'),
     @('run', 'pytest'),
     @('run', 'alembic', 'check'),
     @('run', 'python', 'scripts/export_openapi.py', '--check')

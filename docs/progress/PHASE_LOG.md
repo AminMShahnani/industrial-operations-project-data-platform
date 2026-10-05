@@ -143,3 +143,9 @@ Corrected local image downloads completed; all local infrastructure now healthy.
 Deferred to owning phases: project/department roles (2), notification delivery
 (6), pack/integration enablement (8/6), production deployment hardening (10).
 No Core industry semantics introduced. ADR-0006 records delegated auth choice.
+
+Hosted run 37324876007: frontend PASS; backend stopped at Linux mypy because
+Windows-only `subprocess.CREATE_NO_WINDOW` was referenced in the browser fixture.
+Corrected the platform-conditional constant lookup and added Linux-target mypy
+to local gates. This is test process portability; no authentication policy changed.
+Phase 1 remains pending until the corrected hosted run passes.
