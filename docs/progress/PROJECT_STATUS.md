@@ -27,12 +27,13 @@ protected APIs. No legacy source/export has been supplied.
 5. Design projects/departments/master data contracts and migration rollback.
 
 ## Test status
-40 backend tests pass locally, no skips: unit, API isolation/security, PostgreSQL
+41 backend tests pass locally, no skips: unit, API isolation/security, PostgreSQL
 migration roundtrip/immutability, Redis/private S3, real Keycloak PKCE browser flow.
 Frontend: 3 tests pass; lint, strict types and production build pass.
 Ruff lint/format, strict mypy (134 files), Alembic drift, OpenAPI drift and
 regenerated TypeScript API contract pass. Full fail-fast script passes.
-Hosted Phase 1 CI pending; Phase 0 hosted run 37316897694 passed.
+Hosted run 37325375871 passed both jobs on portability fix 569550b.
+Additional timezone validation/settings coverage awaits its own hosted run.
 
 ## Migration status
 `34c1f0cc7d24` applied in development and isolated test databases. Empty migration

@@ -149,3 +149,11 @@ Windows-only `subprocess.CREATE_NO_WINDOW` was referenced in the browser fixture
 Corrected the platform-conditional constant lookup and added Linux-target mypy
 to local gates. This is test process portability; no authentication policy changed.
 Phase 1 remains pending until the corrected hosted run passes.
+
+Hosted run 37325375871 on 569550b PASS: backend/frontend, including actual
+Chromium PKCE, migrations and contract drift. Final settings validation review
+added a negative timezone-path case: ZoneInfo ValueError now maps to 422 rather
+than 500. Its API test also covers configured branding/locale/units/timezone,
+organization update concurrency and organization admin delegation/audit identity.
+All 12 Phase 1 API tests and Linux mypy/lint/format pass. The suite now has 41
+backend tests; final corrected-head hosted acceptance remains pending.

@@ -444,3 +444,46 @@ def test_workspace_listing_respects_explicit_scope_and_archive(api: Api) -> None
     )
     assert api.client.get(f"{route}/{workspace}", headers=api.headers("invitee")).status_code == 404
     assert api.client.get(route, headers=api.headers("invitee")).json()["items"] == []
+
+
+def test_organization_settings_and_admin_delegation_are_audited(api: Api) -> None:
+    organization = api.organization()
+    route = f"/api/v1/organizations/{organization}"
+    body = {
+        "name": "Configured tenant",
+        "expected_version": 1,
+        "settings": {
+            "locale": "fa-IR",
+            "timezone": "Asia/Tehran",
+            "unit_system": "SI",
+            "brand_name": "Tenant brand",
+        },
+    }
+    assert api.client.put(route, headers=api.headers(), json=body).status_code == 403
+    changed = api.client.put(route, headers=api.headers("admin"), json=body)
+    assert changed.status_code == 200 and changed.json()["settings"] == body["settings"]
+    assert api.client.put(route, headers=api.headers("admin"), json=body).status_code == 409
+    for timezone in ("Unknown/Timezone", "/etc/passwd"):
+        invalid = {**body, "expected_version": 2, "settings": {"timezone": timezone}}
+        assert api.client.put(route, headers=api.headers("admin"), json=invalid).status_code == 422
+    invitation = api.client.post(
+        f"{route}/invitations",
+        headers=api.headers("admin"),
+        json={
+            "email": "second@example.com",
+            "role": "OrganizationAdmin",
+            "scope_type": "organization",
+            "scope_id": str(organization),
+        },
+    )
+    assert invitation.status_code == 201
+    user_id = api.accept(organization, invitation.json()["token"], "second", "second@example.com")
+    assert api.client.get(route, headers=api.headers("second")).status_code == 200
+    events = api.session.scalars(
+        select(AuditRow).where(AuditRow.organization_id == organization)
+    ).all()
+    assert any(event.type == "organization.updated" for event in events)
+    delegated = next(
+        event for event in events if event.type == "iam.grant.created" and event.actor_id == user_id
+    )
+    assert delegated.actor_subject == "second" and delegated.payload["authorized_by"]

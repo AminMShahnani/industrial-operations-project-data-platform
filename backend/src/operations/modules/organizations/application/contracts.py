@@ -19,7 +19,7 @@ class OrganizationSettings(Command):
     def timezone_exists(cls, value: str) -> str:
         try:
             ZoneInfo(value)
-        except ZoneInfoNotFoundError as error:
+        except (ZoneInfoNotFoundError, ValueError) as error:
             raise ValueError("Unknown timezone") from error
         return value
 
