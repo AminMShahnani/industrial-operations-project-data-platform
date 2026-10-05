@@ -1,0 +1,1 @@
+"""identity infrastructure boundary; implementation is phase-gated."""

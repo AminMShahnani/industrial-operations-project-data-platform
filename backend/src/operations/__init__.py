@@ -1,0 +1,1 @@
+"""Industry-neutral modular monolith."""

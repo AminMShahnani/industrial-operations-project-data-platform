@@ -1,0 +1,51 @@
+[project]
+name = "industrial-operations-platform"
+version = "0.1.0"
+description = "Industry-neutral operational platform"
+requires-python = ">=3.14,<3.15"
+dependencies = [
+  "fastapi>=0.115,<1",
+  "uvicorn>=0.34,<1",
+  "pydantic-settings>=2.8,<3",
+  "sqlalchemy>=2.0,<3",
+  "psycopg[binary]>=3.2,<4",
+  "alembic>=1.15,<2",
+  "redis>=5,<8",
+  "boto3>=1.37,<2",
+  "prometheus-client>=0.26.0",
+  "opentelemetry-sdk>=1.45.0",
+  "opentelemetry-exporter-otlp-proto-http>=1.45.0",
+]
+
+[dependency-groups]
+dev = [
+  "pytest>=8.3,<10",
+  "ruff>=0.11,<1",
+  "mypy>=1.15,<2",
+  "boto3-stubs[s3]>=1.37,<2",
+  "httpx2>=2.13.1",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["backend/src/operations"]
+
+[tool.ruff]
+target-version = "py314"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "SIM"]
+
+[tool.mypy]
+python_version = "3.14"
+strict = true
+files = ["backend/src", "backend/migrations", "backend/tests", "scripts"]
+
+[tool.pytest.ini_options]
+testpaths = ["backend/tests"]
+markers = ["integration: requires isolated PostgreSQL, Redis and object storage"]
+addopts = "--strict-markers"
