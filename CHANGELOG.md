@@ -7,3 +7,5 @@
 - Add reversible empty PostgreSQL baseline and real-infrastructure integration tests.
 - Add local PostgreSQL/Redis/private object storage and React/TypeScript shell.
 - Add quality CI, versioned OpenAPI, stack ADR, phase backlog and runbook.
+- Correct registry image pins and replace unavailable development MinIO with
+  S3-compatible RustFS on a separate volume; preserve the original volume (ADR-0005).

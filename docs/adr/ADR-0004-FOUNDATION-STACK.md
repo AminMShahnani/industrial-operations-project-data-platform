@@ -38,6 +38,7 @@ only; arbitrary URLs and request data are excluded. Close providers on shutdown.
 Deployment keeps metrics private; the development server binds locally.
 
 ## References
+- ADR-0005 supersedes the initial local-cache image pins and development MinIO choice.
 - docs/17_TECHNICAL_ARCHITECTURE.md
 - docs/18_DATA_ARCHITECTURE.md
 - https://fastapi.tiangolo.com/advanced/events/

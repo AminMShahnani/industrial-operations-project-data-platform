@@ -3,6 +3,9 @@
 ## Startup and diagnostics
 Use the README setup. Containers bind to loopback and use project-named volumes.
 The development initializer creates a private bucket without an anonymous policy.
+Development/CI storage uses registry-pinned RustFS (ADR-0005). Its volume is separate
+from the retained initial MinIO volume; no data is copied or deleted automatically.
+Integration tests verify signed object roundtrips and denied anonymous downloads.
 It refuses non-development environments. PostgreSQL is the source of truth;
 Redis and object storage do not replace operational relational persistence.
 
@@ -40,8 +43,8 @@ Never run tests against a production database.
 ## Reproducibility and CI
 `uv.lock`, `frontend/package-lock.json` and image digests capture dependencies.
 CI uses frozen/clean installs, separate database tests and OpenAPI drift checks.
-The local workspace has no configured Git remote at startup. Local gate evidence
-is recorded separately from hosted CI; a green hosted run is required for phase
+The workspace initially had no Git remote; GitHub origin is now configured.
+Local gate evidence is recorded separately from hosted CI; a green hosted run is required for phase
 completion under docs/28. Do not equate a workflow file with a successful CI run.
 
 ## Later operational requirements

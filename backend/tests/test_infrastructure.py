@@ -1,8 +1,12 @@
 import os
+from uuid import uuid4
 
+import boto3
 import pytest
 from alembic import command
 from alembic.config import Config
+from botocore import UNSIGNED
+from botocore.config import Config as S3Config
 from botocore.exceptions import ClientError
 from fastapi.testclient import TestClient
 from operations.main import create_app
@@ -66,6 +70,26 @@ def test_real_dependencies_and_private_bucket(infrastructure_settings: Settings)
             assert error.response["Error"]["Code"] == "NoSuchBucketPolicy"
         else:
             pytest.fail(f"Unexpected policy on isolated test bucket: {policy['Policy']}")
+        key = f"foundation-tests/{uuid4()}"
+        anonymous = boto3.client(
+            "s3",
+            endpoint_url=infrastructure_settings.s3_endpoint,
+            region_name="us-east-1",
+            config=S3Config(signature_version=UNSIGNED, connect_timeout=2, read_timeout=2),
+        )
+        try:
+            probe.storage.put_object(Bucket=probe.bucket, Key=key, Body=b"private-test-data")
+            response = probe.storage.get_object(Bucket=probe.bucket, Key=key)
+            try:
+                assert response["Body"].read() == b"private-test-data"
+            finally:
+                response["Body"].close()
+            with pytest.raises(ClientError) as denied:
+                anonymous.get_object(Bucket=probe.bucket, Key=key)
+            assert denied.value.response["ResponseMetadata"]["HTTPStatusCode"] == 403
+        finally:
+            probe.storage.delete_object(Bucket=probe.bucket, Key=key)
+            anonymous.close()
     finally:
         probe.close()
         engine.dispose()

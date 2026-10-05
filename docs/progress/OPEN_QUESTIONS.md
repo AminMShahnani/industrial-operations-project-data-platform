@@ -1,10 +1,9 @@
 # Open Questions
 
 ## Blocking phase completion
-- Q-001 (Phase 0): Which Git remote/CI host should receive this repository?
-  There was no Git repository or remote initially. Local gates pass, but
-  docs/28 requires the complete checklist to pass in CI. A workflow file is
-  present; no hosted run is available. Remote information requested on 2026-10-05.
+- Q-001 remote information resolved: GitHub origin supplied; `main` pushed.
+  Phase 0 still awaits a successful hosted run after correcting the initial
+  Docker startup failure (ADR-0005).
 
 ## Security decisions required before Phase 1
 - Q-002: Select the initial trusted identity provider or explicitly require
@@ -20,6 +19,7 @@
 - legal requirements for electronic signatures in target markets.
 
 ## Resolved
+- Repository remote: https://github.com/AminMShahnani/industrial-operations-project-data-platform
 - Frontend: React SPA with Vite, strict TypeScript (ADR-0004).
 - Repository inventory: docs only; legacy code and production data not supplied.
 

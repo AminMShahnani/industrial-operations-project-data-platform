@@ -63,3 +63,11 @@ production collector/alerts/backup/restore/UAT to Phase 10. Phase 1 has not star
 
 Phase status: locally verified, awaiting required CI evidence. Checkpoint commit
 uses a Phase 0 message and does not claim full phase completion.
+
+### Hosted CI follow-up — 2026-10-05
+User provided the GitHub origin; renamed branch to `main` and pushed checkpoint
+`70db7b1`. Run 37316167433: frontend PASS, backend FAIL at Docker startup.
+Verified local cache digests were not portable registry references. MinIO images
+were unavailable from Docker Hub/Quay. ADR-0005 records corrected PostgreSQL/Redis
+pins and a separate RustFS development volume, preserving the old volume.
+Phase completion remains pending replacement validation and a successful CI run.

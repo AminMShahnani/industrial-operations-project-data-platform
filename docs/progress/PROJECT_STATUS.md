@@ -23,11 +23,12 @@ No business module is complete. All 18 planned namespaces are scaffolded only.
 - Phase 0 hosted CI verification and final acceptance.
 
 ## Blocked
-- Q-001: No Git remote/CI run available; remote information requested.
+- Hosted CI backend infrastructure failure: correcting registry references
+  and validating RustFS development storage (ADR-0005). GitHub origin is configured.
 - Phase 1: gated by Phase 0 acceptance; identity trust decision Q-002 also required.
 
 ## Next 5 tasks
-1. Configure the user-provided Git remote and run the Phase 0 workflow.
+1. Validate corrected image pins and RustFS, then push the Phase 0 CI fix.
 2. Resolve any CI failures and record successful evidence before accepting Phase 0.
 3. Resolve initial identity trust/bootstrap requirements and record an ADR.
 4. Write Phase 1 acceptance criteria and typed identity/hierarchy/IAM contracts.
@@ -36,7 +37,8 @@ No business module is complete. All 18 planned namespaces are scaffolded only.
 ## Test status
 15 tests pass locally, including three PostgreSQL/Redis/S3 integration tests; no skips.
 Ruff lint/format, strict mypy, frontend lint/type/build and OpenAPI drift pass.
-Hosted CI: not run; workflow prepared. See PHASE_LOG for evidence and commands.
+Hosted CI run 37316167433: frontend passed; backend failed at Docker startup.
+See PHASE_LOG for corrective decisions and verification evidence.
 
 ## Migration status
 `0001_foundation` at head in development. Isolated PostgreSQL upgrade/downgrade/
