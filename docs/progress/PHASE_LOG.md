@@ -89,3 +89,9 @@ record is committed separately. No business data was migrated or deleted.
 Deferred items remain assigned to their owning phases as listed above. Phase 1
 has not started: Q-002 authentication choice was requested before security work,
 per AGENTS.md's security-ambiguity stop condition.
+
+Workstation note: downloads of corrected images stalled locally; the agent stopped
+its pending Compose invocation. Existing development containers/volumes remain
+intact on the initial cached images. Clean GitHub CI verified the corrected
+RustFS setup. Re-run `docker compose up -d --wait` locally when registry downloads
+are available; local validation of the replacement is not claimed here.
