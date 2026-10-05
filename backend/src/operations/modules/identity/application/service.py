@@ -8,6 +8,7 @@ from operations.modules.audit.application.contracts import AuditDetails, AuditEv
 from operations.modules.iam.application.contracts import Role, Scope, ScopeType
 from operations.modules.iam.application.service import Authorization
 from operations.modules.identity.application.contracts import (
+    AccessRevoker,
     IdentityStore,
     Invitation,
     Principal,
@@ -24,6 +25,7 @@ class IdentityService:
         organizations: OrganizationReader,
         authorization: Authorization,
         audit: AuditWriter,
+        revokers: list[AccessRevoker] | None = None,
     ) -> None:
         self.store, self.organizations, self.authorization, self.audit = (
             store,
@@ -31,6 +33,7 @@ class IdentityService:
             authorization,
             audit,
         )
+        self.revokers = revokers or []
 
     def bootstrap(self, principal: Principal, reason: str) -> None:
         self.store.bootstrap(principal)
@@ -163,6 +166,8 @@ class IdentityService:
         for grant in self.authorization.grants.for_user(organization_id, user_id):
             if not grant.revoked:
                 self.authorization.revoke(context, organization_id, grant.id)
+        for revoker in self.revokers:
+            revoker.revoke_user_access(context, organization_id, user_id)
         self.audit.append(
             AuditEvent(
                 id=uuid7(),

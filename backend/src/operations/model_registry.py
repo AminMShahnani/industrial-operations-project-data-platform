@@ -7,7 +7,28 @@ from operations.modules.identity.infrastructure.persistence import (
     PlatformAdminRow as PlatformAdminRow,
 )
 from operations.modules.identity.infrastructure.persistence import UserRow as UserRow
+from operations.modules.master_data.infrastructure.persistence import (
+    DataRecordRow as DataRecordRow,
+)
+from operations.modules.master_data.infrastructure.persistence import (
+    DataTypeRow as DataTypeRow,
+)
 from operations.modules.organizations.infrastructure.persistence import (
     OrganizationRow as OrganizationRow,
+)
+from operations.modules.projects.infrastructure.persistence import (
+    DepartmentProjectGrantRow as DepartmentProjectGrantRow,
+)
+from operations.modules.projects.infrastructure.persistence import (
+    ProjectMembershipRow as ProjectMembershipRow,
+)
+from operations.modules.projects.infrastructure.persistence import (
+    ProjectRow as ProjectRow,
+)
+from operations.modules.workspaces.infrastructure.groups import (
+    GroupMembershipRow as GroupMembershipRow,
+)
+from operations.modules.workspaces.infrastructure.groups import (
+    GroupRow as GroupRow,
 )
 from operations.modules.workspaces.infrastructure.persistence import WorkspaceRow as WorkspaceRow

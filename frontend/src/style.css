@@ -12,3 +12,11 @@ button { background: #285b6c; color: white; cursor: pointer; }
 button:disabled { opacity: .6; cursor: wait; }
 :focus-visible { outline: 3px solid #146e9e; outline-offset: 3px; }
 .toolbar { display: flex; justify-content: space-between; gap: 1rem; align-items: center; }
+* { box-sizing: border-box; }
+input, select, textarea { min-width: 0; max-width: 100%; }
+table { width: 100%; border-collapse: collapse; overflow-wrap: anywhere; }
+th, td { text-align: left; border-bottom: 1px solid #cedae1; padding: .5rem; }
+summary { cursor: pointer; font-weight: 600; padding: .7rem 0; }
+fieldset { border: 1px solid #cedae1; margin: 1rem 0; }
+button { margin: .25rem .25rem .25rem 0; }
+[role="status"] { overflow-wrap: anywhere; }

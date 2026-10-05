@@ -143,7 +143,53 @@ def test_real_oidc_pkce_login_and_workspace_creation(monkeypatch: pytest.MonkeyP
                 page.get_by_label("Organization", exact=True).select_option(str(organization.id))
                 page.get_by_label("Workspace name", exact=True).fill("Browser created workspace")
                 page.get_by_role("button", name="Create workspace", exact=True).click()
-                expect(page.get_by_role("status")).to_have_text("Workspace created.")
+                expect(
+                    page.get_by_role("status").filter(has_text="Workspace created.")
+                ).to_be_visible()
+                page.get_by_label("Project name", exact=True).fill("Browser created project")
+                page.get_by_role("button", name="Create project", exact=True).click()
+                expect(
+                    page.get_by_role("status").filter(has_text="Project created.")
+                ).to_be_visible()
+                page.get_by_label("Transition reason", exact=True).fill("Browser acceptance review")
+                page.get_by_role("button", name="Preview transition", exact=True).click()
+                expect(
+                    page.get_by_text(
+                        "Transition preview ready. Review it before applying.", exact=True
+                    )
+                ).to_be_visible()
+                page.get_by_role("button", name="Apply transition", exact=True).click()
+                expect(page.get_by_text("Project state changed.", exact=True)).to_be_visible()
+                page.get_by_label("Group name", exact=True).fill("Browser department")
+                page.get_by_role("button", name="Create department or team", exact=True).click()
+                expect(page.get_by_text("Department or team created.", exact=True)).to_be_visible()
+                page.get_by_text("Create a master data type", exact=True).click()
+                page.get_by_label("Type code", exact=True).fill("browser-sites")
+                page.get_by_label("Type name", exact=True).fill("Browser sites")
+                page.get_by_role("button", name="Create type", exact=True).click()
+                expect(page.get_by_text("Master data type created.", exact=True)).to_be_visible()
+                page.get_by_label("Record code", exact=True).fill("SITE-1")
+                page.get_by_label("Record name", exact=True).fill("Browser site")
+                page.get_by_role("button", name="Create record", exact=True).click()
+                expect(page.get_by_text("Master data record created.", exact=True)).to_be_visible()
+                page.get_by_label("Import file", exact=True).set_input_files(
+                    {
+                        "name": "sites.csv",
+                        "mimeType": "text/csv",
+                        "buffer": b"code,name\nSITE-2,Imported site\n",
+                    }
+                )
+                page.get_by_role("button", name="Preview import", exact=True).click()
+                expect(
+                    page.get_by_text(
+                        "Import preview ready. No records have been written.", exact=True
+                    )
+                ).to_be_visible()
+                page.get_by_role("button", name="Apply import", exact=True).click()
+                expect(page.get_by_text("Import applied.", exact=True)).to_be_visible()
+                with page.expect_download() as download:
+                    page.get_by_role("button", name="Export CSV", exact=True).click()
+                assert download.value.suggested_filename == "master-data-1.csv"
                 assert page.evaluate(
                     "Object.keys(localStorage).concat(Object.keys(sessionStorage))"
                     ".every(key => !key.startsWith('oidc.user:'))"

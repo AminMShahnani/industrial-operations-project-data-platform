@@ -2,6 +2,8 @@ from dataclasses import dataclass
 from typing import Protocol
 from uuid import UUID
 
+from operations.modules.identity.application.contracts import RequestContext
+
 
 @dataclass(frozen=True)
 class Workspace:
@@ -22,3 +24,7 @@ class WorkspaceStore(Protocol):
         workspace_ids: list[UUID] | None,
         after: UUID | None,
     ) -> list[Workspace]: ...
+
+
+class ProjectVisibility(Protocol):
+    def workspace_ids(self, context: RequestContext, organization_id: UUID) -> list[UUID]: ...

@@ -200,3 +200,28 @@ AGENTS.md requires documenting and stopping instead of guessing. No Phase 2
 feature code, permissions or migrations have been applied. Phase 2 acceptance is
 0/8; preparation only. Recommended answer: audited operator publication with
 read-only tenant access; tenant administrators retain only tenant-scoped writes.
+
+Q-003 resolved by user: audited operator publishing, global tenant reads only.
+ADR-0007 accepted; Phase 2 implementation proceeds.
+
+### Phase 2 implementation and local validation
+ADR-0007 accepted after the explicit operator-only publishing decision. Implemented
+P2-01 through P2-07 vertical slices, typed API/UI and reversible empty migrations.
+Core remains industry-neutral. Direct memberships and department grants are
+independent; tenant revocation preserves history and removes effective grants.
+Database protection covers immutable definitions, stable identities and membership
+history. Global reference publication is audited and has no tenant write endpoint.
+Imports are bounded, atomic, formula-safe and preview/hash guarded. A regression
+test verifies untrusted XLSX dimensions cannot silently discard actual rows/cells.
+
+Local fail-fast gates PASS: 63 backend tests, zero skips; 5 frontend tests; Ruff
+lint/format; strict mypy Windows/Linux (153 files); migration roundtrip/drift;
+OpenAPI drift; frontend lint/types/build. Real Chromium/Keycloak login exercises
+workspace/project/group/master-data creation and import/export.
+Hosted acceptance remains pending. P2-01 through P2-08 are not finally marked pass
+until the implementation commit's hosted checks pass.
+
+Deferred to owning phases: forms (3), workflow/milestones (4), tasks (5), automation
+and integrations (6), large asynchronous transfer/reporting jobs (7), pack registry
+and industry definitions (8), production deployment/load/legacy cutover (10).
+No deferred Phase 2 acceptance requirement and no unresolved security blocker.

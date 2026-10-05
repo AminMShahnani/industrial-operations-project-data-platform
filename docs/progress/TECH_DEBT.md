@@ -14,5 +14,7 @@ industry coupling. Later phase namespaces remain planned ownership rather than
 completed implementations. Provider-level logout and automated invitation delivery
 remain documented provider responsibilities and Phase 6 work respectively.
 
-Phase 2 preparation adds no implementation compromise. Q-003 is a pending
-security ownership decision, tracked in OPEN_QUESTIONS.md rather than tech debt.
+Phase 2 resolves Q-003 in ADR-0007. Transfers are deliberately bounded to
+1000 rows per synchronous import and 100 records per export page. Large background
+transfers belong to Phase 7; queue idempotency and load acceptance remain required
+in their owning phases. No legacy data was deleted or migrated.

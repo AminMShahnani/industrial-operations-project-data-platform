@@ -17,6 +17,8 @@ dependencies = [
   "opentelemetry-exporter-otlp-proto-http>=1.45.0",
   "pyjwt[crypto]>=2.10,<3",
   "email-validator>=2.3.0",
+  "openpyxl>=3.1.5",
+  "defusedxml>=0.7.1",
 ]
 
 [dependency-groups]
@@ -27,6 +29,8 @@ dev = [
   "boto3-stubs[s3]>=1.37,<2",
   "httpx2>=2.13.1",
   "playwright>=1.63.0",
+  "types-openpyxl>=3.1.5.20260827",
+  "types-defusedxml>=0.7.0.20260504",
 ]
 
 [build-system]

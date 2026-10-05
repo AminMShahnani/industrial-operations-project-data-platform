@@ -1,51 +1,46 @@
 # Project Status
 
-Status: PHASE 2 PREPARATION ? SECURITY DECISION PENDING
-Current phase: Phase 2 ? projects, departments and master data (preparation)
+Status: PHASE 2 HOSTED VALIDATION
+Current phase: Phase 2 - projects, departments and master data
 Last updated: 2026-10-05
-Overall completion: 2/11 phases accepted. Phase 0: 8/8 criteria satisfied.
-Phase 1: P1-01?08 pass (8/8), hosted run 37325939172 on commit 3135ff8. Later phase detailed
-criteria are not yet written; no unsupported project-wide percentage is reported.
+Overall completion: 2/11 phases accepted. Phase 0 and Phase 1 each satisfy 8/8
+criteria. Phase 2 satisfies local gates; 0/8 finally accepted pending hosted CI.
+No unsupported project-wide percentage is reported.
 
 ## Completed modules
-- Foundation tooling, observability, module boundaries, infrastructure and CI.
-- Phase 1 identity, organizations/settings, workspaces, scoped IAM and audit slices.
-- Typed API/client and OIDC administration shell; provider/operator runbook.
+- Foundation, infrastructure, observability, CI and module boundaries.
+- Identity, organizations/settings, workspaces, scoped IAM and immutable audit.
+- Phase 2 implementation: projects/lifecycle, groups and scoped memberships/grants.
+- Typed scoped master data, atomic imports, paged exports and operator publication.
+- Typed API/client, scope-aware UI and migration/operations runbooks.
 
 ## In progress
-- Phase 2 acceptance checklist written (0/8 accepted); ADR-0007 proposed.
-- No Phase 2 feature code, permissions or migrations have been applied.
+Final Phase 2 hosted validation and acceptance evidence.
 
 ## Blocked
-Q-003: global master-data publication authority is unspecified in docs/14.
-Recommended audited operator-only publishing; tenant access read-only.
-AGENTS.md requires stopping rather than guessing security-sensitive ownership.
-Production provider configuration remains deployment-owned. No legacy export supplied.
+None. Q-003 is resolved by user; ADR-0007 accepted. Legacy export not supplied.
 
 ## Next 5 tasks
-1. Resolve Q-003 global master-data publication authority and accept ADR-0007.
-2. Record project lifecycle/access and master-data schema decisions in ADRs.
-3. Add typed project/department/master-data contracts and tenant-safe migrations.
-4. Implement audited services and positive/negative authorization tests.
-5. Add administration slices and run every Phase 2 quality gate.
+1. Push the Phase 2 implementation and verify hosted backend/frontend gates.
+2. Record P2-01 through P2-08 acceptance against the tested code commit.
+3. Commit final progress evidence after CI passes.
+4. Read Phase 3 requirements and write its acceptance checklist.
+5. Resolve any significant Phase 3 decisions through ADRs before implementation.
 
 ## Test status
-41 backend tests pass locally, no skips: unit, API isolation/security, PostgreSQL
-migration roundtrip/immutability, Redis/private S3, real Keycloak PKCE browser flow.
-Frontend: 3 tests pass; lint, strict types and production build pass.
-Ruff lint/format, strict mypy (134 files), Alembic drift, OpenAPI drift and
-regenerated TypeScript API contract pass. Full fail-fast script passes.
-Hosted run 37325939172 passes backend/frontend on final code commit 3135ff8,
-including all 41 backend tests, 3 frontend tests, real PKCE login, migrations,
-lint/types/build and API contract drift. Phase 1 accepted; Phase 2 not started.
+63 backend tests pass locally without skips, including real Keycloak PKCE browser,
+PostgreSQL isolation/history and migration roundtrip, Redis and private S3.
+5 frontend tests pass. Ruff lint/format, strict mypy on Windows and Linux (153 files),
+Alembic drift, OpenAPI drift, frontend lint/types and production build pass.
+Hosted Phase 1 run 37325939172 passes. Final Phase 2 hosted gates are pending.
 
 ## Migration status
-`34c1f0cc7d24` applied in development and isolated test databases. Empty migration
-roundtrip and schema drift pass; populated downgrade refuses before data removal.
-Audit mutation triggers and composite tenant FKs tested. No legacy migration.
-Local corrected Compose images and private RustFS bucket now verified; the earlier
-Phase 0 workstation image-download limitation has been resolved.
+Development and isolated test databases are at 4c982bc7d8c5. Phase 2 adds
+99e791752349 then 4c982bc7d8c5. Composite tenant/workspace keys, department-only
+relationships, immutable definitions/identities and history protection are tested.
+Populated downgrade refuses before deletion; documented restore/reconciliation
+strategy is in docs/operations/PHASE_2_RUNBOOK.md. No legacy migration performed.
 
 ## Known tech debt
-TD-001?004: deployment telemetry/alerts, production web hardening, legacy fixtures
-and production identity/runtime DB role provisioning. See TECH_DEBT.md.
+TD-001 through TD-004 remain assigned to their owning/deployment phases.
+Large background transfers belong to Phase 7. See TECH_DEBT.md.

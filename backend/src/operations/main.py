@@ -19,6 +19,7 @@ from operations.api import router
 from operations.contracts import ServiceError
 from operations.modules.identity.application.contracts import TokenVerifier
 from operations.modules.identity.infrastructure.oidc import OidcVerifier
+from operations.phase2_api import router as phase2_router
 from operations.platform.config import Settings
 from operations.platform.database import create_database_engine
 from operations.platform.health import HealthResponse, InfrastructureProbe, ReadinessProbe
@@ -84,7 +85,7 @@ def create_app(
         allow_origins=settings.cors_origins,
         allow_methods=["GET", "POST", "PUT"],
         allow_headers=["Authorization", "Content-Type", "X-Request-ID", "X-Correlation-ID"],
-        expose_headers=["X-Request-ID", "X-Correlation-ID"],
+        expose_headers=["X-Request-ID", "X-Correlation-ID", "X-Next-Cursor", "Content-Disposition"],
     )
 
     def identifier(value: str | None) -> str:
@@ -183,6 +184,7 @@ def create_app(
         return HealthResponse(status="ready" if ready else "unavailable", dependencies=dependencies)
 
     app.include_router(router)
+    app.include_router(phase2_router)
     return app
 
 

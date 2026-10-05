@@ -69,6 +69,21 @@ class IdentityRepository:
     def __init__(self, session: Session) -> None:
         self.session = session
 
+    def active_by_email(self, organization_id: UUID, email: str) -> list[User]:
+        return [
+            user_contract(row)
+            for row in self.session.scalars(
+                select(UserRow)
+                .where(
+                    UserRow.organization_id == organization_id,
+                    UserRow.email == email.casefold(),
+                    UserRow.active.is_(True),
+                )
+                .order_by(UserRow.id)
+                .limit(10)
+            )
+        ]
+
     def platform_admin(self, principal: Principal) -> bool:
         row = self.session.get(PlatformAdminRow, (principal.issuer, principal.subject))
         return bool(row and row.active)

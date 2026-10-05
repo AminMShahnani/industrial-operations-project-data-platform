@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.3.0 - Phase 2 projects and governed master data (2026-10-05)
+- Add audited projects, controlled immutable lifecycle definitions and scoped roles.
+- Add departments/teams, independent memberships and department-project grants.
+- Add typed scoped master data, validated atomic CSV/XLSX imports and paged exports.
+- Add audited operator-only global publication and read-only tenant reference access.
+- Add immutable relational history, guarded rollback and typed administration UI.
+- Add isolation, permission, migration and real browser acceptance coverage.
+- Phase acceptance pending final hosted quality gates.
+
 ## 0.2.0 — Phase 1 identity and scoped administration (2026-10-05)
 - Add configurable OIDC access-token verification and browser Authorization Code + PKCE.
 - Add tenant identities, organizations/settings, workspaces and scoped server-side RBAC.

@@ -28,10 +28,7 @@ Codex must not guess business-critical answers. Record assumptions and use confi
 
 Phase 1 final hosted run 37325939172 passes. No unresolved Phase 1 question.
 
-## Phase 2 security decision
-- Q-003: Who may publish global reference master data (docs/14)? Recommended:
-  platform-owned reference data, read-only to tenants, published only by an audited
-  operator command. Alternative: a dedicated platform permission with an audited
-  API. Tenant administrators must never publish across tenants implicitly.
-  ADR-0007 is proposed. AGENTS.md requires a decision before implementing an
-  ambiguous security-sensitive boundary. No Phase 2 authority has been guessed.
+## Resolved Phase 2 security decision
+- Q-003: User selected audited operator publication on 2026-10-05.
+  Global reference data is read-only to tenants; platform administration never
+  grants tenant operational access. ADR-0007 is accepted. No unresolved Phase 2 blocker.

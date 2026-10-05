@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState, type FormEvent } from 'react';
 import { useAuth } from 'react-oidc-context';
 import { apiClient } from './client';
 import type { components } from './api-schema';
+import { ProjectAdministration } from './ProjectAdmin';
 
 type Me = components['schemas']['Me'];
 type Workspace = components['schemas']['Workspace'];
@@ -148,6 +149,7 @@ export function Administration() {
       {invitation && <div><p>Share this code and organization ID with the intended member. The code expires in seven days.</p>
         <label>Invitation code<textarea readOnly value={invitation} /></label></div>}
     </section>}
+    {organization && workspace && <ProjectAdministration key={organization + workspace} api={api} organization={organization} workspace={workspace} />}
     <section><h2>Accept an invitation</h2><form onSubmit={event => void acceptInvitation(event)}>
       <label>Organization ID<input name="organization" required /></label>
       <label>Invitation code<input name="token" type="password" autoComplete="off" required /></label>

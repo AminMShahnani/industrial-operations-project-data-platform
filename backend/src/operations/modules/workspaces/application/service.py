@@ -8,7 +8,11 @@ from operations.modules.iam.application.contracts import Scope, ScopeType
 from operations.modules.iam.application.service import Authorization
 from operations.modules.identity.application.contracts import RequestContext
 from operations.modules.organizations.application.contracts import OrganizationReader
-from operations.modules.workspaces.application.contracts import Workspace, WorkspaceStore
+from operations.modules.workspaces.application.contracts import (
+    ProjectVisibility,
+    Workspace,
+    WorkspaceStore,
+)
 
 
 class WorkspaceService:
@@ -25,6 +29,7 @@ class WorkspaceService:
             authorization,
             audit,
         )
+        self.project_visibility: ProjectVisibility | None = None
 
     def active(self, organization_id: UUID, workspace_id: UUID) -> Workspace:
         self.organizations.active(organization_id)
@@ -34,15 +39,14 @@ class WorkspaceService:
         return workspace
 
     def read(self, context: RequestContext, organization_id: UUID, workspace_id: UUID) -> Workspace:
-        self.authorization.require(
-            context,
-            "workspace.read",
-            Scope(
-                organization_id,
-                ScopeType.WORKSPACE,
-                workspace_id,
-            ),
+        allowed = self.authorization.allowed(
+            context, Scope(organization_id, ScopeType.WORKSPACE, workspace_id)
         )
+        if "workspace.read" not in allowed and (
+            self.project_visibility is None
+            or workspace_id not in self.project_visibility.workspace_ids(context, organization_id)
+        ):
+            raise ServiceError(403, "access_denied")
         return self.active(organization_id, workspace_id)
 
     def create(self, context: RequestContext, organization_id: UUID, name: str) -> Workspace:
@@ -122,4 +126,8 @@ class WorkspaceService:
     ) -> list[Workspace]:
         self.organizations.active(organization_id)
         visible = self.authorization.workspace_filter(context, organization_id)
+        if visible is not None and self.project_visibility is not None:
+            visible = list(
+                set(visible) | set(self.project_visibility.workspace_ids(context, organization_id))
+            )
         return self.store.list(organization_id, visible, after)

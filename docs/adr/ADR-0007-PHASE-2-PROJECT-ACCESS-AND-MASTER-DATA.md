@@ -1,6 +1,6 @@
 # ADR-0007: Phase 2 project access and governed master data
 
-Status: Proposed — security decision required before implementation
+Status: Accepted
 Date: 2026-10-05
 
 ## Context
@@ -12,7 +12,7 @@ organization, workspace and project master data but does not specify who may
 publish global reference data. Existing platform administration deliberately has
 no implicit operational tenant permissions (ADR-0006).
 
-## Recommended decision
+## Decision
 Keep tenant-owned master data governed by explicit permissions in its own scope.
 Treat global reference data as platform-owned, read-only to tenant users. Publish
 global reference definitions/records only through an explicit audited operator
@@ -33,12 +33,38 @@ customer code. Schema changes must preserve existing record validity or require
 an explicit validated migration. Imports require validation and duplicate checks
 before any writes, with a dry-run preview and atomic commit.
 
-## Pending decision
-Global reference publishing is a security-sensitive ownership boundary not
-selected by the source documents. Per AGENTS.md's stop condition, record the
-recommended rule and obtain a decision before implementing that authority.
-The remaining recommendations can be refined into accepted contracts once this
-boundary is resolved. No new permissions or migrations have been applied.
+## Authorization
+The user selected audited operator publication with read-only tenant global access
+on 2026-10-05. Q-003 is resolved. No tenant grant can confer global write authority.
+
+OrganizationAdmin's existing explicit inherited grant carries project administration.
+Workspace admins/owners can create projects, groups and workspace master data;
+their workspace role does not automatically grant existing project operational access.
+Project creation atomically seeds an explicit ProjectManager membership for its
+creator, analogous to initial organization bootstrap. Further membership changes
+cannot target the actor. ProjectManager can delegate only its own permissions.
+Department manager flags allow management of that group's membership; an explicit
+department-project role applies to active group members. Department grant changes
+cannot target the actor's own department. Tenant user revocation also revokes every
+direct project/group membership transactionally, including archived workspaces;
+reactivation never silently restores old access.
+
+Departments and teams share a workspace-owned group aggregate with a constrained
+kind; only departments may receive department-project grants. Lifecycle graphs are
+captured immutably at project creation, with all states reachable and able to reach
+a terminal state. Master-data schemas are immutable after creation in Phase 2;
+changed schemas use a new type/code and explicit record migration, never mutation.
+Decimal values use canonical text with at most 18 integer and 6 fractional digits.
+Imports are insert-only, bounded to 1000 rows/4 MiB; dry-run source hash and type
+version are required for apply. Exports are cursor-paged with stable IDs/codes.
+XLSX formula cells, macros, external workbook links and oversized archives deny.
+CSV/XLSX exports neutralize spreadsheet formulas without evaluating expressions.
+Codes remain case-sensitive stable identifiers; field keys cannot overlap built-in
+record columns. Direct project or group membership permits discovering its parent
+workspace name for navigation, without granting workspace management or unrelated
+project/data access. Group lists are restricted to own memberships when no explicit
+workspace read grant exists. Membership and department grants are independent
+authorization primitives owned by their modules; IAM table access stays private.
 
 ## Sources
 docs/03 FR-012–016; docs/05–08, 14, 18–20, 22 and 28.

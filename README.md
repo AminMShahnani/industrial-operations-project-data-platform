@@ -63,3 +63,5 @@ See `docs/operations/FOUNDATION_RUNBOOK.md`. `docker compose down` stops this
 project's services while retaining volumes. Do not remove volumes containing data.
 Development credentials in `.env.example` are local-only; secrets never belong
 in Git. Production deployment, provider provisioning, backups and UAT remain gated work.
+
+Phase 2 project, department and master-data operations: [runbook](docs/operations/PHASE_2_RUNBOOK.md).
