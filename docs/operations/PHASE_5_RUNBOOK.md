@@ -1,6 +1,7 @@
 # Phase 5 workflow operations
 
-Status: implementation in progress; final local/hosted acceptance pending.
+Status: accepted on d91dfce; all 8 Phase 5 criteria pass.
+CI: https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/37454353238
 
 ## Migration and deployment
 The Phase 5 chain follows `b71acf0449b2`: `e049d194ba38` definitions,
@@ -19,7 +20,7 @@ Typed APIs support review, decision, notification and explicit return nodes.
 Unsupported manager relationships fail explicitly; never invent substitutes.
 
 Assigned users review permitted immutable evidence in the scoped inbox. Every
- action requires a reason and immutable actor/time/audit evidence. ADR-0010 requires
+action requires a reason and immutable actor/time/audit evidence. ADR-0010 requires
 independent approval, including administrators. Assignment snapshots never bypass
 fresh identity, group/role or project checks. Drafts remain private. Basic authenticated
 acknowledgement is V1; configurable signatures remain V1.5.

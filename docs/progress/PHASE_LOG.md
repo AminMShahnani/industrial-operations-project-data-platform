@@ -457,3 +457,35 @@ paging, preserved versions/defaults and immutable evidence pass. Ruff lint/forma
 strict mypy Windows/Linux (202 files), migration and OpenAPI drift, frontend
 lint/types/build pass. Final negative-scope/populated-role guards are revalidated
 before commit. Hosted acceptance remains pending; no phase advancement.
+
+### Phase 5 final acceptance - 2026-10-06
+Code commit: `d91dfceabeeb0906395d57e42805e235c8d5f5e4`.
+Hosted run: https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/37454353238
+Backend and frontend jobs PASS on that exact commit. Local full suite: 136 backend
+tests without skips; final targeted API/browser revalidation: 15 pass in 59.19s.
+Frontend: 11 tests. Ruff lint/format, strict mypy Windows/Linux (202 files),
+TypeScript/ESLint, production build, empty migration roundtrip, populated rollback
+guards, Alembic drift and generated API/client drift pass.
+
+- P5-01 PASS: typed scoped definitions, graph validation, immutable exact-form pins
+  and reviewed content-hash activation; one active binding per form version.
+- P5-02 PASS: atomic submission startup, pinned immutable routing, deterministic
+  decisions/notification intents and concurrent authenticated idempotent actions.
+- P5-03 PASS: independent one/all/quorum/sequential approval, review roles, all
+  supported assignment strategies, fresh group/project authority and scope denial.
+- P5-04 PASS: return/reject routes, new correction/amendment drafts, pinned retired
+  workflow resubmission and immutable payload/signature/action/audit history.
+- P5-05 PASS: typed application ports update proven task states without rewriting
+  root linkage and provide exact-scope/owner/form previous-approved defaults.
+- P5-06 PASS: scoped administration, actionable inbox, permitted evidence/history,
+  reasoned actions and owner revisions; private drafts stay private.
+- P5-07 PASS: composite ownership/evidence constraints, bounded paged history,
+  immutable notification handoff and empty/populated migration safety checks.
+- P5-08 PASS: complete local and exact-head hosted gates, accepted ADR-0010,
+  runbook/changelog/progress and phase-oriented implementation/acceptance commits.
+
+8/8 accepted; overall 6/11 phases accepted. No Phase 5 acceptance item deferred.
+Notification workers/email/timer automation remain Phase 6; configurable signatures
+remain V1.5; deployment/load/backup validation remains Phase 10. Unsupported manager
+relations fail explicitly under the documented where-supported assignment profile.
+No industry-specific Core behavior or new execution framework. Phase 6 unstarted.

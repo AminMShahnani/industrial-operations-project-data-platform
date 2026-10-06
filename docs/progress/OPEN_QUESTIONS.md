@@ -56,13 +56,12 @@ owned by Phase 4/5, with explicit unavailable-context errors until connected.
 Phase 4 accepted on d92a10f with hosted run 37432881526. No unresolved Phase 4
 security/domain question. Workflow policies are reviewed before Phase 5 implementation.
 
-## Pending Phase 5 security decision
+## Phase 5 security decision (resolved)
 - Q-005 (2026-10-06): May a submitter approve their own record? docs/10 does not
   establish separation of duties. Recommended: require independent approval and
   never silently substitute an administrator when no eligible approver exists.
   Alternative: permit self-approval only when explicitly configured in a workflow.
-  User question pending. ADR-0010 is proposed; dependent implementation is blocked
-  by AGENTS.md's security-sensitive ambiguity stop condition.
+  User accepted mandatory independent approval; ADR-0010 is accepted.
 
 Q-005 resolved on 2026-10-06: user instructed "do it" after the independent-approval
 recommendation. ADR-0010 accepted. Submitters cannot approve their own record,
@@ -72,3 +71,6 @@ Phase 5 runtime verification: no new unresolved security/domain question.
 ADR-0010 records exact-version binding, preserved revisions, scoped action roles,
 fresh authority, deterministic routing and bounded history. Unsupported manager
 relationships fail explicitly rather than inventing domain data.
+
+Phase 5 accepted on d91dfce / hosted run 37454353238. No unresolved Phase 5
+security/domain boundary; Phase 6 decisions remain subject to its own preparation.

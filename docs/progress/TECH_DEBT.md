@@ -57,3 +57,8 @@ Phase 5 runtime verification: API/UI/runtime integration is implemented and unde
 acceptance testing. Remaining assignment/browser/concurrency/gate verification is
 current Phase 5 work, not deferred debt. Typed notification intents hand off to
 Phase 6; existing TD-001 through TD-005 retain their owners.
+
+Phase 5 accepted on d91dfce / hosted run 37454353238 with no deferred acceptance
+criterion or new implementation debt. Documented bounds and unsupported manager
+context are explicit product profiles; delivery/deployment obligations retain their
+Phase 6/10 owners. Phase 6 has not started.

@@ -1,13 +1,14 @@
 # Changelog
 
-## Unreleased - Phase 5 in progress (2026-10-06)
+## Unreleased - Phase 5 complete (2026-10-06)
 - Accept mandatory independent approval in ADR-0010; administrators cannot self-approve.
 - Add typed bounded workflow graphs and one/all/quorum/sequential approval invariants.
 - Add scoped definition/version persistence with immutable activation and guarded rollback.
 - Add assigned workflow actions, immutable correction/amendment links, task state
   integration, authoritative approved defaults and scoped administration/review UI.
 - Add runtime evidence guards and Reviewer/Approver project role migrations.
-- Phase 5 acceptance remains pending complete local and hosted verification.
+- Phase 5 accepted: 8/8 criteria, 136 backend and 11 frontend tests; local and
+  exact-head hosted gates pass on d91dfce / run 37454353238.
 
 ## 0.5.0 - Phase 4 scheduling and shared tasks (2026-10-06)
 - Add immutable schedule versions, bounded timezone-aware recurrence and scoped shifts/triggers/milestones.

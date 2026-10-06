@@ -1,10 +1,10 @@
 # Project Status
 
-Status: PHASE 5 IN PROGRESS
-Current phase: Phase 5 - workflow and audit
+Status: PHASE 5 COMPLETE
+Current phase: Phase 5 accepted; Phase 6 not started
 Last updated: 2026-10-06
-Overall completion: 5/11 phases accepted. Phase 0 through Phase 4 each
-satisfy 8/8 criteria. Phase 4: P4-01 through P4-08 PASS.
+Overall completion: 6/11 phases accepted. Phase 0 through Phase 5 each
+satisfy 8/8 criteria. Phase 5: P5-01 through P5-08 PASS.
 No unsupported project-wide percentage is reported.
 
 ## Completed modules
@@ -18,12 +18,12 @@ No unsupported project-wide percentage is reported.
 - Immutable schedules, shifts and project milestones; bounded timezone-aware recurrence.
 - Idempotent shared tasks, atomic claims, My Work and durable in-app reminders.
 - Transactional task/submission linkage and scoped periodic generation CLI.
+- Immutable workflow definitions, deterministic routing and independent approval.
+- Preserved correction/amendment links, task transitions and approved defaults.
+- Scoped assigned-action inbox, administration and immutable evidence/history UI.
 
 ## In progress
-Phase 5 administration/activation, assigned runtime/actions, governed revisions,
-task transitions, approved defaults and scoped review UI are implemented.
-Database evidence guards and scoped review-role migrations are under verification.
-Phase 5: 0/8 accepted pending complete local and exact-head hosted gates.
+None. Phase 5 accepted on d91dfce, hosted run 37454353238. Phase 6 unstarted.
 
 ## Blocked
 None. Q-005 resolved: independent approval is mandatory, including administrators.
@@ -32,11 +32,11 @@ Q-004 resolved by user: shared task claimed by one eligible member.
 Legacy export absent.
 
 ## Next 5 tasks
-1. Complete independent-user PKCE return/correction/approval browser validation.
-2. Verify assignment/routing policies and negative authorization cases.
-3. Recheck all guarded migrations, tests and generated contracts.
-4. Commit implementation and verify exact-head hosted CI.
-5. Record acceptance only after all gates pass; keep Phase 6 unstarted.
+1. Review Phase 6 automation/notification requirements before implementation.
+2. Write Phase 6 acceptance criteria and resolve worker architecture through an ADR.
+3. Design typed immutable rule versions, event contracts and durable execution.
+4. Integrate idempotent notification delivery with retained workflow/task intents.
+5. Verify Phase 6 local/hosted gates before any Phase 7 work.
 
 ## Test status
 136 backend tests pass locally without skips, including separate real Keycloak PKCE
@@ -45,16 +45,18 @@ live group/project revocation and 156-action paged history. PostgreSQL migration
 roundtrip/isolation, Redis and private S3 remain covered. 11 frontend tests pass.
 Ruff lint/format and strict mypy on Windows/Linux (202 files),
 Alembic drift, OpenAPI drift, frontend lint/types and production build pass.
-Hosted Phase 4 run [37432881526](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/37432881526) passes both jobs on
-code commit d92a10f. Foundation run 37442996936 passes on 554b593; full Phase 5
-exact-head hosted acceptance is pending.
+Final targeted revalidation: 15 workflow API/browser tests pass in 59.19 seconds.
+Hosted [37454353238](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/37454353238)
+passes backend/frontend jobs on exact code commit
+`d91dfceabeeb0906395d57e42805e235c8d5f5e4`, including Linux tests, separate PKCE
+identities, concurrent approval, migration and generated-contract drift.
 
 ## Migration status
 Development, isolated test and browser databases are at 71db385e7a02. Phase 5 adds
 scoped definitions/versions, instances, visits/recipient snapshots, immutable
 actions/notification intents/revisions, proven task transitions and review roles.
 Empty migration roundtrip/drift and populated evidence rollback refusal are tested.
-Final full-suite/hosted acceptance is pending. Phase 4 adds
+Final local/hosted migration gates pass. Phase 4 adds
 guarded immutable schedules, tasks, recipients, shifts, triggers, reminders and
 project milestones. Empty roundtrip/drift pass; populated downgrade refuses.
 Phase 3 adds
