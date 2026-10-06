@@ -5,7 +5,12 @@ from uuid import UUID
 from pydantic import Field, model_validator
 
 from operations.contracts import Command
-from operations.modules.automation.application.events import Delivery, EventType, OperationalEvent
+from operations.modules.automation.application.events import (
+    Delivery,
+    EventType,
+    NotificationHandoff,
+    OperationalEvent,
+)
 from operations.modules.forms.application.contracts import Expression
 from operations.modules.master_data.application.contracts import RecordValues
 from operations.modules.scheduling.application.contracts import Assignment
@@ -169,6 +174,7 @@ class Receipt(Command):
 
 
 class AutomationStore(Protocol):
+    def handoff_events(self, handoff: NotificationHandoff) -> list[OperationalEvent]: ...
     def append(self, event: OperationalEvent) -> None: ...
     def event(self, org: UUID, identifier: UUID) -> OperationalEvent | None: ...
     def create_rule(self, row: Rule) -> None: ...

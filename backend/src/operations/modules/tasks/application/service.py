@@ -3,7 +3,7 @@ from uuid import UUID, uuid7
 from zoneinfo import ZoneInfo
 
 from operations.contracts import ServiceError
-from operations.modules.automation.application.events import EventContext
+from operations.modules.automation.application.events import EventContext, NotificationHandoff
 from operations.modules.identity.application.contracts import RequestContext
 from operations.modules.scheduling.application.service import SchedulingService
 from operations.modules.submissions.application.contracts import Submission
@@ -167,6 +167,33 @@ class TaskService:
                 }
             )
         )
+
+    def notification_handoffs(
+        self, actor: RequestContext, org: UUID, workspace: UUID, after: UUID | None
+    ) -> list[NotificationHandoff]:
+        self.schedules.forms.require(actor, org, workspace, None, "automation.manage")
+        rows: list[NotificationHandoff] = []
+        for reminder in self.store.reminder_intents(org, workspace, after):
+            task = self.store.get(org, workspace, reminder.task_id)
+            if task is None:
+                raise ServiceError(409, "notification_handoff_source_integrity")
+            self.schedules.forms.require(
+                actor, org, workspace, task.project_id, "automation.manage"
+            )
+            rows.append(
+                NotificationHandoff(
+                    kind="task_reminder",
+                    intent_id=reminder.id,
+                    organization_id=org,
+                    workspace_id=workspace,
+                    project_id=task.project_id,
+                    source_id=task.id,
+                    recipient_ids=task.recipient_ids,
+                    created_at=reminder.created_at,
+                    scheduled_at=reminder.scheduled_at,
+                )
+            )
+        return rows
 
     def notification_delivery_access(
         self, actor: RequestContext, org: UUID, workspace: UUID, identifier: UUID

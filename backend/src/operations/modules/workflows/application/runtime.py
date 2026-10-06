@@ -3,7 +3,7 @@ from typing import Literal, Protocol
 from uuid import UUID, uuid7
 
 from operations.contracts import ServiceError
-from operations.modules.automation.application.events import EventContext
+from operations.modules.automation.application.events import EventContext, NotificationHandoff
 from operations.modules.forms.application.expressions import condition_matches
 from operations.modules.identity.application.contracts import RequestContext
 from operations.modules.submissions.application.contracts import Submission
@@ -38,6 +38,38 @@ class WorkflowRuntime:
     def root_submission(self, org: UUID, workspace: UUID, submission: UUID) -> UUID:
         revision = self.store.revision_by_submission(org, workspace, submission)
         return revision.root_submission_id if revision else submission
+
+    def notification_handoffs(
+        self, actor: RequestContext, org: UUID, workspace: UUID, after: UUID | None
+    ) -> list[NotificationHandoff]:
+        self.workflows.forms.require(actor, org, workspace, None, "automation.manage")
+        rows: list[NotificationHandoff] = []
+        for intent in self.store.notification_intents(org, workspace, after):
+            instance = self.store.instance(org, workspace, intent.instance_id)
+            if instance is None:
+                raise ServiceError(409, "notification_handoff_source_integrity")
+            workflow, version = self.definition(actor, instance)
+            self.workflows.forms.require(
+                actor, org, workspace, workflow.project_id, "automation.manage"
+            )
+            node = next(
+                (node for node in version.definition.nodes if node.key == intent.node_key), None
+            )
+            if node is None or node.kind != "notify":
+                raise ServiceError(409, "notification_handoff_source_integrity")
+            rows.append(
+                NotificationHandoff(
+                    kind="workflow_notify",
+                    intent_id=intent.id,
+                    organization_id=org,
+                    workspace_id=workspace,
+                    project_id=workflow.project_id,
+                    source_id=instance.id,
+                    recipient_ids=intent.recipient_ids,
+                    created_at=intent.created_at,
+                )
+            )
+        return rows
 
     def notification_access(
         self, actor: RequestContext, org: UUID, workspace: UUID, identifier: UUID, intent: UUID

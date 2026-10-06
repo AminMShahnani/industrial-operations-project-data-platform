@@ -120,6 +120,33 @@ class NotificationReplayReview(Command):
     applied: bool = False
 
 
+type HandoffKind = Literal["task_reminder", "workflow_notify"]
+
+
+class NotificationHandoff(Command):
+    kind: HandoffKind
+    intent_id: UUID
+    organization_id: UUID
+    workspace_id: UUID
+    project_id: UUID | None
+    source_id: UUID
+    recipient_ids: list[UUID] = Field(max_length=1000)
+    created_at: datetime
+    scheduled_at: datetime | None = None
+
+    @model_validator(mode="after")
+    def coherent(self) -> NotificationHandoff:
+        if self.created_at.utcoffset() is None or (
+            self.scheduled_at is not None and self.scheduled_at.utcoffset() is None
+        ):
+            raise ValueError("handoff_timestamp_requires_timezone")
+        if len(set(self.recipient_ids)) != len(self.recipient_ids):
+            raise ValueError("handoff_duplicate_recipient")
+        if (self.kind == "task_reminder") != (self.scheduled_at is not None):
+            raise ValueError("handoff_schedule_binding_required")
+        return self
+
+
 class EventWriter(Protocol):
     def append(self, event: OperationalEvent) -> None: ...
 

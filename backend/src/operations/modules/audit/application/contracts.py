@@ -38,6 +38,7 @@ class AuditDetails(Command):
     scheduled_at: datetime | None = None
     timer_version_id: UUID | None = None
     reminder_id: UUID | None = None
+    source_created_at: datetime | None = None
 
 
 class AuditEvent(Command):

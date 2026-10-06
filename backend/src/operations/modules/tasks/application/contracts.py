@@ -68,6 +68,9 @@ class DeadlineTick(Command):
 
 
 class TaskStore(Protocol):
+    def reminder_intents(
+        self, org: UUID, workspace: UUID, after: UUID | None
+    ) -> list[Reminder]: ...
     def deadline_candidates(
         self,
         org: UUID,

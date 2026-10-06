@@ -762,3 +762,38 @@ reviewed replay command, typed review, immutable audit and concurrency repair.
 No full phase criterion is accepted; Phase 6 stays 0/8 and Phase 7 is unstarted.
 Historical handoff reconciliation, management API/UI, email/invitations, generic
 tasks, tags/flags, webhooks and telemetry remain required Phase 6 work. None deferred.
+
+## Phase 6 historical notification handoffs - 2026-10-06
+
+Read AGENTS.md and numbered docs in numeric order. docs/10-12,19-24 require
+governed immutable source snapshots, durable atomic handoffs, fresh authorization,
+idempotent retries and history-preserving migration/recovery. ADR-0018 records
+reconciliation using exact retained workflow notify intents and reminder rows.
+Preview/apply is tenant/workspace/source-family scoped and bounded to 100 intents,
+with an explicit cursor and reviewed SHA-256 of original source/capture identities.
+Fresh organization.manage and scoped automation.manage checks guard both phases.
+Existing handoffs are reported without requeue; ambiguous/mismatched provenance
+fails closed. Missing handoffs create one new event/notification-only delivery and
+current operator audit, preserving original IDs/time and recipients. No old audit,
+intent, task, workflow or read evidence is rewritten; no arbitrary old reminder
+audit association or historical actor/time is invented. Worker checks remain fresh.
+
+Migration 34e34c3ce85a adds scoped intent cursor and aggregate lookup indexes only.
+Populated rollback drops indexes while preserving new evidence. Tests cover old
+random reminder audit IDs, minimal notify eligibility, existing handoffs, stale
+previews/reasons, operator/recipient revocation, 104-intent pagination, atomic
+failure rollback and populated index rollback. Eight concurrent committed applies
+produce one capture/audit and seven stale conflicts; eight concurrent deliveries
+produce one notice/attempt. All 215 backend tests pass without skips in 223.77s;
+11 frontend tests pass. Twelve new cases include retained provenance, live authority,
+minimal eligibility, pagination, atomic rollback and committed duplicate effects.
+Ruff lint/format (314 files), strict mypy (248 files), frontend lint/types/build,
+empty migration roundtrip/drift, generated API/OpenAPI drift and CLI checks pass.
+All three local databases are at 34e34c3ce85a; no retained artifact is rewritten.
+Hosted exact-code verification is pending.
+
+Completed implementation increment: reviewed historical notify/reminder recovery,
+source-owned contracts/queries, exact provenance, notification-only enqueue and
+reversible lookup migration. Phase 6 stays 0/8 accepted; Phase 7 is unstarted.
+Email/invitations, management API/UI, generic tasks, tags/flags, webhooks and
+telemetry remain required current-phase work. Nothing is deferred.

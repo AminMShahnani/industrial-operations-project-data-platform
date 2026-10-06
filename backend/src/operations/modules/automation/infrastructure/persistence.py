@@ -24,7 +24,11 @@ from operations.modules.automation.application.contracts import (
     Run,
     RunAttempt,
 )
-from operations.modules.automation.application.events import Delivery, OperationalEvent
+from operations.modules.automation.application.events import (
+    Delivery,
+    NotificationHandoff,
+    OperationalEvent,
+)
 from operations.platform.database import Base
 
 
@@ -47,6 +51,13 @@ class EventRow(Base):
             "project_id IS NULL OR workspace_id IS NOT NULL", name="outbox_project_scope"
         ),
         Index("ix_outbox_scope_cursor", "organization_id", "workspace_id", "id"),
+        Index(
+            "ix_outbox_aggregate_lookup",
+            "organization_id",
+            "workspace_id",
+            "type",
+            text("(envelope ->> 'aggregate_id')"),
+        ),
     )
     id: Mapped[UUID] = mapped_column(primary_key=True)
     organization_id: Mapped[UUID]
@@ -237,6 +248,23 @@ class ReceiptRow(Base):
 
 
 class AutomationRepository:
+    def handoff_events(self, handoff: NotificationHandoff) -> list[OperationalEvent]:
+        query = select(EventRow).where(
+            EventRow.organization_id == handoff.organization_id,
+            EventRow.workspace_id == handoff.workspace_id,
+        )
+        if handoff.kind == "task_reminder":
+            query = query.where(EventRow.id == handoff.intent_id)
+        else:
+            query = query.where(
+                EventRow.type == "workflow.notification.requested",
+                EventRow.envelope["aggregate_id"].astext == str(handoff.intent_id),
+            )
+        return [
+            OperationalEvent.model_validate(row.envelope)
+            for row in self.session.scalars(query.limit(2))
+        ]
+
     def __init__(self, session: Session) -> None:
         self.session = session
 

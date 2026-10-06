@@ -157,6 +157,7 @@ class ReminderRow(Base):
             "organization_id", "task_id", "offset_seconds", name="uq_task_reminder_once"
         ),
         Index("ix_task_reminders_scope_cursor", "organization_id", "workspace_id", "task_id", "id"),
+        Index("ix_task_reminders_workspace_cursor", "organization_id", "workspace_id", "id"),
     )
     id: Mapped[UUID] = mapped_column(primary_key=True)
     organization_id: Mapped[UUID]
@@ -403,6 +404,17 @@ class TaskRepository:
         return [
             task_contract(row)
             for row in self.session.scalars(query.order_by(TaskRow.id).limit(101))
+        ]
+
+    def reminder_intents(self, org: UUID, workspace: UUID, after: UUID | None) -> list[Reminder]:
+        query = select(ReminderRow).where(
+            ReminderRow.organization_id == org, ReminderRow.workspace_id == workspace
+        )
+        if after:
+            query = query.where(ReminderRow.id > after)
+        return [
+            Reminder.model_validate({key: getattr(row, key) for key in Reminder.model_fields})
+            for row in self.session.scalars(query.order_by(ReminderRow.id).limit(101))
         ]
 
     def add_reminder(self, row: Reminder) -> bool:

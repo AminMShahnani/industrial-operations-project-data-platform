@@ -35,8 +35,10 @@ and verified locally/hosted; periodic evidence is immutable and task lifecycle s
 In-app automation notices and their personal scoped API/inbox UI are implemented.
 Automatic task/review/notify/reminder delivery, retry/skip evidence and shared worker
 routing are implemented. Reviewed, audited notification replay is implemented through
-a scoped operator command. Historical handoff reconciliation,
-generic tasks, tags/flags, webhooks, email/invitations,
+a scoped operator command. Bounded reviewed historical notify/reminder handoff
+reconciliation is implemented with exact intent provenance and notification-only
+delivery. All local gates pass; hosted exact-code verification is pending.
+Generic tasks, tags/flags, webhooks, email/invitations,
 rule/run UI and telemetry remain current-phase
 work. 0/8 accepted; Q-006 is resolved.
 Phase 5 remains accepted on d91dfce / hosted run 37454353238.
@@ -50,10 +52,10 @@ Q-004 resolved by user: shared task claimed by one eligible member.
 Legacy export absent.
 
 ## Next 5 tasks
-1. Implement bounded historical handoff reconciliation with explicit provenance.
-2. Complete email/invitation adapters and queue/run telemetry.
-3. Expose scoped rule/run management and audited replay through typed API/UI.
-4. Implement generic task, tag/flag and webhook handlers.
+1. Complete email/invitation adapters under explicit recipient and delivery policy.
+2. Expose scoped rule/run management and audited replay through typed API/UI.
+3. Implement generic task, tag/flag and webhook handlers.
+4. Complete queue/run telemetry and operator failure visibility.
 5. Verify all Phase 6 local/hosted criteria before any Phase 7 work.
 
 ## Test status
@@ -180,8 +182,21 @@ Linux tests/types, real browser/worker flows, committed replay and lock contenti
 empty migration roundtrip/drift and generated contracts.
 Phase 6 remains 0/8 accepted.
 
+Historical handoff increment: all 215 backend tests pass without skips in 223.77s;
+11 frontend tests pass. Twelve new cases cover exact original provenance, preview
+purity, existing handoffs, reasons, operator/recipient revocation, minimal notify
+access, 104-intent paging, rollback and committed duplicate apply/delivery. Eight
+concurrent applies produce one capture/audit; eight deliveries one notice/attempt.
+Ruff lint/format (314 files), strict mypy (248 files), frontend lint/types/build,
+empty migration roundtrip/drift, generated API/OpenAPI drift and reconciliation CLI
+checks pass. ADR-0018 records the policy. Hosted exact-code verification is pending;
+Phase 6 remains 0/8 accepted.
+
 ## Migration status
-Development, isolated test and browser databases are at a5fa16a227ff.
+Development, isolated test and retained browser databases are at 34e34c3ce85a.
+Historical handoff migration adds reversible lookup indexes
+only; populated rollback preserves all evidence. Existing notice/source IDs and
+audit/read history are retained.
 Automatic delivery adds immutable attempts and notice origin/intent metadata.
 Existing notice identities, source/run bindings and read/audit history are retained.
 Immutable notice/read evidence adds composite tenant keys and exact source/action

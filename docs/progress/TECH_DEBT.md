@@ -138,3 +138,12 @@ The reproducible user/organization lock-order deadlock is repaired through the
 organization-owned lock contract (ADR-0017), retaining existing tenant serialization.
 Measuring and optimizing tenant-level contention belongs to Phase 10 performance
 verification; no concurrency safeguard is weakened for this increment.
+
+Historical notify/reminder handoff reconciliation is implemented as a bounded
+reviewed operator command (ADR-0018), with original source snapshots, current audit,
+notification-only delivery and existing-handoff preservation. Index migration is
+reversible with populated history. All local gates pass (215 backend/11 frontend),
+including retained provenance, populated rollback and committed duplicate effects.
+Hosted verification is pending. No new
+debt or acceptance deferral; email/invitations, management API/UI, other action
+handlers and telemetry remain current Phase 6 work.

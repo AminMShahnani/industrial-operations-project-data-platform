@@ -67,9 +67,9 @@ attempt eight. Permanent errors dead-letter immediately. Attempt codes omit SQL
 parameters, data values and secrets. Unsupported source types complete without an audience.
 
 Existing task/review outbox backlog can be dispatched under current checks.
-Pre-outbox historical notify/reminder intents are retained; an explicit bounded
-audited reconciliation is still required before Phase 6 acceptance. Do not rewrite
-old audits or infer a reminder-to-audit mapping. Email/invitations and complete
+Pre-outbox historical notify/reminder intents can be recovered through the reviewed
+reconciliation command below. Do not rewrite old audits or infer a reminder-to-audit
+mapping. Email/invitations and complete
 queue telemetry are still Phase 6 work.
 
 Empty rollback to `73eddd554d17` is reversible. Populated automatic notices,
@@ -80,6 +80,42 @@ Run unit/boundary tests with `uv run pytest backend/tests/test_phase6_reliabilit
 backend/tests/test_boundaries.py`. The real Redis transport test additionally needs
 `IOP_TEST_DATABASE_URL` and the existing development Compose services. Its cleanup
 is restricted to a uniquely generated fixture namespace.
+
+## Historical notification handoff reconciliation
+
+Migration `34e34c3ce85a` adds scoped cursor/aggregate lookup indexes. It changes no
+stored record and can be downgraded with populated history because only indexes drop.
+Preview one page using:
+`uv run python scripts/notification_reconcile.py --organization <uuid> --workspace <uuid> --kind task_reminder --subject <trusted-subject>`.
+Repeat separately with `--kind workflow_notify`. A configured trusted issuer,
+organization.manage and scoped automation.manage are required; platform authority
+alone does not bypass tenant permissions. Preview exposes IDs, timestamps and
+recipient counts, never recipient lists or submitted values. At most 100 intents
+are reviewed per call. Use the returned `cursor` as `--after <cursor>` for the next
+page. Existing handoffs remain visible with `existing_event_id` and are not changed.
+
+Review missing intents and apply the same page with
+`--apply --review-sha256 <review-hash> --reason "Reviewed historical recovery"`.
+Changed snapshots/capture state fail with `notification_handoff_review_required`;
+preview again. A stale repeated apply cannot duplicate a handoff. All captures and
+audits commit together; dependency failure rolls the page back. Restart the same
+page after a crash to inspect retained capture identities before applying again.
+
+Events use original intent IDs and captured recipients but current reconciliation
+time/operator. `notification.handoff.reconciled` retains original creation time and
+source binding. Old reminder audits need no guessed row association. Notify lookup
+uses exact intent aggregate IDs; mismatched/ambiguous source or missing delivery
+evidence fails closed. No automation rules run. Dispatch the notification-only
+deliveries with the existing notification dispatcher; the command does not publish
+Redis messages or deliver email. Workers recheck current access and skip obsolete
+work. Existing failed deliveries use replay below; completed skips are not backfilled.
+
+Application rollback: pause dispatch while switching compatible code, preserve all
+new audit/event/delivery evidence, and resume with a worker that supports the existing
+task.reminder.created/workflow.notification.requested types and the optional audit
+`source_created_at` field. Older strict audit DTOs require a compatible forward patch;
+never remove fields from retained audit evidence. Index downgrade is
+reversible independently. No production rollout is implied (ADR-0018).
 
 ## Controlled notification replay
 

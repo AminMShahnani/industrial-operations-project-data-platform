@@ -2,6 +2,13 @@
 
 ## Unreleased - Phase 6 in progress (2026-10-06)
 
+- Add bounded preview/apply reconciliation for historical workflow notify and task
+  reminder handoffs (ADR-0018). Preserve original source/audit/read history; create
+  current operator evidence and notification-only deliveries for missing exact
+  intents, and leave existing handoffs intact. Add reversible lookup indexes.
+  Verify 215 backend/11 frontend tests and all local gates, including 104-intent
+  pagination, atomic rollback and committed duplicate capture/delivery.
+
 - Add reviewed, audited notification replay through a scoped operator command
   (ADR-0016). Requeue the same failed delivery under fresh administrator authority;
   reject stale reviews, preserve source/recipients/attempt/read history and enforce

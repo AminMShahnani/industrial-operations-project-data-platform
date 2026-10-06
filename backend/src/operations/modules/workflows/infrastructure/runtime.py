@@ -225,6 +225,7 @@ class NotificationRow(Base):
         ),
         CheckConstraint("visit > 0", name="workflow_notification_visit"),
         Index("ix_workflow_notification_cursor", "organization_id", "id"),
+        Index("ix_workflow_notification_workspace_cursor", "organization_id", "workspace_id", "id"),
     )
     id: Mapped[UUID] = mapped_column(primary_key=True)
     organization_id: Mapped[UUID]
@@ -679,6 +680,21 @@ class RuntimeRepository:
         values["recipient_ids"] = [str(user) for user in row.recipient_ids]
         self.session.add(NotificationRow(**values))
         self.session.flush()
+
+    def notification_intents(
+        self, org: UUID, workspace: UUID, after: UUID | None
+    ) -> list[WorkflowNotification]:
+        query = select(NotificationRow).where(
+            NotificationRow.organization_id == org, NotificationRow.workspace_id == workspace
+        )
+        if after:
+            query = query.where(NotificationRow.id > after)
+        return [
+            WorkflowNotification.model_validate(
+                {key: getattr(row, key) for key in WorkflowNotification.model_fields}
+            )
+            for row in self.session.scalars(query.order_by(NotificationRow.id).limit(101))
+        ]
 
     def notification(
         self, org: UUID, workspace: UUID, identifier: UUID

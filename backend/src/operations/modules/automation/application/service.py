@@ -21,7 +21,9 @@ from operations.modules.automation.application.event_bus import AuditedEventBus
 from operations.modules.automation.application.events import (
     Delivery,
     DeliveryMessage,
+    EventContext,
     JobPublisher,
+    NotificationHandoff,
     NotificationReplayReview,
     OperationalEvent,
 )
@@ -629,6 +631,101 @@ class AutomationService:
             review_sha256=digest,
             applied=not dry_run,
         )
+
+    def notification_handoff_event(self, handoff: NotificationHandoff) -> OperationalEvent | None:
+        rows = self.store.handoff_events(handoff)
+        if len(rows) > 1:
+            raise ServiceError(409, "notification_handoff_source_integrity")
+        if not rows:
+            return None
+        event = rows[0]
+        task = handoff.kind == "task_reminder"
+        if (
+            event.type != ("task.reminder.created" if task else "workflow.notification.requested")
+            or event.project_id != handoff.project_id
+            or event.payload.recipient_ids != handoff.recipient_ids
+            or (event.payload.task_id if task else event.payload.workflow_instance_id)
+            != handoff.source_id
+            or (task and event.payload.reminder_id != handoff.intent_id)
+        ):
+            raise ServiceError(409, "notification_handoff_source_integrity")
+        if (
+            self.store.delivery(handoff.organization_id, delivery_id(event.id, "notifications"))
+            is None
+        ):
+            raise ServiceError(409, "notification_handoff_delivery_integrity")
+        return event
+
+    def capture_notification_handoff(
+        self, actor: RequestContext, handoff: NotificationHandoff, reason: str
+    ) -> UUID:
+        org = handoff.organization_id
+        user = self.forms.authorization.require(
+            actor, "organization.manage", Scope(org, ScopeType.ORGANIZATION, org)
+        )
+        self.forms.require(
+            actor, org, handoff.workspace_id, handoff.project_id, "automation.manage"
+        )
+        if not reason.strip() or len(reason) > 500:
+            raise ServiceError(422, "notification_handoff_reason_required")
+        existing = self.notification_handoff_event(handoff)
+        if existing is not None:
+            return existing.id
+        task = handoff.kind == "task_reminder"
+        now = datetime.now(UTC)
+        event = OperationalEvent(
+            id=handoff.intent_id,
+            organization_id=org,
+            workspace_id=handoff.workspace_id,
+            project_id=handoff.project_id,
+            actor_id=user.id,
+            correlation_id=actor.correlation_id,
+            type="task.reminder.created" if task else "workflow.notification.requested",
+            occurred_at=now,
+            aggregate_type="task" if task else "workflow",
+            aggregate_id=handoff.source_id if task else handoff.intent_id,
+            payload=EventContext(
+                task_id=handoff.source_id if task else None,
+                workflow_instance_id=None if task else handoff.source_id,
+                recipient_ids=handoff.recipient_ids,
+                scheduled_at=handoff.scheduled_at,
+                reminder_id=handoff.intent_id if task else None,
+            ),
+        )
+        self.audit.append(
+            AuditEvent(
+                id=uuid7(),
+                type="notification.handoff.reconciled",
+                occurred_at=now,
+                organization_id=org,
+                actor_id=user.id,
+                correlation_id=actor.correlation_id,
+                request_id=actor.request_id,
+                aggregate_type="notification_handoff",
+                aggregate_id=handoff.intent_id,
+                payload=AuditDetails(
+                    workspace_id=handoff.workspace_id,
+                    project_id=handoff.project_id,
+                    target_id=handoff.source_id,
+                    source_created_at=handoff.created_at,
+                    reminder_id=handoff.intent_id if task else None,
+                    workflow_instance_id=None if task else handoff.source_id,
+                    scheduled_at=handoff.scheduled_at,
+                    reason=reason,
+                ),
+            )
+        )
+        self.store.append(event)
+        self.store.add_delivery(
+            Delivery(
+                id=delivery_id(event.id, "notifications"),
+                organization_id=org,
+                event_id=event.id,
+                consumer="notifications",
+                next_at=now,
+            )
+        )
+        return event.id
 
     def lock_tenant(self, org: UUID) -> None:
         self.forms.workspaces.organizations.lock(org)

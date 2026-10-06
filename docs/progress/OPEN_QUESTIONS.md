@@ -152,3 +152,10 @@ invitation deadlock. It preserves existing authorization and revocation serializ
 no domain or security policy is changed.
 Hosted run 37514426474 passes both jobs on exact code ffac30f after all local
 gates pass (203 backend/11 frontend). No additional unresolved question is introduced.
+
+Historical notification handoffs: ADR-0018 records reviewed, bounded reconciliation
+of exact retained notify/reminder intents under existing administrator authority.
+Current reconciliation events/audits preserve original IDs and creation timestamps;
+no historical actor or reminder-to-audit association is inferred. Existing captured
+handoffs stay terminal, and recipient eligibility is checked by the worker. No new
+unresolved security/domain decision or industry coupling is introduced.

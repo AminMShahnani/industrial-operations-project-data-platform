@@ -216,6 +216,9 @@ class WorkflowRevision(Command):
 
 
 class RuntimeStore(Protocol):
+    def notification_intents(
+        self, org: UUID, workspace: UUID, after: UUID | None
+    ) -> list[WorkflowNotification]: ...
     def add_instance(self, row: WorkflowInstance) -> None: ...
     def instance(
         self, org: UUID, workspace: UUID, identifier: UUID, lock: bool = False
