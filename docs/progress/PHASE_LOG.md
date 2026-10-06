@@ -790,7 +790,10 @@ minimal eligibility, pagination, atomic rollback and committed duplicate effects
 Ruff lint/format (314 files), strict mypy (248 files), frontend lint/types/build,
 empty migration roundtrip/drift, generated API/OpenAPI drift and CLI checks pass.
 All three local databases are at 34e34c3ce85a; no retained artifact is rewritten.
-Hosted exact-code verification is pending.
+Hosted [37519811189](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/37519811189)
+passes both jobs on exact code `079b8c8afad24857f16617a6ed1339c40354f0e7`, including
+Linux types/tests, real browser/worker flows, committed duplicate handoff/delivery,
+empty migration roundtrip/drift and generated contracts.
 
 Completed implementation increment: reviewed historical notify/reminder recovery,
 source-owned contracts/queries, exact provenance, notification-only enqueue and

@@ -8,6 +8,8 @@
   intents, and leave existing handoffs intact. Add reversible lookup indexes.
   Verify 215 backend/11 frontend tests and all local gates, including 104-intent
   pagination, atomic rollback and committed duplicate capture/delivery.
+  Hosted run 37519811189 passes both jobs on exact code 079b8c8, including Linux
+  gates, real browser/worker flows, duplicate handoffs/delivery and migrations.
 
 - Add reviewed, audited notification replay through a scoped operator command
   (ADR-0016). Requeue the same failed delivery under fresh administrator authority;

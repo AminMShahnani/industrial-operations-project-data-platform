@@ -37,7 +37,7 @@ Automatic task/review/notify/reminder delivery, retry/skip evidence and shared w
 routing are implemented. Reviewed, audited notification replay is implemented through
 a scoped operator command. Bounded reviewed historical notify/reminder handoff
 reconciliation is implemented with exact intent provenance and notification-only
-delivery. All local gates pass; hosted exact-code verification is pending.
+delivery. All local and exact-code hosted gates pass.
 Generic tasks, tags/flags, webhooks, email/invitations,
 rule/run UI and telemetry remain current-phase
 work. 0/8 accepted; Q-006 is resolved.
@@ -189,7 +189,11 @@ access, 104-intent paging, rollback and committed duplicate apply/delivery. Eigh
 concurrent applies produce one capture/audit; eight deliveries one notice/attempt.
 Ruff lint/format (314 files), strict mypy (248 files), frontend lint/types/build,
 empty migration roundtrip/drift, generated API/OpenAPI drift and reconciliation CLI
-checks pass. ADR-0018 records the policy. Hosted exact-code verification is pending;
+checks pass. ADR-0018 records the policy. Hosted
+[37519811189](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/37519811189)
+passes both jobs on exact code `079b8c8afad24857f16617a6ed1339c40354f0e7`, including
+Linux types/tests, real browser/worker flows, committed duplicate handoff/delivery,
+empty migration roundtrip/drift and generated contracts.
 Phase 6 remains 0/8 accepted.
 
 ## Migration status

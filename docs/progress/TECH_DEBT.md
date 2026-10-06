@@ -144,6 +144,7 @@ reviewed operator command (ADR-0018), with original source snapshots, current au
 notification-only delivery and existing-handoff preservation. Index migration is
 reversible with populated history. All local gates pass (215 backend/11 frontend),
 including retained provenance, populated rollback and committed duplicate effects.
-Hosted verification is pending. No new
+Hosted run 37519811189 passes both jobs on exact code 079b8c8, including Linux
+gates, real browser/worker flows, committed duplicate handoffs and migrations. No new
 debt or acceptance deferral; email/invitations, management API/UI, other action
 handlers and telemetry remain current Phase 6 work.
