@@ -124,6 +124,7 @@ class NotificationService:
             notice.project_id,
             notice.source_kind,
             notice.source_id,
+            notice.source_intent_id if notice.origin == "automatic" else None,
         )
 
     def inbox(

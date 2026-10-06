@@ -19,6 +19,7 @@ def main() -> None:
     parser.add_argument("--organization", required=True, type=UUID)
     parser.add_argument("--subject", required=True)
     parser.add_argument("--apply", action="store_true")
+    parser.add_argument("--consumer", choices=["automation", "notifications"], default="automation")
     args = parser.parse_args()
     settings = Settings()  # type: ignore[call-arg]
     if not settings.oidc_issuer:
@@ -38,15 +39,15 @@ def main() -> None:
             )
             if args.apply:
                 count = services.automation.dispatch(
-                    args.organization, DramatiqPublisher(broker), "automation"
+                    args.organization, DramatiqPublisher(broker), args.consumer
                 )
             else:
                 count = len(
                     services.automation.store.due_deliveries(
-                        args.organization, datetime.now(UTC), "automation"
+                        args.organization, datetime.now(UTC), args.consumer
                     )
                 )
-        print(f"Automation dispatch: {count} deliveries; apply={args.apply}")
+        print(f"{args.consumer} dispatch: {count} deliveries; apply={args.apply}")
     finally:
         broker.close()
         broker.client.close()

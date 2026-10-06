@@ -679,3 +679,21 @@ class RuntimeRepository:
         values["recipient_ids"] = [str(user) for user in row.recipient_ids]
         self.session.add(NotificationRow(**values))
         self.session.flush()
+
+    def notification(
+        self, org: UUID, workspace: UUID, identifier: UUID
+    ) -> WorkflowNotification | None:
+        row = self.session.scalar(
+            select(NotificationRow).where(
+                NotificationRow.organization_id == org,
+                NotificationRow.workspace_id == workspace,
+                NotificationRow.id == identifier,
+            )
+        )
+        return (
+            WorkflowNotification.model_validate(
+                {key: getattr(row, key) for key in WorkflowNotification.model_fields}
+            )
+            if row
+            else None
+        )

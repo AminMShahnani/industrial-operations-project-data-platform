@@ -9,12 +9,17 @@ from sqlalchemy import (
     String,
     UniqueConstraint,
     select,
+    text,
     tuple_,
 )
 from sqlalchemy.orm import Mapped, Session, mapped_column
 
 from operations.contracts import ServiceError
-from operations.modules.notifications.application.contracts import Notice, ReadReceipt
+from operations.modules.notifications.application.contracts import (
+    Notice,
+    NotificationAttempt,
+    ReadReceipt,
+)
 from operations.platform.database import Base
 
 
@@ -47,6 +52,20 @@ class NoticeRow(Base):
             "AND source_kind IN ('task','workflow','submission','project')",
             name="notice_contract",
         ),
+        CheckConstraint(
+            "(origin='automation' AND run_id IS NOT NULL AND position IS NOT NULL "
+            "AND source_intent_id IS NULL) OR (origin='automatic' AND run_id IS NULL "
+            "AND position IS NULL AND source_intent_id IS NOT NULL)",
+            name="notice_origin",
+        ),
+        Index(
+            "uq_notice_automatic_once",
+            "organization_id",
+            "event_id",
+            "recipient_id",
+            unique=True,
+            postgresql_where=text("origin='automatic'"),
+        ),
         Index(
             "ix_notice_recipient_cursor",
             "organization_id",
@@ -62,8 +81,10 @@ class NoticeRow(Base):
     project_id: Mapped[UUID | None]
     recipient_id: Mapped[UUID]
     event_id: Mapped[UUID]
-    run_id: Mapped[UUID]
-    position: Mapped[int]
+    run_id: Mapped[UUID | None]
+    position: Mapped[int | None]
+    origin: Mapped[str] = mapped_column(String(20), server_default="automation")
+    source_intent_id: Mapped[UUID | None]
     topic: Mapped[str] = mapped_column(String(30))
     source_kind: Mapped[str] = mapped_column(String(20))
     source_id: Mapped[UUID]
@@ -90,9 +111,41 @@ def notice_value(row: NoticeRow) -> Notice:
     return Notice.model_validate({key: getattr(row, key) for key in Notice.model_fields})
 
 
+class AttemptRow(Base):
+    __tablename__ = "notification_attempts"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["organization_id", "delivery_id"],
+            ["outbox_deliveries.organization_id", "outbox_deliveries.id"],
+        ),
+        UniqueConstraint(
+            "organization_id", "delivery_id", "number", name="uq_notification_attempt"
+        ),
+        CheckConstraint(
+            "number BETWEEN 1 AND 20 AND created BETWEEN 0 AND 1000 "
+            "AND skipped BETWEEN 0 AND 1000 "
+            "AND outcome IN ('completed','retry','dead_letter')",
+            name="notification_attempt_contract",
+        ),
+    )
+    id: Mapped[UUID] = mapped_column(primary_key=True)
+    organization_id: Mapped[UUID]
+    delivery_id: Mapped[UUID]
+    number: Mapped[int]
+    outcome: Mapped[str] = mapped_column(String(20))
+    created: Mapped[int]
+    skipped: Mapped[int]
+    error_code: Mapped[str | None] = mapped_column(String(100))
+    occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
 class NoticeRepository:
     def __init__(self, session: Session) -> None:
         self.session = session
+
+    def add_attempt(self, attempt: NotificationAttempt) -> None:
+        self.session.add(AttemptRow(**attempt.model_dump()))
+        self.session.flush()
 
     def add(self, notice: Notice) -> None:
         self.session.add(NoticeRow(**notice.model_dump()))

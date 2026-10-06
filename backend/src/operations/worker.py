@@ -15,6 +15,7 @@ from operations.composition import compose
 from operations.contracts import ServiceError
 from operations.modules.automation.application.consumer import AutomationConsumer
 from operations.modules.automation.application.events import Delivery, DeliveryMessage
+from operations.modules.notifications.application.consumer import NotificationConsumer
 from operations.platform.config import Settings
 from operations.platform.database import create_database_engine
 
@@ -36,6 +37,15 @@ def process_automation(
 ) -> Delivery:
     return AutomationConsumer(
         compose(session, settings=settings).automation, lambda: action_savepoint(session)
+    ).consume(message)
+
+
+def process_notifications(
+    session: Session, message: DeliveryMessage, settings: Settings | None = None
+) -> Delivery:
+    services = compose(session, settings=settings)
+    return NotificationConsumer(
+        services.notifications, services.automation, lambda: action_savepoint(session)
     ).consume(message)
 
 
@@ -70,7 +80,12 @@ def register_actor(settings: Settings, namespace: str = "dramatiq") -> WorkerRun
             raise ServiceError(422, "invalid_delivery_message") from None
         try:
             with sessions.begin() as session:
-                process_automation(session, message, settings)
+                service = compose(session, settings=settings).automation
+                delivery = service.store.delivery(message.organization_id, message.delivery_id)
+                if delivery is not None and delivery.consumer == "notifications":
+                    process_notifications(session, message, settings)
+                else:
+                    process_automation(session, message, settings)
         except DBAPIError:
             raise ServiceError(503, "worker_database_unavailable") from None
 

@@ -2888,11 +2888,27 @@
             "title": "Organization Id",
             "type": "string"
           },
+          "origin": {
+            "default": "automation",
+            "enum": [
+              "automation",
+              "automatic"
+            ],
+            "title": "Origin",
+            "type": "string"
+          },
           "position": {
-            "maximum": 19.0,
-            "minimum": 0.0,
-            "title": "Position",
-            "type": "integer"
+            "anyOf": [
+              {
+                "maximum": 19.0,
+                "minimum": 0.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Position"
           },
           "project_id": {
             "anyOf": [
@@ -2912,14 +2928,33 @@
             "type": "string"
           },
           "run_id": {
-            "format": "uuid",
-            "title": "Run Id",
-            "type": "string"
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Run Id"
           },
           "source_id": {
             "format": "uuid",
             "title": "Source Id",
             "type": "string"
+          },
+          "source_intent_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Intent Id"
           },
           "source_kind": {
             "$ref": "#/components/schemas/NoticeSource"
@@ -2940,8 +2975,6 @@
           "project_id",
           "recipient_id",
           "event_id",
-          "run_id",
-          "position",
           "topic",
           "source_kind",
           "source_id",

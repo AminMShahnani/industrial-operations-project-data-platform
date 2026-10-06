@@ -32,6 +32,7 @@ class TaskService:
         *,
         event_id: UUID | None = None,
         scheduled_at: datetime | None = None,
+        reminder_id: UUID | None = None,
         include_submission: bool = True,
     ) -> None:
         self.schedules.event(
@@ -51,6 +52,7 @@ class TaskService:
                 subject_user_id=row.claimant_id,
                 submission_id=row.submission_id if include_submission else None,
                 scheduled_at=scheduled_at,
+                reminder_id=reminder_id,
             ),
         )
 
@@ -109,6 +111,8 @@ class TaskService:
         workspace: UUID,
         identifier: UUID,
         execute: bool = False,
+        *,
+        scope_write: bool = True,
     ) -> Task:
         user = self.schedules.forms.authorization.user(actor, org)
         row = self.store.get(org, workspace, identifier)
@@ -120,7 +124,7 @@ class TaskService:
             raise ServiceError(403, "task_not_assigned")
         if execute:
             self.schedules.forms.require(
-                actor, org, workspace, row.project_id, "task.execute", True
+                actor, org, workspace, row.project_id, "task.execute", scope_write
             )
             if user.id not in row.recipient_ids:
                 raise ServiceError(403, "task_not_assigned")
@@ -152,6 +156,7 @@ class TaskService:
         manager = "schedule.manage" in self.schedules.forms.permissions(
             actor, row.organization_id, row.workspace_id, row.project_id
         )
+
         return (
             row
             if manager
@@ -162,6 +167,19 @@ class TaskService:
                 }
             )
         )
+
+    def notification_delivery_access(
+        self, actor: RequestContext, org: UUID, workspace: UUID, identifier: UUID
+    ) -> None:
+        row = self.access(actor, org, workspace, identifier, True, scope_write=False)
+        if row.state not in {"open", "in_progress", "returned"}:
+            raise ServiceError(403, "notification_task_no_longer_pending")
+        if row.project_id:
+            project = self.schedules.forms.projects.require_access(
+                actor, org, workspace, row.project_id, "project.read"
+            )
+            if project.state in project.lifecycle.terminal:
+                raise ServiceError(403, "notification_project_no_longer_active")
 
     def materialize(
         self,
@@ -433,5 +451,13 @@ class TaskService:
                     )
                     if self.store.add_reminder(reminder):
                         count += 1
-                        self.event(actor, task, "task.reminder.created")
+                        self.event(
+                            actor,
+                            task,
+                            "task.reminder.created",
+                            event_id=reminder.id,
+                            reminder_id=reminder.id,
+                            scheduled_at=due,
+                            include_submission=False,
+                        )
         return count, rows[99].id if len(rows) > 100 else None

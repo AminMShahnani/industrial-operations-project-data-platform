@@ -2522,8 +2522,14 @@ export interface components {
              * Format: uuid
              */
             organization_id: string;
+            /**
+             * Origin
+             * @default automation
+             * @enum {string}
+             */
+            origin: "automation" | "automatic";
             /** Position */
-            position: number;
+            position?: number | null;
             /** Project Id */
             project_id: string | null;
             /**
@@ -2531,16 +2537,15 @@ export interface components {
              * Format: uuid
              */
             recipient_id: string;
-            /**
-             * Run Id
-             * Format: uuid
-             */
-            run_id: string;
+            /** Run Id */
+            run_id?: string | null;
             /**
              * Source Id
              * Format: uuid
              */
             source_id: string;
+            /** Source Intent Id */
+            source_intent_id?: string | null;
             source_kind: components["schemas"]["NoticeSource"];
             topic: components["schemas"]["NoticeTopic"];
             /**

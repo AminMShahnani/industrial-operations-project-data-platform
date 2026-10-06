@@ -7,6 +7,13 @@ from uuid import UUID
 from pydantic import Field, model_validator
 
 from operations.contracts import Command
+from operations.modules.automation.domain.reliability import retry_delay
+
+
+def delivery_retry_delay(attempt: int) -> int | None:
+    """Shared bounded delivery policy exposed through the owning application interface."""
+    return retry_delay(attempt)
+
 
 type EventType = Literal[
     "submission.created",
@@ -25,6 +32,11 @@ type EventType = Literal[
 ]
 
 
+type SourceEventType = (
+    EventType | Literal["workflow.notification.requested", "task.reminder.created"]
+)
+
+
 class EventContext(Command):
     subject_user_id: UUID | None = None
     form_id: UUID | None = None
@@ -38,6 +50,7 @@ class EventContext(Command):
     recipient_ids: list[UUID] = Field(default_factory=list, max_length=1000)
     scheduled_at: datetime | None = None
     timer_version_id: UUID | None = None
+    reminder_id: UUID | None = None
 
     @model_validator(mode="after")
     def coherent(self) -> EventContext:
@@ -50,7 +63,7 @@ class EventContext(Command):
 
 class OperationalEvent(Command):
     id: UUID
-    type: EventType
+    type: SourceEventType
     occurred_at: datetime
     organization_id: UUID
     workspace_id: UUID | None = None

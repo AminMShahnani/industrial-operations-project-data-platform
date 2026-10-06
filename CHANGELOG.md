@@ -2,6 +2,15 @@
 
 ## Unreleased - Phase 6 in progress (2026-10-06)
 
+- Add a scoped automatic in-app consumer for task assignment/deadline/reminder and
+  workflow review/notify sources, immutable attempt/skip evidence, bounded retries
+  and persisted-consumer worker routing (ADR-0015). Recheck original and live
+  recipients; preserve notice history after project closure and guard rollback.
+  Historical handoff reconciliation, controlled replay and email/invitations remain
+  current Phase 6 requirements.
+  Verify 195 backend/11 frontend tests and all local gates, including real Redis
+  duplicate delivery, concurrent read receipts and guarded migration rollback.
+
 - Add immutable, recipient-scoped in-app automation notices and read receipts,
   fresh source authorization, chronological paging and workspace inbox/API
   (ADR-0014). Preserve private drafts and roll back all effects on recipient failure.

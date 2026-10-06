@@ -46,15 +46,21 @@ class NoticeSources:
         project: UUID | None,
         kind: NoticeSource,
         identifier: UUID,
+        intent: UUID | None = None,
     ) -> None:
         if kind == "task":
             # Execution access includes original snapshot and live group/role eligibility.
-            row = self.tasks.access(actor, org, workspace, identifier, True)
+            row = self.tasks.access(actor, org, workspace, identifier, True, scope_write=False)
             actual_project = row.project_id
         elif kind == "workflow":
-            instance = self.workflows.access(actor, org, workspace, identifier)
-            workflow, _ = self.workflows.definition(actor, instance)
-            actual_project = workflow.project_id
+            if intent is not None:
+                actual_project = self.workflows.notification_access(
+                    actor, org, workspace, identifier, intent
+                )
+            else:
+                instance = self.workflows.access(actor, org, workspace, identifier)
+                workflow, _ = self.workflows.definition(actor, instance)
+                actual_project = workflow.project_id
         elif kind == "submission":
             submission = self.submissions.access(actor, org, workspace, identifier)
             actual_project = self.forms.form(actor, org, workspace, submission.form_id).project_id

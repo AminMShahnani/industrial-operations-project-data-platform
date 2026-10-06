@@ -9,8 +9,10 @@ adds typed outbox delivery, immutable activated rules and retained run evidence.
 Source writes now capture supported operational events atomically with their audit.
 Metadata/related-record/form-task/pinned-workflow handlers and the automation
 consumer are implemented. Generic tasks without forms, tags/flags, webhooks,
-automatic notifications and email remain incomplete. In-app automation notices
-and their typed API/workspace inbox are implemented (ADR-0014). Do not roll out production workers
+email/invitations remain incomplete. In-app automation notices and automatic task/
+workflow consumers with the typed inbox are implemented (ADRs 0014/0015).
+Historical pre-outbox handoff reconciliation and controlled notification replay
+remain current Phase 6 work. Do not roll out production workers
 before the complete Phase 6 acceptance gates pass. Periodic timer/deadline generation
 and private-storage reconciliation are now implemented; see their sections below.
 
@@ -25,7 +27,8 @@ closed. Task, workflow, submission and project source links use their owning
 services. Task notices never disclose another claimant's private draft link.
 
 The automation worker delivers these notices transactionally with run receipts.
-It does not dispatch the separate automatic `notifications` outbox consumer.
+The automatic `notifications` consumer now projects fixed task/workflow sources
+through the same worker, separately from explicit automation action notices.
 Selecting a workspace shows the personal Notifications inbox. Refresh/paging and
 mark-as-read use the scoped `/notifications`, `/notifications/{id}` and
 `/notifications/{id}/read` endpoints; all require authenticated recipient access.
@@ -36,6 +39,42 @@ Empty migration rollback to `a39df7b251c0` is reversible. Once notices or read
 receipts exist, downgrade refuses before deletion. Preserve a verified backup and
 restore to a separate environment for reconciliation; never remove immutable
 evidence to force an application rollback. No existing artifact is rewritten.
+
+## Automatic source notices
+
+Migration `a5fa16a227ff` adds immutable delivery attempts and additive notice
+origin/source-intent metadata. Existing automation notices retain their IDs, exact
+run/action bindings and read/audit history. Automatic notices use event/recipient
+identities, original recipient snapshots and fixed topics, without rule runs.
+Task assigned/due/overdue/reminder and workflow review/notify sources are supported.
+Reminders and notify nodes now enter the outbox atomically with their existing intents.
+
+Use the existing worker command. Dispatch a bounded batch with:
+`uv run python scripts/automation_tick.py --organization <uuid> --subject <trusted-subject> --consumer notifications`.
+This previews by default; `--apply` enqueues the filtered batch. The trusted
+operator still needs organization management permission. The worker gets no
+operator/admin privileges: every recipient is checked against its owning source.
+Run the dispatcher periodically so retained retry/dispatched deliveries recover
+after broker or process failure. PostgreSQL owns attempt/completion evidence.
+
+Revoked/inactive recipients and obsolete work are audited as skipped. Other
+eligible recipients still receive notices. New group members cannot inherit old
+events. Completed deliveries are terminal even if skipped recipients regain access.
+Source/visit eligibility is rechecked on inbox/detail/read; closed projects preserve
+authorized notice history while delivery to closed projects is skipped.
+Transient errors roll back all effects and use exponential backoff, stopping by
+attempt eight. Permanent errors dead-letter immediately. Attempt codes omit SQL
+parameters, data values and secrets. Unsupported source types complete without an audience.
+
+Existing task/review outbox backlog can be dispatched under current checks.
+Pre-outbox historical notify/reminder intents are retained; an explicit bounded
+audited reconciliation is still required before Phase 6 acceptance. Do not rewrite
+old audits or infer a reminder-to-audit mapping. Controlled notification replay,
+email/invitations and complete queue telemetry are still Phase 6 work.
+
+Empty rollback to `73eddd554d17` is reversible. Populated automatic notices,
+attempts or new notify/reminder source types refuse downgrade before evidence loss.
+Restore a verified backup to a separate environment and reconcile if needed.
 
 Run unit/boundary tests with `uv run pytest backend/tests/test_phase6_reliability.py
 backend/tests/test_boundaries.py`. The real Redis transport test additionally needs
@@ -90,8 +129,9 @@ Invoke periodically (for example every five seconds). Dispatched deliveries are
 revisited after 60 seconds if no durable completion was recorded. Run retries use
 their persisted next_at/backoff. Redis acknowledgement is not completion evidence.
 
-The dispatcher currently filters `automation` before pagination and does not
-dispatch pending `notifications` intents. Unconfigured action families fail closed
+The dispatcher filters the selected consumer before pagination, defaulting to
+`automation`; select `--consumer notifications` for automatic notices.
+Unconfigured action families fail closed
 during validation. An existing workflow binding is reused only when its exact
 version matches; workflows must still receive independent human approval.
 Form-task receipts refer to their one-time schedule batch; concrete tasks retain

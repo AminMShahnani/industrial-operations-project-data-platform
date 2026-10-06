@@ -6,8 +6,8 @@ from operations.modules.audit.application.contracts import AuditEvent, AuditWrit
 from operations.modules.automation.application.contracts import Run
 from operations.modules.automation.application.events import (
     EventContext,
-    EventType,
     OperationalEvent,
+    SourceEventType,
 )
 
 
@@ -43,7 +43,7 @@ class AuditedEventBus:
         self.audit.append(event)
         if self.capture is None or event.organization_id is None or event.aggregate_id is None:
             return
-        mapping: dict[str, EventType] = {
+        mapping: dict[str, SourceEventType] = {
             "submission.draft.created": "submission.created",
             "submission.revision.draft.created": "submission.created",
             "submission.submitted": "submission.submitted",
@@ -52,6 +52,8 @@ class AuditedEventBus:
             "task.created": "task.created",
             "task.due": "task.due",
             "task.overdue": "task.overdue",
+            "task.reminder.created": "task.reminder.created",
+            "workflow.notification.requested": "workflow.notification.requested",
             "project.transitioned": "project.phase.changed",
             "master_data.record.created": "master_data.changed",
             "master_data.record.updated": "master_data.changed",

@@ -33,7 +33,9 @@ storage reconciliation is implemented and verified locally/hosted (TD-005).
 Bounded scheduled timers and task due/overdue source generation are implemented
 and verified locally/hosted; periodic evidence is immutable and task lifecycle stays intact.
 In-app automation notices and their personal scoped API/inbox UI are implemented.
-Generic tasks, tags/flags, webhooks, automatic notifications/email/invitations,
+Automatic task/review/notify/reminder delivery, retry/skip evidence and shared worker
+routing are implemented. Historical handoff reconciliation and notification replay,
+generic tasks, tags/flags, webhooks, email/invitations,
 rule/run UI and telemetry remain current-phase
 work. 0/8 accepted; Q-006 is resolved.
 Phase 5 remains accepted on d91dfce / hosted run 37454353238.
@@ -47,8 +49,8 @@ Q-004 resolved by user: shared task claimed by one eligible member.
 Legacy export absent.
 
 ## Next 5 tasks
-1. Integrate automatic task/workflow notifications, email and invitation adapters.
-2. Complete delivery adapters and queue/run telemetry.
+1. Implement bounded historical handoff reconciliation and notification replay.
+2. Complete email/invitation adapters and queue/run telemetry.
 3. Expose scoped rule/run management and audited replay through typed API/UI.
 4. Implement generic task, tag/flag and webhook handlers.
 5. Verify all Phase 6 local/hosted criteria before any Phase 7 work.
@@ -151,8 +153,19 @@ real PKCE browser notice delivery/read, prior worker/periodic concurrency,
 migration roundtrip/drift and generated contracts. Phase 6 remains in progress
 with 0/8 accepted.
 
+Automatic source notice increment: 195 backend tests pass without skips in 157.33s;
+11 frontend tests pass. Nine new integration cases verify original/live eligibility,
+notify-only access, cancellation, retry/dead letters, atomic rollback and immutable
+evidence. Real Redis duplicate delivery and concurrent first-read tests each produce
+one effect. Ruff lint/format (303 files), strict mypy (240 files), frontend
+lint/types/build, empty migration roundtrip/drift, generated API/OpenAPI drift and
+dispatcher CLI checks pass. ADR-0015 records the policy. Hosted exact-code
+verification is pending; Phase 6 remains 0/8 accepted.
+
 ## Migration status
-Development, isolated test and browser databases are at 73eddd554d17.
+Development, isolated test and browser databases are at a5fa16a227ff.
+Automatic delivery adds immutable attempts and notice origin/intent metadata.
+Existing notice identities, source/run bindings and read/audit history are retained.
 Immutable notice/read evidence adds composite tenant keys and exact source/action
 binding; populated rollback refuses before dropping retained history.
 Periodic generation adds immutable timer/task-deadline evidence with exact

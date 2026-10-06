@@ -129,3 +129,12 @@ Automatic notification/email/invitation policies remain required Phase 6 work.
 
 Hosted 37504095044 passes both jobs on notice code 11b7818. No unresolved
 question or change to the existing authority decisions; Phase 6 remains open.
+
+
+Automatic in-app delivery: ADR-0015 records fixed source authority, original plus
+live recipient eligibility, system-actor audits and bounded atomic delivery.
+Notification eligibility does not grant review votes or submission content access.
+No new unresolved security/domain boundary; Core remains industry-neutral.
+Pre-outbox historical handoffs require bounded audited reconciliation rather than
+an inferred reminder/audit mapping or rewriting retained history. This is current
+Phase 6 work, along with controlled replay/email/invitations, not a Phase 7 deferral.

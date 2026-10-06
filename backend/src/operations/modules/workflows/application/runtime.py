@@ -39,6 +39,45 @@ class WorkflowRuntime:
         revision = self.store.revision_by_submission(org, workspace, submission)
         return revision.root_submission_id if revision else submission
 
+    def notification_access(
+        self, actor: RequestContext, org: UUID, workspace: UUID, identifier: UUID, intent: UUID
+    ) -> UUID | None:
+        """Minimal notification eligibility; does not grant instance/submission content access."""
+        row = self.store.instance(org, workspace, identifier)
+        if row is None:
+            raise ServiceError(404, "workflow_notification_not_found")
+        workflow, version = self.definition(actor, row)
+        user = self.workflows.forms.authorization.user(actor, org)
+        step = next(
+            (
+                item
+                for item in self.store.participant_steps(org, workspace, row.id, user.id)
+                if item.id == intent
+            ),
+            None,
+        )
+        if step is not None:
+            if not self.authorized_step(actor, row, step):
+                raise ServiceError(403, "workflow_notification_revoked")
+            return workflow.project_id
+        notification = self.store.notification(org, workspace, intent)
+        if notification is None or notification.instance_id != row.id:
+            raise ServiceError(404, "workflow_notification_not_found")
+        node = next(item for item in version.definition.nodes if item.key == notification.node_key)
+        if node.kind != "notify":
+            raise ServiceError(409, "notification_source_integrity")
+        if user.id not in notification.recipient_ids or not self.workflows.assignments.eligible(
+            actor, workflow, user, False, notification=True
+        ):
+            raise ServiceError(403, "workflow_notification_revoked")
+        submission = self.submissions.snapshot(org, workspace, row.submission_id)
+        if not any(
+            self.workflows.assignments.matches(actor, workflow, user, assignment, submission.values)
+            for assignment in node.assignments
+        ):
+            raise ServiceError(403, "workflow_notification_revoked")
+        return workflow.project_id
+
     def sync_tasks(self, actor: RequestContext, row: WorkflowInstance) -> None:
         if self.tasks:
             state = {

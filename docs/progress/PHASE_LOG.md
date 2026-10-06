@@ -695,3 +695,31 @@ local/browser/migration tests. Remaining current-phase items: automatic task/
 workflow intents, email/invitations, generic tasks, tags/flags, webhooks, rule/run
 management/replay UI and telemetry. No acceptance criterion is prematurely marked
 PASS and nothing is deferred to Phase 7.
+
+## Phase 6 automatic in-app source notices - 2026-10-06
+
+Implemented fixed task assignment/due/overdue/reminder and workflow review/notify
+delivery through owning application services. Original snapshots and live permissions
+are checked independently; revoked recipients produce immutable skips. Notify-node
+eligibility grants no workflow vote or submission content access. Closed projects
+retain authorized notice/read history and stop new task deliveries. Savepoint rollback,
+eight bounded retries, terminal deduplication and immutable attempts preserve evidence.
+ADR-0015 records this policy; migration a5fa16a227ff preserves existing notices and
+guards populated rollback. Empty migration roundtrip and drift pass.
+
+Nine new integration test cases cover minimal eligibility, live group changes,
+cancellation, retry/dead letters, rollback and immutable evidence. Real Redis receives
+eight duplicate automatic deliveries and creates one notice/attempt; eight concurrent
+first reads create one receipt/audit. Browser setup now waits for outstanding requests
+before its separate audited fixture transaction, avoiding a setup lock-order deadlock.
+All 195 backend tests pass without skips in 157.33s; 11 frontend tests pass. Ruff
+lint/format (303 files), strict mypy (240 files), frontend lint/types/build, generated
+API/OpenAPI drift and dispatcher CLI checks pass. Hosted exact-code verification is
+pending. All four progress files and the operations runbook are updated.
+
+Completed increment: automatic source notices, current eligibility checks, durable
+retry/skip evidence, worker routing and guarded additive migration. No full Phase 6
+acceptance criterion is claimed; Phase 6 stays 0/8 and Phase 7 is unstarted.
+Historical handoff reconciliation, controlled notification replay, email/invitations,
+generic tasks, tags/flags, webhooks, rule/run UI and telemetry remain current-phase
+requirements. No item is deferred.

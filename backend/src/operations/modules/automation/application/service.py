@@ -555,6 +555,23 @@ class AutomationService:
             )
         return len(rows)
 
+    def notification_delivery(self, message: DeliveryMessage) -> tuple[Delivery, OperationalEvent]:
+        """Trusted worker handoff; expose immutable source and a locked scoped delivery."""
+        delivery = self.store.delivery(message.organization_id, message.delivery_id, True)
+        if delivery is None:
+            raise ServiceError(404, "outbox_delivery_not_found")
+        if delivery.consumer != "notifications":
+            raise ServiceError(422, "outbox_consumer_mismatch")
+        source = self.store.event(message.organization_id, delivery.event_id)
+        if source is None:
+            raise ServiceError(409, "outbox_delivery_integrity")
+        return delivery, source
+
+    def complete_notification_delivery(self, delivery: Delivery) -> None:
+        if delivery.consumer != "notifications":
+            raise ServiceError(422, "outbox_consumer_mismatch")
+        self.store.save_delivery(delivery)
+
 
 class EventCapture:
     """Capture source events and pin matching rules inside the business transaction."""

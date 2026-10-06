@@ -37,6 +37,7 @@ class AuditDetails(Command):
     storage_grace_seconds: int | None = Field(default=None, ge=86400, le=2592000)
     scheduled_at: datetime | None = None
     timer_version_id: UUID | None = None
+    reminder_id: UUID | None = None
 
 
 class AuditEvent(Command):

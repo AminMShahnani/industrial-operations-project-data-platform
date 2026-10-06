@@ -115,3 +115,12 @@ all local gates passing (186 backend/11 frontend). ADR-0014 documents boundaries
 Automatic task/workflow consumers, email/invitations, remaining handlers, rule/run
 management UI and telemetry stay in Phase 6; no new debt or acceptance deferral.
 Hosted run 37504095044 passes both jobs on exact code 11b7818; no new debt.
+
+
+Automatic in-app consumer/worker routing and durable retry/skip evidence are
+implemented within Phase 6. ADR-0015 documents source-owned authorization and
+additive migration. Historical handoff reconciliation, controlled notification
+replay, email/invitations, remaining handlers/UI and telemetry remain current-phase
+requirements. No new debt, data rewrite or acceptance deferral is introduced.
+All local gates pass (195 backend/11 frontend tests), including real worker duplicate
+delivery and concurrent first reads. Hosted exact-code verification is pending.

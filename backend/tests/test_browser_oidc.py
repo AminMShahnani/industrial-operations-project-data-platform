@@ -300,6 +300,9 @@ def test_real_oidc_pkce_login_and_workspace_creation(monkeypatch: pytest.MonkeyP
                 project_id = page.get_by_label("Project", exact=True).input_value()
                 # Seed the development identity through audited application services.
                 # Its subsequent review actions must use a separate real PKCE login.
+                # Finish browser requests before the separate fixture transaction locks
+                # the same tenant and user rows in application-service setup order.
+                page.wait_for_load_state("networkidle")
                 with Session(engine) as session, session.begin():
                     services = compose(session, principal)
                     owner_context = RequestContext(principal, uuid7(), uuid7())
