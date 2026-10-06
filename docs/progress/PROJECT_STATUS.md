@@ -90,7 +90,9 @@ frontend lint/types/build, Alembic/OpenAPI drift pass. Hosted action/worker run
 passes both jobs on `700db02b39dd94b8e7fdae2dff00ad8ddfcaee13`.
 Final workflow-boundary refinement moves pinned-start persistence entirely into
 the workflow application service; 24 affected tests and strict types pass locally.
-Hosted refinement check pending.
+Hosted refinement [37466610016](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/37466610016)
+passes both jobs on final code `4f8f6dab18e491ca10a80fdbedfa048c2d21dfb7`.
+Phase 6 remains in progress with 0/8 accepted; no Phase 7 work.
 No migration is added; existing development/test/browser head remains 8323b0dbac0e.
 
 ## Migration status

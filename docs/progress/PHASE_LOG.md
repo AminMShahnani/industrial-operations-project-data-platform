@@ -600,3 +600,8 @@ prior PKCE browser flows. Final review moves pinned-workflow start into the work
 application service so automation never calls its persistence port directly.
 Affected action/worker/workflow/boundary revalidation: 24 tests pass in 43.45s;
 Windows/Linux strict types pass. No additional schema or API contract change.
+
+Final action/worker code 4f8f6dab18e491ca10a80fdbedfa048c2d21dfb7 passes hosted run
+https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/37466610016
+Both jobs pass, including full Linux backend tests, concurrent real Redis workers,
+browser flows, migrations and contracts. Phase 6 acceptance remains 0/8.
