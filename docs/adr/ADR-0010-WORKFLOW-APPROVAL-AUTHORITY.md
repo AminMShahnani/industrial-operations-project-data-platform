@@ -42,5 +42,33 @@ must report unavailable assignment context instead of fabricating a manager.
 
 Workflow definitions own their persistence. Composite scope keys pin form versions;
 activated content and identity cannot change. Populated downgrade refuses before
-any table drop. These are foundation invariants, not a claim that runtime actions,
-amendments or workflow APIs have passed Phase 5 acceptance.
+any table drop. Full Phase 5 acceptance requires all local and hosted gates.
+
+## Runtime binding and revisions
+One active workflow binds each exact published form version. Unbound forms create
+immutable submitted records without fabricated approval or backfilled history.
+Replacement affects future submissions. Corrections and amendments pin the source
+workflow version even after retirement; retired form versions still reject writes
+under the Phase 3 policy. Owners create new private drafts with immutable source
+and root links. Editable permitted values may be copied, but prior file/image and
+signature evidence is not copied. Original payloads remain intact. Shared tasks
+retain their original submission pointer and follow the proven revision chain.
+
+## Authorization, routing and bounds
+Scoped Reviewer/Approver roles grant action rights without broad submission or
+private draft access. Evidence retains field visibility rules. Original recipients
+and fresh identity, role/group and project permissions must all allow each action.
+Accepted votes retain the authority at cast time; later revocation never erases
+history. Sequential policies order every action, including return and rejection.
+Retries verify fresh authority and exact content.
+Decisions use bounded declarative conditions over immutable scalar fields, avoiding
+mutable ambient context. Notification nodes persist typed intents for Phase 6,
+without claiming delivery. Instances permit 1000 visits/1000 distinct recipients
+per visit. History pages contain 20 visits/100 actions; vote counts read the whole
+current visit independently of paging. Unsupported manager relationships fail.
+
+Read-only history and immutable definition lookups do not acquire workflow write
+locks. Mutations acquire scoped project authority before workflow/instance locks;
+instance actions serialize and recheck expected revision/idempotency. Active-binding
+startup explicitly locks the workflow and revalidates activation after waiting.
+This avoids inversions with submission/file evidence reads and revision submission.

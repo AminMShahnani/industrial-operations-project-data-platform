@@ -6,6 +6,7 @@ import { FormStudio } from './FormStudio';
 import { MasterDataAdmin } from './MasterDataAdmin';
 import { MemberLookup } from './MemberLookup';
 import { Scheduling } from './Scheduling';
+import { Workflows } from './Workflows';
 
 type Project = MethodResponse<ReturnType<typeof apiClient>, 'get', '/api/v1/organizations/{organization_id}/workspaces/{workspace_id}/projects/{project_id}'>;
 type Group = components['schemas']['Group'];
@@ -18,6 +19,7 @@ export function ProjectAdministration({ api, organization, workspace }: { api: C
   const [groups, setGroups] = useState<Group[]>([]);
   const [selected, setSelected] = useState('');
   const [taskForm, setTaskForm] = useState<{id:string;form:string;draft:string}>();
+  const [workflowSubmission,setWorkflowSubmission]=useState<string>();
   const [permissions, setPermissions] = useState<string[]>([]);
   const [projectPermissions, setProjectPermissions] = useState<string[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
@@ -52,6 +54,7 @@ export function ProjectAdministration({ api, organization, workspace }: { api: C
   useEffect(() => {
     setPreview(undefined); setProjectPermissions([]); setMember(''); setLastMembership(undefined);
     setTaskForm(undefined);
+    setWorkflowSubmission(undefined);
     if (!selected) return;
     let alive = true;
     void api.GET(`${projectPath}/permissions`, { params: { path: { ...path, project_id: selected } } }).then(result => {
@@ -260,20 +263,22 @@ export function ProjectAdministration({ api, organization, workspace }: { api: C
       <form onSubmit={event => void projectMember(event)}>
         <MemberLookup key={current.id} api={api} organization={organization} workspace={workspace} scope={{ kind: 'project', id: current.id }} onSelect={setMember} />
         <input type="hidden" name="user" value={member} />
-        <label>Direct project role<select name="role"><option>Viewer</option><option>Contributor</option><option>ProjectManager</option></select></label>
+        <label>Direct project role<select name="role"><option>Viewer</option><option>Contributor</option><option>Reviewer</option><option>Approver</option><option>ProjectManager</option></select></label>
         <button disabled={busy || !member}>Grant direct project access</button>
       </form>
       <form onSubmit={event => void projectMember(event)}>
         <label>Department<select name="department" required><option value="">Choose a department</option>{groups.filter(group => group.active && group.kind === 'department').map(group => <option key={group.id} value={group.id}>{group.name}</option>)}</select></label>
-        <label>Department project role<select name="role"><option>Viewer</option><option>Contributor</option><option>ProjectManager</option></select></label>
+        <label>Department project role<select name="role"><option>Viewer</option><option>Contributor</option><option>Reviewer</option><option>Approver</option><option>ProjectManager</option></select></label>
         <button disabled={busy}>Grant department project access</button>
       </form>
       {lastMembership && <button disabled={busy} onClick={() => void revokeLastMembership()}>Revoke the last access grant</button>}
     </>}
     <Scheduling key={'work'+organization+workspace+selected} api={api} organization={organization} workspace={workspace} project={selected}
       canManage={selected?projectPermissions.includes('schedule.manage'):permissions.includes('schedule.manage')} onOpen={task=>{if(task.submission_id)setTaskForm({id:task.id,form:task.form_id,draft:task.submission_id});}} />
+    <Workflows key={'workflow'+organization+workspace+selected} api={api} organization={organization} workspace={workspace} project={selected}
+      canManage={selected?projectPermissions.includes('workflow.manage'):permissions.includes('workflow.manage')} submission={workflowSubmission} onOpenRevision={row=>setTaskForm({id:row.id,form:row.form_id,draft:row.id})}/>
     <FormStudio key={'forms' + organization + workspace + selected + (taskForm?.id??'')} api={api} organization={organization} workspace={workspace} project={selected}
-      canManage={selected ? projectPermissions.includes('form.manage') : permissions.includes('form.manage')} canManageLibrary={permissions.includes('form.manage')} taskForm={taskForm?.form} taskDraft={taskForm?.draft}/>
+      canManage={selected ? projectPermissions.includes('form.manage') : permissions.includes('form.manage')} canManageLibrary={permissions.includes('form.manage')} taskForm={taskForm?.form} taskDraft={taskForm?.draft} onSubmitted={setWorkflowSubmission}/>
     <MasterDataAdmin key={organization + workspace + selected} api={api} organization={organization} workspace={workspace} project={selected}
       canManage={selected ? projectPermissions.includes('master_data.manage') : permissions.includes('master_data.manage')} />
   </section>;

@@ -15,7 +15,7 @@ from operations.modules.workflows.domain.graph import (
 )
 
 
-class Assignment(Command):
+class WorkflowAssignment(Command):
     kind: Literal[
         "user", "project_role", "department_role", "team", "submission_field", "manager_of"
     ]
@@ -24,7 +24,7 @@ class Assignment(Command):
     field_key: str | None = Field(default=None, pattern=r"^[a-z][a-z0-9_]{0,59}$")
 
     @model_validator(mode="after")
-    def coherent(self) -> Assignment:
+    def coherent(self) -> WorkflowAssignment:
         required = {
             "user": (True, False, False),
             "project_role": (False, True, False),
@@ -40,6 +40,9 @@ class Assignment(Command):
         ):
             raise ValueError("invalid_workflow_assignment")
         return self
+
+
+Assignment = WorkflowAssignment
 
 
 class ApprovalPolicy(Command):
@@ -133,16 +136,23 @@ class WorkflowInstance(Command):
     created_at: datetime
 
 
-class WorkflowStep(Command):
+class WorkflowStepMetadata(Command):
     id: UUID
     organization_id: UUID
     workspace_id: UUID
     instance_id: UUID
     node_key: str = Field(max_length=60)
-    number: int = Field(ge=1)
-    recipient_ids: list[UUID] = Field(min_length=1, max_length=1000)
+    number: int = Field(ge=1, le=1000)
     state: Literal["open", "completed", "returned", "rejected"] = "open"
     created_at: datetime
+
+
+class WorkflowStep(WorkflowStepMetadata):
+    recipient_ids: list[UUID] = Field(min_length=1, max_length=1000)
+
+
+class AssignedStep(WorkflowStepMetadata):
+    recipient_id: UUID
 
 
 class WorkflowAction(Command):
@@ -160,16 +170,94 @@ class WorkflowAction(Command):
 
 class WorkflowStore(Protocol):
     def create(self, workflow: Workflow) -> None: ...
-    def get(self, org: UUID, workspace: UUID, identifier: UUID) -> Workflow | None: ...
+    def get(
+        self, org: UUID, workspace: UUID, identifier: UUID, lock: bool = False
+    ) -> Workflow | None: ...
     def list_workflows(
         self, org: UUID, workspace: UUID, project: UUID | None, after: UUID | None
     ) -> list[Workflow]: ...
     def save(self, workflow: Workflow, expected: int) -> bool: ...
     def add_version(self, version: WorkflowVersion) -> None: ...
     def version(
-        self, org: UUID, workspace: UUID, identifier: UUID, number: int
+        self, org: UUID, workspace: UUID, identifier: UUID, number: int, lock: bool = False
     ) -> WorkflowVersion | None: ...
     def versions(
         self, org: UUID, workspace: UUID, identifier: UUID, after: UUID | None
     ) -> list[WorkflowVersion]: ...
     def save_version(self, version: WorkflowVersion, expected: int) -> bool: ...
+    def active_for_form(
+        self, org: UUID, workspace: UUID, form_version: UUID
+    ) -> WorkflowVersion | None: ...
+
+
+class WorkflowNotification(Command):
+    id: UUID
+    organization_id: UUID
+    workspace_id: UUID
+    instance_id: UUID
+    node_key: str
+    visit: int = Field(ge=1)
+    recipient_ids: list[UUID] = Field(min_length=1, max_length=1000)
+    created_at: datetime
+
+
+class WorkflowRevision(Command):
+    id: UUID
+    organization_id: UUID
+    workspace_id: UUID
+    source_instance_id: UUID
+    root_submission_id: UUID
+    submission_id: UUID
+    owner_id: UUID
+    kind: Literal["correction", "amendment"]
+    reason: str = Field(min_length=1, max_length=2000)
+    idempotency_key: UUID
+    created_at: datetime
+
+
+class RuntimeStore(Protocol):
+    def add_instance(self, row: WorkflowInstance) -> None: ...
+    def instance(
+        self, org: UUID, workspace: UUID, identifier: UUID, lock: bool = False
+    ) -> WorkflowInstance | None: ...
+    def by_submission(
+        self, org: UUID, workspace: UUID, submission: UUID
+    ) -> WorkflowInstance | None: ...
+    def save_instance(self, row: WorkflowInstance, expected: int) -> bool: ...
+    def add_step(self, row: WorkflowStep) -> None: ...
+    def history_steps(
+        self, org: UUID, workspace: UUID, instance: UUID, after: int | None = None
+    ) -> list[WorkflowStep]: ...
+    def current_step(
+        self, org: UUID, workspace: UUID, instance: UUID, node: str
+    ) -> WorkflowStep | None: ...
+    def participant_steps(
+        self, org: UUID, workspace: UUID, instance: UUID, user: UUID
+    ) -> list[AssignedStep]: ...
+    def step_count(self, org: UUID, workspace: UUID, instance: UUID) -> int: ...
+    def completed_approval(
+        self, org: UUID, workspace: UUID, instance: UUID, node_keys: set[str]
+    ) -> bool: ...
+    def save_step(self, row: WorkflowStep) -> None: ...
+    def add_action(self, row: WorkflowAction) -> None: ...
+    def actions(
+        self, org: UUID, workspace: UUID, instance: UUID, after: UUID | None = None
+    ) -> list[WorkflowAction]: ...
+    def actions_for_step(
+        self, org: UUID, workspace: UUID, instance: UUID, step: UUID
+    ) -> list[WorkflowAction]: ...
+    def action_by_key(self, org: UUID, key: UUID) -> WorkflowAction | None: ...
+    def inbox(
+        self, org: UUID, workspace: UUID, user: UUID, project: UUID | None, after: UUID | None
+    ) -> list[WorkflowInstance]: ...
+    def notify(self, row: WorkflowNotification) -> None: ...
+    def add_revision(self, row: WorkflowRevision) -> None: ...
+    def revision_by_submission(
+        self, org: UUID, workspace: UUID, submission: UUID
+    ) -> WorkflowRevision | None: ...
+    def revision_by_source(
+        self, org: UUID, workspace: UUID, instance: UUID
+    ) -> WorkflowRevision | None: ...
+    def approved_submission(
+        self, org: UUID, workspace: UUID, form: UUID, owner: UUID
+    ) -> UUID | None: ...

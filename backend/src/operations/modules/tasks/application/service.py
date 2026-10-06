@@ -219,6 +219,32 @@ class TaskService:
             if row.state != "in_progress" or row.claimant_id != submission.owner_id:
                 raise ServiceError(409, "task_not_writable")
 
+    def validate_revision_write(
+        self, actor: RequestContext, org: UUID, workspace: UUID, root: UUID
+    ) -> None:
+        row = self.store.by_submission(org, workspace, root)
+        if row:
+            self.access(actor, org, workspace, row.id, True)
+            user = self.schedules.forms.authorization.user(actor, org)
+            if row.claimant_id != user.id or row.state not in {"returned", "approved", "submitted"}:
+                raise ServiceError(409, "task_revision_not_writable")
+
+    def workflow_transition(
+        self, actor: RequestContext, org: UUID, workspace: UUID, root: UUID, state: str
+    ) -> None:
+        self.schedules.forms.authorization.user(actor, org)
+        row = self.store.by_submission(org, workspace, root)
+        if row is None or row.state == state:
+            return
+        if state not in {"awaiting_review", "returned", "approved", "submitted"}:
+            raise ServiceError(422, "invalid_workflow_task_state")
+        if row.state not in {"submitted", "awaiting_review", "returned", "approved"}:
+            raise ServiceError(409, "task_workflow_conflict")
+        changed = row.model_copy(update={"state": state, "revision": row.revision + 1})
+        if not self.store.save(changed, row.revision):
+            raise ServiceError(409, "stale_revision")
+        self.event(actor, changed, "task.workflow." + state)
+
     def cancel(
         self,
         actor: RequestContext,

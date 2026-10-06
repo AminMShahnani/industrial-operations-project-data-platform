@@ -143,7 +143,7 @@ export function Administration() {
       <p>Review the selected organization and workspace before creating access.</p>
       <form onSubmit={event => void createInvitation(event)}>
         <label>Email<input type="email" name="email" required /></label>
-        <label>Role<select name="role"><option>Viewer</option><option>Contributor</option><option>WorkspaceAdmin</option><option>WorkspaceOwner</option></select></label>
+        <label>Role<select name="role"><option>Viewer</option><option>Contributor</option><option>Reviewer</option><option>Approver</option><option>WorkspaceAdmin</option><option>WorkspaceOwner</option></select></label>
         <button disabled={busy}>Create invitation</button>
       </form>
       {invitation && <div><p>Share this code and organization ID with the intended member. The code expires in seven days.</p>

@@ -15,6 +15,8 @@ class Role(StrEnum):
     WORKSPACE_ADMIN = "WorkspaceAdmin"
     VIEWER = "Viewer"
     CONTRIBUTOR = "Contributor"
+    REVIEWER = "Reviewer"
+    APPROVER = "Approver"
 
 
 PERMISSIONS: dict[Role, frozenset[str]] = {
@@ -86,6 +88,21 @@ PERMISSIONS: dict[Role, frozenset[str]] = {
     ),
 }
 
+PERMISSIONS[Role.REVIEWER] = frozenset(
+    {"workspace.read", "form.read", "workflow.read", "workflow.act", "submission.review"}
+)
+PERMISSIONS[Role.APPROVER] = PERMISSIONS[Role.REVIEWER] | {"submission.approve"}
+for workflow_admin in (Role.ORGANIZATION_ADMIN, Role.WORKSPACE_OWNER, Role.WORKSPACE_ADMIN):
+    PERMISSIONS[workflow_admin] |= {
+        "workflow.read",
+        "workflow.manage",
+        "workflow.act",
+        "submission.review",
+        "submission.approve",
+    }
+for workflow_reader in (Role.VIEWER, Role.CONTRIBUTOR):
+    PERMISSIONS[workflow_reader] |= {"workflow.read"}
+
 
 def role_permissions(role: Role, scope_type: ScopeType) -> frozenset[str]:
     if role == Role.VIEWER:
@@ -95,6 +112,7 @@ def role_permissions(role: Role, scope_type: ScopeType) -> frozenset[str]:
                 "master_data.read",
                 "form.read",
                 "task.read",
+                "workflow.read",
             }
         )
     return PERMISSIONS[role]

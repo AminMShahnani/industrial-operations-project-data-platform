@@ -28,6 +28,12 @@ from operations.modules.submissions.application.service import SubmissionService
 from operations.modules.submissions.infrastructure.persistence import SubmissionRepository
 from operations.modules.tasks.application.service import TaskService
 from operations.modules.tasks.infrastructure.persistence import TaskRepository
+from operations.modules.workflows.application.assignments import AssignmentResolver
+from operations.modules.workflows.application.defaults import WorkflowDefaults
+from operations.modules.workflows.application.runtime import SubmissionLifecycle, WorkflowRuntime
+from operations.modules.workflows.application.service import WorkflowService
+from operations.modules.workflows.infrastructure.persistence import WorkflowRepository
+from operations.modules.workflows.infrastructure.runtime import RuntimeRepository
 from operations.modules.workspaces.application.group_service import GroupService
 from operations.modules.workspaces.application.service import WorkspaceService
 from operations.modules.workspaces.infrastructure.groups import GroupRepository
@@ -37,6 +43,8 @@ from operations.platform.config import Settings
 
 @dataclass(frozen=True)
 class Services:
+    workflows: WorkflowService
+    workflow_runtime: WorkflowRuntime
     scheduling: SchedulingService
     tasks: TaskService
     forms: FormService
@@ -93,8 +101,17 @@ def compose(
     schedules = SchedulingService(ScheduleRepository(session), forms)
     forms.default_context = SchedulingDefaults(schedules.store)
     tasks = TaskService(TaskRepository(session), schedules, submissions)
-    submissions.observer = tasks
+    workflows = WorkflowService(WorkflowRepository(session), forms, AssignmentResolver(schedules))
+    workflow_runtime = WorkflowRuntime(RuntimeRepository(session), workflows, submissions)
+    workflow_runtime.tasks = tasks
+    forms.default_context = WorkflowDefaults(
+        SchedulingDefaults(schedules.store), workflow_runtime.store, submissions
+    )
+    submissions.review_access = workflow_runtime
+    submissions.observer = SubmissionLifecycle(tasks, workflow_runtime)
     return Services(
+        workflows,
+        workflow_runtime,
         schedules,
         tasks,
         forms,

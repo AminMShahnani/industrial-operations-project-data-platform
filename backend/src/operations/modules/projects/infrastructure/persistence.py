@@ -76,7 +76,10 @@ class ProjectMembershipRow(Base):
             "valid_until IS NULL OR valid_from IS NULL OR valid_until > valid_from",
             name="validity_window",
         ),
-        CheckConstraint("role IN ('ProjectManager', 'Contributor', 'Viewer')", name="project_role"),
+        CheckConstraint(
+            "role IN ('ProjectManager', 'Contributor', 'Viewer', 'Reviewer', 'Approver')",
+            name="project_role",
+        ),
         Index(
             "ix_project_memberships_scope_user",
             "organization_id",
@@ -117,7 +120,10 @@ class DepartmentProjectGrantRow(Base):
             "valid_until IS NULL OR valid_from IS NULL OR valid_until > valid_from",
             name="validity_window",
         ),
-        CheckConstraint("role IN ('ProjectManager', 'Contributor', 'Viewer')", name="project_role"),
+        CheckConstraint(
+            "role IN ('ProjectManager', 'Contributor', 'Viewer', 'Reviewer', 'Approver')",
+            name="project_role",
+        ),
         Index(
             "ix_department_project_grants_scope",
             "organization_id",

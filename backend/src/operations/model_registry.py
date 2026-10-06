@@ -50,6 +50,8 @@ from operations.modules.workflows.infrastructure.persistence import WorkflowRow 
 from operations.modules.workflows.infrastructure.persistence import (
     WorkflowVersionRow as WorkflowVersionRow,
 )
+from operations.modules.workflows.infrastructure.runtime import InstanceRow as InstanceRow
+from operations.modules.workflows.infrastructure.runtime import StepRow as StepRow
 from operations.modules.workspaces.infrastructure.groups import (
     GroupMembershipRow as GroupMembershipRow,
 )

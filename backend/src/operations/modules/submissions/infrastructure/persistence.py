@@ -97,6 +97,17 @@ class SubmissionRepository:
     def __init__(self, session: Session) -> None:
         self.session = session
 
+    def snapshot(self, org: UUID, workspace: UUID, identifier: UUID) -> Submission | None:
+        row = self.session.scalar(
+            select(SubmissionRow).where(
+                SubmissionRow.organization_id == org,
+                SubmissionRow.workspace_id == workspace,
+                SubmissionRow.id == identifier,
+                SubmissionRow.state == "submitted",
+            )
+        )
+        return contract(row) if row else None
+
     def create(self, submission: Submission) -> None:
         self.session.add(
             SubmissionRow(

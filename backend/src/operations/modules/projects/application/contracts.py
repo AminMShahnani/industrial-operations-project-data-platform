@@ -58,6 +58,8 @@ class ProjectRole(StrEnum):
     MANAGER = "ProjectManager"
     VIEWER = "Viewer"
     CONTRIBUTOR = "Contributor"
+    REVIEWER = "Reviewer"
+    APPROVER = "Approver"
 
 
 class ProjectMembership(Command):

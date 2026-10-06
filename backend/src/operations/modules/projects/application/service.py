@@ -51,6 +51,22 @@ PROJECT_PERMISSIONS = {
     ),
 }
 
+PROJECT_PERMISSIONS[ProjectRole.REVIEWER] = frozenset(
+    {"project.read", "form.read", "workflow.read", "workflow.act", "submission.review"}
+)
+PROJECT_PERMISSIONS[ProjectRole.APPROVER] = PROJECT_PERMISSIONS[ProjectRole.REVIEWER] | {
+    "submission.approve"
+}
+PROJECT_PERMISSIONS[ProjectRole.MANAGER] |= {
+    "workflow.read",
+    "workflow.manage",
+    "workflow.act",
+    "submission.review",
+    "submission.approve",
+}
+for workflow_reader in (ProjectRole.VIEWER, ProjectRole.CONTRIBUTOR):
+    PROJECT_PERMISSIONS[workflow_reader] |= {"workflow.read"}
+
 
 def effective(grant: ProjectMembership | DepartmentProjectGrant, now: datetime) -> bool:
     return (

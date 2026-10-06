@@ -27,5 +27,10 @@
     "emailVerified": true, "email": "dev-platform@example.com",
     "firstName": "Development", "lastName": "Operator",
     "credentials": [{"type": "password", "value": "${IOP_OIDC_DEV_PASSWORD}", "temporary": false}]
+  }, {
+    "id": "dev-reviewer", "username": "dev-reviewer", "enabled": true,
+    "emailVerified": true, "email": "dev-reviewer@example.com",
+    "firstName": "Development", "lastName": "Reviewer",
+    "credentials": [{"type": "password", "value": "${IOP_OIDC_DEV_PASSWORD}", "temporary": false}]
   }]
 }

@@ -7,20 +7,22 @@ import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
-from uuid import uuid7
+from uuid import UUID, uuid7
 
 import pytest
 from alembic import command
 from alembic.config import Config
 from operations.composition import compose
 from operations.modules.audit.infrastructure.persistence import AuditRow
+from operations.modules.iam.application.contracts import Role, Scope, ScopeType
 from operations.modules.identity.application.contracts import Principal, RequestContext
 from operations.modules.organizations.application.contracts import OrganizationSettings
+from operations.modules.projects.application.contracts import ProjectRole
 from operations.platform.config import Settings
 from operations.platform.database import create_database_engine
 from playwright.sync_api import expect, sync_playwright
 from pydantic import SecretStr
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 pytestmark = pytest.mark.e2e
@@ -232,6 +234,54 @@ def test_real_oidc_pkce_login_and_workspace_creation(monkeypatch: pytest.MonkeyP
                     )
                 ).to_be_visible()
                 form_id = page.get_by_label("Form", exact=True).input_value()
+                workspace_id = page.get_by_label("Workspace", exact=True).input_value()
+                project_id = page.get_by_label("Project", exact=True).input_value()
+                # Seed the development identity through audited application services.
+                # Its subsequent review actions must use a separate real PKCE login.
+                with Session(engine) as session, session.begin():
+                    services = compose(session, principal)
+                    owner_context = RequestContext(principal, uuid7(), uuid7())
+                    token = services.identity.invite(
+                        owner_context,
+                        "dev-reviewer@example.com",
+                        Role.APPROVER,
+                        Scope(organization.id, ScopeType.WORKSPACE, UUID(workspace_id)),
+                    )
+                    reviewer_principal = Principal(
+                        issuer, "dev-reviewer", "dev-reviewer@example.com", True
+                    )
+                    reviewer_user = services.identity.accept(
+                        RequestContext(reviewer_principal, uuid7(), uuid7()), organization.id, token
+                    )
+                    services.projects.add_member(
+                        owner_context,
+                        organization.id,
+                        UUID(workspace_id),
+                        UUID(project_id),
+                        reviewer_user.id,
+                        ProjectRole.APPROVER,
+                        None,
+                        None,
+                    )
+                page.get_by_text("Workflow administration", exact=True).click()
+                page.get_by_role("button", name="Refresh forms for workflow", exact=True).click()
+                page.get_by_label("Approver email", exact=True).fill("dev-reviewer@example.com")
+                page.get_by_role("button", name="Find eligible approvers", exact=True).click()
+                page.get_by_role(
+                    "button", name="Add approver dev-reviewer@example.com", exact=True
+                ).click()
+                page.get_by_label("Workflow name", exact=True).fill("Browser independent approval")
+                page.get_by_label("Published form", exact=True).select_option(form_id)
+                page.get_by_role("button", name="Create workflow draft", exact=True).click()
+                expect(
+                    page.get_by_role("button", name="Preview workflow activation", exact=True)
+                ).to_be_visible()
+                page.get_by_role("button", name="Preview workflow activation", exact=True).click()
+                page.get_by_role("button", name="Apply workflow activation", exact=True).click()
+                expect(page.get_by_label("Workflow version", exact=True)).to_have_value("1")
+                expect(
+                    page.get_by_role("button", name="Preview workflow activation", exact=True)
+                ).to_have_count(0)
                 page.get_by_text("Schedule administration", exact=True).click()
                 page.get_by_label("Schedule name", exact=True).fill("Browser scheduled report")
                 page.get_by_label("Schedule form ID", exact=True).fill(form_id)
@@ -309,10 +359,99 @@ def test_real_oidc_pkce_login_and_workspace_creation(monkeypatch: pytest.MonkeyP
                 ).to_be_visible()
                 page.get_by_role("button", name="Refresh My Work", exact=True).click()
                 expect(
-                    page.get_by_text("submitted", exact=False)
+                    page.get_by_text("awaiting_review", exact=False)
                     .filter(has_text="Browser scheduled report")
                     .first
                 ).to_be_visible()
+                reviewer_context = browser.new_context()
+                review_page = reviewer_context.new_page()
+                review_page.goto("http://localhost:5173/")
+                review_page.get_by_role("button", name="Sign in", exact=True).click()
+                review_page.locator("#username").fill("dev-reviewer")
+                review_page.locator("#password").fill(
+                    os.environ.get("IOP_OIDC_DEV_PASSWORD", "development-only-change-me")
+                )
+                with review_page.expect_response("**/api/v1/me") as reviewer_identity:
+                    review_page.locator("#kc-login").click()
+                assert reviewer_identity.value.status == 200
+                review_page.get_by_label("Organization", exact=True).select_option(
+                    str(organization.id)
+                )
+                review_page.get_by_label("Workspace", exact=True).select_option(workspace_id)
+                review_page.get_by_label("Project", exact=True).select_option(project_id)
+                review_page.get_by_role("button", name="Refresh review inbox", exact=True).click()
+                review_page.get_by_role("button", name="Review record", exact=True).click()
+                review_page.get_by_label("Decision reason", exact=True).fill(
+                    "Correct the reported count"
+                )
+                review_page.get_by_role("button", name="Return for correction", exact=True).click()
+                expect(
+                    review_page.get_by_role("button", name="Approve record", exact=True)
+                ).to_have_count(0)
+                with page.expect_response(
+                    lambda response: "/workflow-instances/" in response.url
+                ) as owner_history:
+                    page.get_by_role("button", name="Refresh record history", exact=True).click()
+                assert owner_history.value.status == 200, owner_history.value.text()
+                page.get_by_label("Decision reason", exact=True).fill(
+                    "Correct count with preserved original evidence"
+                )
+                page.get_by_role("button", name="Create correction draft", exact=True).click()
+                page.get_by_label("Reported count", exact=True).fill("8")
+                expect(page.get_by_role("status").filter(has_text="Draft saved.")).to_be_visible()
+                page.get_by_label("Submission reason", exact=True).fill("Corrected scheduled work")
+                page.get_by_role("button", name="Submit form", exact=True).click()
+                expect(
+                    page.get_by_role("status").filter(
+                        has_text="Submission preserved as an immutable snapshot."
+                    )
+                ).to_be_visible()
+                review_page.get_by_role("button", name="Refresh review inbox", exact=True).click()
+                with review_page.expect_response(
+                    lambda response: "/workflow-instances/" in response.url
+                ) as review_history:
+                    review_page.get_by_role("button", name="Review record", exact=True).click()
+                review_page.get_by_label("Decision reason", exact=True).fill(
+                    "Independent evidence approval"
+                )
+                reviewed = review_history.value.json()["instance"]
+                approval_authorization = review_history.value.request.headers["authorization"]
+                approval_body = {
+                    "expected_revision": reviewed["revision"],
+                    "idempotency_key": str(uuid7()),
+                    "kind": "approve",
+                    "reason": "Independent evidence approval",
+                }
+
+                def approve() -> dict[str, object]:
+                    request = urllib.request.Request(
+                        route + f"/workflow-instances/{reviewed['id']}/actions",
+                        data=json.dumps(approval_body).encode(),
+                        headers={
+                            "Authorization": approval_authorization,
+                            "Content-Type": "application/json",
+                        },
+                        method="POST",
+                    )
+                    with urllib.request.urlopen(request, timeout=30) as response:
+                        result: dict[str, object] = json.load(response)
+                        return result
+
+                with ThreadPoolExecutor(max_workers=2) as pool:
+                    approvals = [pool.submit(approve) for _ in range(2)]
+                    outcomes = [future.result() for future in approvals]
+                assert outcomes[0] == outcomes[1] and outcomes[0]["state"] == "approved"
+                review_page.get_by_role("button", name="Refresh record history", exact=True).click()
+                expect(
+                    review_page.get_by_role("button", name="Approve record", exact=True)
+                ).to_have_count(0)
+                page.get_by_role("button", name="Refresh My Work", exact=True).click()
+                expect(
+                    page.get_by_text("approved", exact=False)
+                    .filter(has_text="Browser scheduled report")
+                    .first
+                ).to_be_visible()
+                reviewer_context.close()
                 assert page.evaluate(
                     "Object.keys(localStorage).concat(Object.keys(sessionStorage))"
                     ".every(key => !key.startsWith('oidc.user:'))"
@@ -329,6 +468,24 @@ def test_real_oidc_pkce_login_and_workspace_creation(monkeypatch: pytest.MonkeyP
                 )
             )
             assert event is not None and event.actor_subject == "dev-platform"
+            approval = session.scalar(
+                select(AuditRow).where(
+                    AuditRow.organization_id == organization.id,
+                    AuditRow.type == "workflow.action.approve",
+                )
+            )
+            assert approval is not None and approval.actor_subject == "dev-reviewer"
+            assert (
+                session.scalar(
+                    select(func.count())
+                    .select_from(AuditRow)
+                    .where(
+                        AuditRow.organization_id == organization.id,
+                        AuditRow.type == "workflow.action.approve",
+                    )
+                )
+                == 1
+            )
     finally:
         for process in (web, api):
             process.terminate()

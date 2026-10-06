@@ -67,3 +67,8 @@ security/domain question. Workflow policies are reviewed before Phase 5 implemen
 Q-005 resolved on 2026-10-06: user instructed "do it" after the independent-approval
 recommendation. ADR-0010 accepted. Submitters cannot approve their own record,
 including administrators; no definition-level opt-out or silent reassignment.
+
+Phase 5 runtime verification: no new unresolved security/domain question.
+ADR-0010 records exact-version binding, preserved revisions, scoped action roles,
+fresh authority, deterministic routing and bounded history. Unsupported manager
+relationships fail explicitly rather than inventing domain data.

@@ -434,3 +434,26 @@ remain required. Phase 6 has not started. Runbook describes guarded rollback.
 
 Frontend checkpoint gates PASS: lint, strict TypeScript, all 9 tests and production
 build. Local foundation checks complete; hosted results pending. Phase 5 stays 0/8.
+
+### Phase 5 runtime verification - 2026-10-06
+Foundation commit 554b593 passes hosted run 37442996936. Current uncommitted slice
+adds audited administration, immutable activation, deterministic routing, assigned
+independent review/approval, correction/amendment links, task state integration,
+approved defaults, scoped evidence/history UI and bounded paging. Migrations add
+runtime/revision/evidence guards and Reviewer/Approver project grant constraints.
+Targeted tests: 16 pass (graph, persistence and five API cases), including private
+draft denial, fresh grant revocation, rollback on empty approvers, pinned-version
+resubmission, immutable evidence and approved-default isolation. Frontend types and
+strict backend types pass. Separate real PKCE browser flow is under verification.
+P5-01 through P5-08 remain unaccepted until complete local/hosted gates. No Phase 5
+requirement deferred and no Phase 6 implementation started.
+
+Final local runtime gates: 136 backend tests pass without skips in 93.81 seconds;
+11 frontend tests pass. Separate real PKCE identities exercise return/correction
+and concurrent idempotent approval. All assignment strategies except unsupported
+manager context are exercised; live team/department/project revocation denies
+actions. One/all/quorum/sequential policies, review routing, 156-action history
+paging, preserved versions/defaults and immutable evidence pass. Ruff lint/format,
+strict mypy Windows/Linux (202 files), migration and OpenAPI drift, frontend
+lint/types/build pass. Final negative-scope/populated-role guards are revalidated
+before commit. Hosted acceptance remains pending; no phase advancement.

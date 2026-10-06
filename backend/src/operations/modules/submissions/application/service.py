@@ -39,11 +39,22 @@ class SubmissionObserver(Protocol):
     def submitted(self, actor: RequestContext, submission: Submission) -> None: ...
 
 
+class SubmissionReviewAccess(Protocol):
+    def can_read(self, actor: RequestContext, submission: Submission) -> bool: ...
+
+
 class SubmissionService:
     def __init__(self, store: SubmissionStore, forms: FormService) -> None:
         self.store, self.forms = store, forms
         self.attachments: AttachmentReader | None = None
         self.observer: SubmissionObserver | None = None
+        self.review_access: SubmissionReviewAccess | None = None
+
+    def snapshot(self, org: UUID, workspace: UUID, identifier: UUID) -> Submission:
+        row = self.store.snapshot(org, workspace, identifier)
+        if row is None:
+            raise ServiceError(404, "submitted_snapshot_not_found")
+        return row
 
     def access(
         self,
@@ -68,7 +79,11 @@ class SubmissionService:
             if self.observer:
                 self.observer.validate_write(actor, row)
         elif row.owner_id != user.id and (
-            row.state != "submitted" or "submission.read" not in permissions
+            row.state != "submitted"
+            or (
+                "submission.read" not in permissions
+                and not (self.review_access and self.review_access.can_read(actor, row))
+            )
         ):
             raise ServiceError(403, "submission_private")
         return row
@@ -136,6 +151,69 @@ class SubmissionService:
         )
         self.store.create(row)
         self.forms.event(actor, form, "submission.draft.created", row.id, number)
+        return DraftCreated(**row.model_dump(), initialization=public_runtime(result))
+
+    def create_revision(
+        self, actor: RequestContext, source: Submission, reason: str
+    ) -> DraftCreated:
+        form, version = self.forms.version(
+            actor, source.organization_id, source.workspace_id, source.form_id, source.form_number
+        )
+        self.forms.require(
+            actor,
+            source.organization_id,
+            source.workspace_id,
+            form.project_id,
+            "submission.create",
+            True,
+        )
+        user = self.forms.authorization.user(actor, source.organization_id)
+        if source.state != "submitted" or source.owner_id != user.id:
+            raise ServiceError(403, "submission_owner_required")
+        if version.state == "retired":
+            raise ServiceError(409, "form_retired")
+        visible = self.public(actor, source)
+        manager = "form.manage" in self.forms.permissions(
+            actor, source.organization_id, source.workspace_id, form.project_id
+        )
+
+        def copy_fields(fields: list[Component], values: Mapping[str, object]) -> dict[str, object]:
+            copied: dict[str, object] = {}
+            for field in fields:
+                if field.kind in {"calculated", "display", "file", "image", "signature"}:
+                    continue
+                if not manager and (
+                    field.permissions.write == "manager" or field.permissions.read == "manager"
+                ):
+                    continue
+                value = values.get(field.key)
+                if field.children and isinstance(value, list):
+                    value = [
+                        copy_fields(field.children, item)
+                        for item in value
+                        if isinstance(item, dict)
+                    ]
+                copied[field.key] = value
+            return copied
+
+        values = FormValues.model_validate(
+            {"fields": copy_fields(components(version.definition), visible.values.fields)}
+        )
+        result = self.forms.evaluate(actor, form, version, values, False)
+        row = Submission(
+            id=uuid7(),
+            organization_id=source.organization_id,
+            workspace_id=source.workspace_id,
+            form_id=source.form_id,
+            form_version_id=source.form_version_id,
+            form_number=source.form_number,
+            owner_id=source.owner_id,
+            values=result.values,
+        )
+        self.store.create(row)
+        self.forms.event(
+            actor, form, "submission.revision.draft.created", row.id, row.form_number, reason
+        )
         return DraftCreated(**row.model_dump(), initialization=public_runtime(result))
 
     def validate(
@@ -247,6 +325,8 @@ class SubmissionService:
             if row.submit_key == key:
                 return row
             raise ServiceError(409, "immutable_submission")
+        if self.observer:
+            self.observer.validate_write(actor, row)
         # Server-owned formulas are recalculated; strip previously computed values.
         _, version = self.forms.version(actor, org, workspace, row.form_id, row.form_number)
 

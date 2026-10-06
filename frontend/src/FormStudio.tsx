@@ -24,8 +24,8 @@ function errorCode(value: unknown): string {
 }
 const initial: Definition = { schema_version: 1, sections: [{ key: 'main', label: 'Main', components: [] }] };
 
-export function FormStudio({ api, organization, workspace, project, canManage, canManageLibrary, taskForm, taskDraft }: {
-  api: Client; organization: string; workspace: string; project: string; canManage: boolean; canManageLibrary: boolean; taskForm?: string | undefined; taskDraft?: string | undefined;
+export function FormStudio({ api, organization, workspace, project, canManage, canManageLibrary, taskForm, taskDraft, onSubmitted }: {
+  api: Client; organization: string; workspace: string; project: string; canManage: boolean; canManageLibrary: boolean; taskForm?: string | undefined; taskDraft?: string | undefined; onSubmitted?: ((id:string)=>void)|undefined;
 }) {
   const [libraries, setLibraries] = useState<components['schemas']['LibraryArtifact'][]>([]);
   const [library, setLibrary] = useState('');
@@ -172,7 +172,7 @@ export function FormStudio({ api, organization, workspace, project, canManage, c
     if (!draft || dirty.current) { setMessage('Save your draft before submitting.'); return; }
     await action(async () => {
       const result = await api.POST(`${draftPath}/submit`, { params: { path: { ...path, submission_id: draft.id } }, body: { expected_revision: draft.revision, idempotency_key: key.current, reason: String(data.get('reason')) } });
-      if (result.data) { setDraft(result.data); setDrafts(current => current.map(item => item.id === result.data.id ? result.data : item)); setValues(result.data.values.fields ?? {}); setMessage('Submission preserved as an immutable snapshot.'); } else setMessage(errorCode(result.error));
+      if (result.data) { setDraft(result.data); setDrafts(current => current.map(item => item.id === result.data.id ? result.data : item)); setValues(result.data.values.fields ?? {}); onSubmitted?.(result.data.id); setMessage('Submission preserved as an immutable snapshot.'); } else setMessage(errorCode(result.error));
     });
   }
   async function upload(key: string, file: File) {
@@ -202,6 +202,7 @@ export function FormStudio({ api, organization, workspace, project, canManage, c
       if (!exact.data) { setMessage(errorCode(exact.error)); return; }
       setVersions(current => [...current.filter(item => item.id !== exact.data.id), exact.data]); setNumber(exact.data.number);
       setDraft(result.data); setValues(result.data.values.fields ?? {}); setRuntime(undefined); dirty.current = false; key.current = result.data.submit_key ?? crypto.randomUUID();
+      if (result.data.state === 'submitted') onSubmitted?.(result.data.id);
     });
   }
   async function download(identifier: string) {

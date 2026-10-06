@@ -9,6 +9,7 @@ from sqlalchemy import (
     String,
     UniqueConstraint,
     select,
+    text,
     update,
 )
 from sqlalchemy.dialects.postgresql import JSONB
@@ -79,6 +80,14 @@ class WorkflowVersionRow(Base):
         Index(
             "ix_workflow_versions_cursor", "organization_id", "workspace_id", "workflow_id", "id"
         ),
+        Index(
+            "uq_workflow_active_form",
+            "organization_id",
+            "workspace_id",
+            "form_version_id",
+            unique=True,
+            postgresql_where=text("state='active'"),
+        ),
     )
     id: Mapped[UUID] = mapped_column(primary_key=True)
     organization_id: Mapped[UUID]
@@ -107,20 +116,32 @@ class WorkflowRepository:
     def __init__(self, session: Session) -> None:
         self.session = session
 
+    def active_for_form(
+        self, org: UUID, workspace: UUID, form_version: UUID
+    ) -> WorkflowVersion | None:
+        row = self.session.scalar(
+            select(WorkflowVersionRow).where(
+                WorkflowVersionRow.organization_id == org,
+                WorkflowVersionRow.workspace_id == workspace,
+                WorkflowVersionRow.form_version_id == form_version,
+                WorkflowVersionRow.state == "active",
+            )
+        )
+        return version_contract(row) if row else None
+
     def create(self, workflow: Workflow) -> None:
         self.session.add(WorkflowRow(**workflow.model_dump()))
         self.session.flush()
 
-    def get(self, org: UUID, workspace: UUID, identifier: UUID) -> Workflow | None:
-        row = self.session.scalar(
-            select(WorkflowRow)
-            .where(
-                WorkflowRow.organization_id == org,
-                WorkflowRow.workspace_id == workspace,
-                WorkflowRow.id == identifier,
-            )
-            .with_for_update()
+    def get(
+        self, org: UUID, workspace: UUID, identifier: UUID, lock: bool = False
+    ) -> Workflow | None:
+        query = select(WorkflowRow).where(
+            WorkflowRow.organization_id == org,
+            WorkflowRow.workspace_id == workspace,
+            WorkflowRow.id == identifier,
         )
+        row = self.session.scalar(query.with_for_update() if lock else query)
         return workflow_contract(row) if row else None
 
     def list_workflows(
@@ -160,18 +181,15 @@ class WorkflowRepository:
         self.session.flush()
 
     def version(
-        self, org: UUID, workspace: UUID, identifier: UUID, number: int
+        self, org: UUID, workspace: UUID, identifier: UUID, number: int, lock: bool = False
     ) -> WorkflowVersion | None:
-        row = self.session.scalar(
-            select(WorkflowVersionRow)
-            .where(
-                WorkflowVersionRow.organization_id == org,
-                WorkflowVersionRow.workspace_id == workspace,
-                WorkflowVersionRow.workflow_id == identifier,
-                WorkflowVersionRow.number == number,
-            )
-            .with_for_update()
+        query = select(WorkflowVersionRow).where(
+            WorkflowVersionRow.organization_id == org,
+            WorkflowVersionRow.workspace_id == workspace,
+            WorkflowVersionRow.workflow_id == identifier,
+            WorkflowVersionRow.number == number,
         )
+        row = self.session.scalar(query.with_for_update() if lock else query)
         return version_contract(row) if row else None
 
     def versions(

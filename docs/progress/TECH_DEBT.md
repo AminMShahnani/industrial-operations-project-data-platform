@@ -52,3 +52,8 @@ Phase 5 definition foundation: migration e049d194ba38 preserves prior forms,
 submissions, attachments and tasks. Missing runtime/UI integration remains current
 Phase 5 work; it is not reclassified as technical debt or deferred acceptance.
 Q-005 resolved; no new industry dependency or execution framework introduced.
+
+Phase 5 runtime verification: API/UI/runtime integration is implemented and under
+acceptance testing. Remaining assignment/browser/concurrency/gate verification is
+current Phase 5 work, not deferred debt. Typed notification intents hand off to
+Phase 6; existing TD-001 through TD-005 retain their owners.
