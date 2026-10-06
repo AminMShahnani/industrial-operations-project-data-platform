@@ -754,7 +754,10 @@ All 203 backend tests pass without skips in 175.74s; 11 frontend tests pass.
 Ruff lint/format (308 files), strict mypy (243 files), frontend lint/types/build,
 empty migration roundtrip/drift, generated API/OpenAPI drift and replay CLI checks
 pass. Database head stays a5fa16a227ff; no stored evidence is rewritten. Hosted
-exact-code verification is pending. Completed implementation increment:
+run [37514426474](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/37514426474)
+passes both jobs on exact code `ffac30f68a33964a1dbf45f2f14f65da30fe8d6e`, including
+Linux tests/types, real browser/worker flows, committed replay and lock contention,
+empty migration roundtrip/drift and generated contracts. Completed implementation increment:
 reviewed replay command, typed review, immutable audit and concurrency repair.
 No full phase criterion is accepted; Phase 6 stays 0/8 and Phase 7 is unstarted.
 Historical handoff reconciliation, management API/UI, email/invitations, generic

@@ -150,3 +150,5 @@ Historical handoff reconciliation remains a separate provenance-preserving slice
 ADR-0017 records the tenant-before-identity locking repair for a reproducible browser/
 invitation deadlock. It preserves existing authorization and revocation serialization;
 no domain or security policy is changed.
+Hosted run 37514426474 passes both jobs on exact code ffac30f after all local
+gates pass (203 backend/11 frontend). No additional unresolved question is introduced.

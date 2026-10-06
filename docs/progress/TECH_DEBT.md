@@ -130,7 +130,8 @@ Controlled notification replay is implemented with preview/apply, immutable audi
 fresh operator authority and unchanged source/audience/attempt history (ADR-0016).
 Eight new test cases include committed eight-way concurrent apply. All local gates
 pass (203 backend/11 frontend), including forced lock-order contention and real
-browser/worker flows. Hosted verification is pending. No new debt or acceptance
+browser/worker flows. Hosted run 37514426474 passes both jobs on exact code ffac30f,
+including Linux gates, committed concurrency and migrations. No new debt or acceptance
 deferral; historical handoff
 reconciliation, management API/UI and other remaining requirements stay in Phase 6.
 The reproducible user/organization lock-order deadlock is repaired through the

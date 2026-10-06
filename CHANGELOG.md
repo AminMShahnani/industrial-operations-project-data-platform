@@ -9,6 +9,8 @@
   remain Phase 6 work.
   Verify 203 backend/11 frontend tests and all local gates, including committed
   duplicate requeue and forced tenant/identity lock contention.
+  Hosted run 37514426474 passes both jobs on exact code ffac30f, including Linux
+  types/tests, real browser/worker flows, committed concurrency and migrations.
 - Repair tenant/user lock inversion using an organization-owned application contract
   (ADR-0017), preserving fresh authorization and revocation serialization.
 
