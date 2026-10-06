@@ -1,0 +1,113 @@
+import os
+from concurrent.futures import ThreadPoolExecutor
+from uuid import uuid7
+
+import pytest
+from alembic import command
+from alembic.config import Config
+from dramatiq import Worker
+from operations.composition import compose
+from operations.modules.audit.infrastructure.persistence import AuditRow
+from operations.modules.automation.application.contracts import MetadataAction, RuleDefinition
+from operations.modules.automation.application.events import DeliveryMessage
+from operations.modules.automation.domain.reliability import delivery_id
+from operations.modules.automation.infrastructure.queue import DramatiqPublisher
+from operations.modules.identity.application.contracts import Principal, RequestContext
+from operations.modules.organizations.application.contracts import OrganizationSettings
+from operations.modules.projects.application.contracts import LifecycleDefinition, ProjectContext
+from operations.platform.config import Settings
+from operations.platform.database import create_database_engine
+from operations.worker import register_actor
+from pydantic import SecretStr
+from sqlalchemy import func, select
+from sqlalchemy.orm import Session
+
+pytestmark = pytest.mark.e2e
+
+
+def test_real_redis_workers_concurrently_deduplicate_committed_action(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    url = os.environ.get("IOP_BROWSER_DATABASE_URL")
+    if not url:
+        pytest.skip("Committed worker test needs dedicated IOP_BROWSER_DATABASE_URL")
+    assert url.rsplit("/", 1)[-1].endswith("_browser_test")
+    settings = Settings(database_url=SecretStr(url), environment="test")  # type: ignore[call-arg]
+    monkeypatch.setenv("IOP_DATABASE_URL", url)
+    command.upgrade(Config("alembic.ini"), "head")
+    namespace = "phase6-worker-test-" + str(uuid7())
+    principal = Principal("https://worker-fixture.example.test", str(uuid7()))
+    context = RequestContext(principal, uuid7(), uuid7())
+    engine = create_database_engine(settings)
+    runtime = register_actor(settings, namespace)
+    worker = Worker(runtime.broker, worker_threads=4)
+    try:
+        # Retain committed fixture/audit history; never reset this database.
+        with Session(engine) as session, session.begin():
+            services = compose(session, principal)
+            services.identity.bootstrap(principal, "Dedicated worker fixture operator")
+            org = services.organizations.create(
+                context,
+                "Worker fixture",
+                OrganizationSettings(),
+                principal.subject,
+                "worker-fixture@example.com",
+            ).id
+            workspace = services.workspaces.create(context, org, "Worker fixture").id
+            project = services.projects.create(
+                context, org, workspace, "Worker fixture", ProjectContext(), LifecycleDefinition()
+            ).id
+            rule = services.automation.create(
+                context,
+                org,
+                workspace,
+                project,
+                "Phase notice",
+                RuleDefinition(
+                    trigger="project.phase.changed",
+                    actions=[MetadataAction(kind="set_metadata", description="Worker completed")],
+                ),
+            )
+            preview = services.automation.activate(
+                context, org, workspace, rule.id, 1, 1, True, None
+            )
+            services.automation.activate(
+                context, org, workspace, rule.id, 1, 1, False, preview.content_sha256
+            )
+            services.projects.transition(context, org, workspace, project, "active", 1, "begin")
+            source = session.scalar(
+                select(AuditRow).where(
+                    AuditRow.type == "project.transitioned", AuditRow.aggregate_id == project
+                )
+            )
+            assert source
+            message = DeliveryMessage(
+                organization_id=org, delivery_id=delivery_id(source.id, "automation")
+            )
+            source_id = source.id
+        worker.start()
+        publisher = DramatiqPublisher(runtime.broker)
+        with ThreadPoolExecutor(max_workers=4) as executor:
+            list(executor.map(lambda _: publisher.publish(message), range(8)))
+        runtime.broker.join("operations", timeout=15000)
+        worker.join()
+        with Session(engine) as session:
+            services = compose(session)
+            row = services.projects.require_access(context, org, workspace, project, "project.read")
+            assert row.context.description == "Worker completed" and row.version == 3
+            run = services.automation.store.event_runs(org, source_id)[0]
+            assert run.state == "completed" and run.attempts == 1
+            assert len(services.automation.store.receipts(org, run.id)) == 1
+            assert (
+                session.scalar(
+                    select(func.count())
+                    .select_from(AuditRow)
+                    .where(AuditRow.organization_id == org, AuditRow.type == "project.updated")
+                )
+                == 1
+            )
+    finally:
+        worker.stop()
+        runtime.broker.flush("operations")
+        runtime.close()
+        engine.dispose()

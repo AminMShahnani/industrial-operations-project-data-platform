@@ -3,8 +3,9 @@ from dataclasses import dataclass
 from sqlalchemy.orm import Session
 
 from operations.modules.audit.infrastructure.persistence import AuditRepository
+from operations.modules.automation.application.actions import ApplicationActions, UnavailableActions
 from operations.modules.automation.application.event_bus import AuditedEventBus
-from operations.modules.automation.application.service import EventCapture
+from operations.modules.automation.application.service import AutomationService, EventCapture
 from operations.modules.automation.infrastructure.persistence import AutomationRepository
 from operations.modules.files.application.service import FileService
 from operations.modules.files.infrastructure.adapters import ClamScanner, S3Storage
@@ -46,6 +47,7 @@ from operations.platform.config import Settings
 
 @dataclass(frozen=True)
 class Services:
+    automation: AutomationService
     workflows: WorkflowService
     workflow_runtime: WorkflowRuntime
     scheduling: SchedulingService
@@ -114,6 +116,12 @@ def compose(
     submissions.review_access = workflow_runtime
     submissions.observer = SubmissionLifecycle(tasks, workflow_runtime)
     return Services(
+        AutomationService(
+            AutomationRepository(session),
+            forms,
+            audit,
+            ApplicationActions(forms, submissions, tasks, workflow_runtime, UnavailableActions()),
+        ),
         workflows,
         workflow_runtime,
         schedules,

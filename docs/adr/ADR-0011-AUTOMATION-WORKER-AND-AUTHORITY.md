@@ -74,3 +74,39 @@ Automatic backoff stops by attempt eight; controlled replay retains all attempts
 and refuses at the overall twenty-attempt bound. A broker publish followed by a
 transaction crash may republish the same scoped delivery ID; receipts and terminal
 run state, not Redis acknowledgement, determine completed work.
+
+## Application action and consumer boundaries
+Controlled metadata initially means the existing project description field; it
+cannot change lifecycle, grants, memberships or governed submissions. Related
+records use the owning master-data service, immutable type schema and exact rule
+scope. Form tasks pin a published form version and retain current eligible
+assignment snapshots. One action creates a one-time schedule as the audited
+materialization batch; its receipt points to that schedule, with resulting tasks
+retaining its exact version. Due dates derive from immutable source-event time,
+not retry time. Generic tasks without a form remain a distinct pending handler;
+they are never silently converted into form tasks.
+
+Starting a workflow explicitly pins workflow ID and version number. Execution
+requires that exact version still be active and match the submitted form snapshot.
+An existing instance with that pin is returned idempotently; another binding
+conflicts. This action never casts votes or bypasses independent approval. Safe
+condition lookups use the source's currently authorized public scalar fields;
+an administrator cannot read another owner's private draft through automation.
+
+Consumer orchestration locks the scoped delivery and executes each run inside a
+database savepoint. Failure rolls back all actions, receipts, audits and caused
+events from that attempt, then records bounded failure evidence outside its
+savepoint. Different runs can succeed independently. Dispatcher queries filter
+their configured consumer in PostgreSQL before pagination, so pending notification
+intents cannot starve automation dispatch. Production adapters enqueue durable
+external intents rather than doing network effects inside these savepoints.
+Database errors are classified without retaining SQL parameters or exception chains
+in worker logs. A lost database connection rolls back the delivery transaction;
+durable dispatcher redelivery can recover it.
+
+Workflow pin compatibility preflight on development, isolated test and retained
+browser databases found zero stored start-workflow actions without a version
+number. Previous checkpoints had no production workflow handler or public rule
+API. This adds a required action contract without rewriting any immutable version.
+If an external pre-rollout installation contains an unpinned action, preserve it
+and create/review a new pinned version; never infer a historical target silently.

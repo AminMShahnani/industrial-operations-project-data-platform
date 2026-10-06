@@ -565,3 +565,30 @@ https://github.com/AminMShahnani/industrial-operations-project-data-platform/act
 Both backend/frontend jobs pass, including Linux types, real PKCE browser flows,
 full migration roundtrip/drift and generated contracts. Development/test/browser
 databases are at 8323b0dbac0e. Phase 6 remains in progress with 0/8 accepted.
+
+### Phase 6 authorized actions and real worker - 2026-10-06
+Added handlers for controlled project description, scoped typed related records,
+exact-version form tasks and explicitly pinned workflows through owning application
+services. Source conditions use currently authorized public scalar fields; private
+drafts cannot be read by another administrator. Form-task receipts identify their
+one-time materialization schedule; task due dates retain source-event time.
+Workflow actions preserve existing exact bindings and cannot cast approval votes.
+
+Added consumer orchestration with scoped delivery locks and per-run savepoints.
+Transient failures roll back all actions/receipts/audits/caused events before failure
+evidence is retained. A real Dramatiq actor and bounded scoped dispatcher use
+ID-only messages and PostgreSQL retry state. Consumer filters apply before paging;
+pending notification intents cannot starve automation dispatch. SQL exception chains
+are suppressed from worker errors. Notification/webhook/tag/generic-task adapters
+remain explicitly unavailable until implemented, rather than silently succeeding.
+
+Local gates: 156 backend tests without skips in 115.18s; eight concurrent real Redis
+deliveries yield one metadata effect/attempt/receipt. Seven new action tests cover
+private source/target scope, condition skipping, pins, revocation, rollback/retry and
+workflow governance. Eleven frontend tests, Ruff lint/format, strict Windows/Linux
+mypy (220 files), frontend lint/types/build, Alembic and OpenAPI drift pass.
+Workflow action now requires an exact number; read-only preflight found zero
+unpinned workflow actions in development/test/browser databases. No retained
+definition or history is rewritten; no schema migration is required.
+Phase 6 remains 0/8; all remaining handlers, notifications/invitations, trigger
+generation, API/UI, telemetry and TD-005 reconciliation remain current-phase work.

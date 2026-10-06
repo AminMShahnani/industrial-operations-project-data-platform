@@ -79,3 +79,9 @@ No production worker rollout or new authority bypass is introduced.
 
 Ledger checkpoint e1e84af passes hosted run 37462108788 and all local checks.
 No remaining Phase 6 requirement is deferred or converted into technical debt.
+
+Action/consumer increment: four authorized action families and the real worker are
+implemented and tested. Generic tasks, tags/flags, notification/webhook adapters,
+timer/due events, email/invitations, API/UI, telemetry and TD-005 reconciliation remain
+required Phase 6 work. No production rollout or acceptance is claimed for partial
+adapters. The existing migration and operational-history safeguards remain in force.

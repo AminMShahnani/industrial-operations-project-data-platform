@@ -90,3 +90,7 @@ ADR-0011 records atomic capture-time matching and retained execution evidence.
 
 Local and hosted ledger verification pass on e1e84af / run 37462108788. Q-006 stays
 resolved; remaining Phase 6 work does not require reopening its authority decision.
+
+Action/consumer increment: no new security/domain ambiguity. ADR-0011 records
+exact workflow action pins, source privacy, task materialization receipts and atomic
+consumer/savepoint boundaries. Q-006 delegation is verified by real worker tests.

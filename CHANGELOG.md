@@ -13,6 +13,11 @@
 - Verify 148 backend and 11 frontend tests plus lint/types/build/contracts locally.
   Production action handlers, workers and notifications remain in progress;
   Phase 6 remains unaccepted (0/8).
+- Add authorized metadata/related-record/form-task/pinned-workflow actions and a
+  durable savepoint-based automation consumer, Dramatiq actor and scoped dispatcher.
+- Verify atomic rollback/retry, source privacy, target scope and concurrent actual
+  Redis worker deduplication. Local suite: 156 backend and 11 frontend tests pass.
+  Remaining Phase 6 adapters, notifications, triggers and UI stay in progress.
 
 ## Unreleased - Phase 5 complete (2026-10-06)
 - Accept mandatory independent approval in ADR-0010; administrators cannot self-approve.

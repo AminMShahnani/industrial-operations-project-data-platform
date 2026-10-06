@@ -1,14 +1,16 @@
 # Phase 6 automation operations
 
-Status: delegated ledger checkpoint; no Phase 6 acceptance or worker rollout.
+Status: authorized action/consumer increment; no Phase 6 acceptance or production rollout.
 
 ## Current setup
 `uv sync --frozen` installs the ADR-0011 Dramatiq/Redis transport. Broker messages
 contain organization/delivery UUIDs only. PostgreSQL migration `8323b0dbac0e`
 adds typed outbox delivery, immutable activated rules and retained run evidence.
 Source writes now capture supported operational events atomically with their audit.
-Action handlers, consumer worker CLI, notifications and email are still being
-implemented. Do not launch production workers against this checkpoint.
+Metadata/related-record/form-task/pinned-workflow handlers and the automation
+consumer are implemented. Generic tasks without forms, tags/flags, webhooks,
+notifications and email remain incomplete. Do not roll out production workers
+before the complete Phase 6 acceptance gates pass.
 
 Run unit/boundary tests with `uv run pytest backend/tests/test_phase6_reliability.py
 backend/tests/test_boundaries.py`. The real Redis transport test additionally needs
@@ -42,8 +44,33 @@ fresh delegation and a reason. It retains prior attempts/receipts; it never rese
 history. Automatic backoff stops by attempt eight and the total retained attempt
 bound is twenty. A publish/commit crash republishes the same scoped IDs. External
 effects must use their own durable intents and bounded adapters before rollout.
-The integration tests use a typed executor fixture; no public replay endpoint or
-production action worker is exposed yet.
+The ledger tests use a typed executor fixture; action tests exercise the real owning
+services and actual concurrent Redis worker. No public replay endpoint is exposed yet.
+
+## Automation worker and dispatcher
+In development, start the configured actor using:
+`uv run dramatiq operations.automation_worker:broker --processes 1 --threads 4`.
+The deployment process supplies the existing database/Redis/S3 settings and must
+have access to tenant-scoped secrets when external adapters are implemented.
+Actor messages contain only organization/delivery UUIDs; malformed IDs and database
+errors have stable sanitized errors. Every delivery opens its own database transaction;
+per-run savepoints retain successful independent runs while rolling back failed ones.
+
+Preview one bounded dispatcher batch with
+`uv run python scripts/automation_tick.py --organization <UUID> --subject <trusted-subject>`.
+Add `--apply` to publish up to 100 due automation deliveries. The configured trusted
+issuer and current organization-administrator grant are required; this follows the
+existing operator CLI trust model and is not an unauthenticated network endpoint.
+Invoke periodically (for example every five seconds). Dispatched deliveries are
+revisited after 60 seconds if no durable completion was recorded. Run retries use
+their persisted next_at/backoff. Redis acknowledgement is not completion evidence.
+
+The dispatcher currently filters `automation` before pagination and does not
+dispatch pending `notifications` intents. Unconfigured action families fail closed
+during validation. An existing workflow binding is reused only when its exact
+version matches; workflows must still receive independent human approval.
+Form-task receipts refer to their one-time schedule batch; concrete tasks retain
+exact form/schedule versions, original assignment recipients and event-time due dates.
 
 ## Remaining rollout requirements
 Complete scoped consumer/action handlers, bounded backoff/dead letters,

@@ -26,7 +26,10 @@ No unsupported project-wide percentage is reported.
 Phase 6 typed event/delivery contracts, bounded retry/causation rules and tested
 Dramatiq transport. Durable outbox/rule/run persistence, transactional source capture,
 delegated authority, receipts/attempts and replay application services are implemented.
-Production action handlers, worker/notification integration and UI remain current-phase
+Authorized project metadata, related-record, form-task and pinned workflow handlers
+are implemented through owning services. A durable automation consumer, real
+Dramatiq worker and scoped dispatcher are implemented and tested. Generic tasks,
+tags/flags, webhook/notification adapters, periodic triggers and UI remain current-phase
 work. 0/8 accepted; Q-006 is resolved.
 Phase 5 remains accepted on d91dfce / hosted run 37454353238.
 
@@ -39,8 +42,8 @@ Q-004 resolved by user: shared task claimed by one eligible member.
 Legacy export absent.
 
 ## Next 5 tasks
-1. Implement authorized action handlers through owning application services.
-2. Add durable consumer/worker orchestration, timer and due/overdue generation.
+1. Implement generic task, tag/flag and notification/webhook action handlers.
+2. Add timer and due/overdue generation, delivery adapters and telemetry.
 3. Expose scoped rule/run management and audited replay through typed API/UI.
 4. Integrate notifications/invitations, scoped UI and TD-005 reconciliation.
 5. Verify all Phase 6 local/hosted criteria before any Phase 7 work.
@@ -76,6 +79,14 @@ Hosted [37462108788](https://github.com/AminMShahnani/industrial-operations-proj
 passes both jobs on exact code commit `e1e84af7c04bd2a616c93d7e9ed256cd5b288ca2`,
 including Linux tests/types, real browser identities, migrations and contract drift.
 This verifies the ledger checkpoint; Phase 6 remains 0/8 accepted.
+
+Action/consumer increment: 156 backend tests pass without skips in 115.18s,
+including eight concurrent real Redis messages producing one committed effect.
+New integration tests cover exact form/workflow pins, private source/target scope,
+safe condition skipping, revocation, atomic multi-action rollback and bounded retry.
+11 frontend tests pass. Ruff lint/format, Windows/Linux strict mypy (220 files),
+frontend lint/types/build, Alembic/OpenAPI drift pass. Hosted increment check pending.
+No migration is added; existing development/test/browser head remains 8323b0dbac0e.
 
 ## Migration status
 Development, isolated test and browser databases are at 8323b0dbac0e.

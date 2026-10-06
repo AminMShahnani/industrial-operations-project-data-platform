@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Literal
 from uuid import UUID
 
 from sqlalchemy import (
@@ -10,6 +11,7 @@ from sqlalchemy import (
     UniqueConstraint,
     select,
     text,
+    true,
     update,
 )
 from sqlalchemy.dialects.postgresql import JSONB
@@ -273,11 +275,17 @@ class AutomationRepository:
             else None
         )
 
-    def due_deliveries(self, org: UUID, now: datetime) -> list[Delivery]:
+    def due_deliveries(
+        self,
+        org: UUID,
+        now: datetime,
+        consumer: Literal["automation", "notifications"] | None = None,
+    ) -> list[Delivery]:
         rows = self.session.scalars(
             select(DeliveryRow)
             .where(
                 DeliveryRow.organization_id == org,
+                DeliveryRow.consumer == consumer if consumer else true(),
                 DeliveryRow.state.in_(["pending", "retry", "dispatched"]),
                 DeliveryRow.next_at <= now,
             )

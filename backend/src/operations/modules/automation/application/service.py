@@ -510,9 +510,14 @@ class AutomationService:
             )
         return changed
 
-    def dispatch(self, org: UUID, publisher: JobPublisher) -> int:
+    def dispatch(
+        self,
+        org: UUID,
+        publisher: JobPublisher,
+        consumer: Literal["automation", "notifications"] | None = None,
+    ) -> int:
         now = datetime.now(UTC)
-        rows = self.store.due_deliveries(org, now)
+        rows = self.store.due_deliveries(org, now, consumer)
         for row in rows:
             publisher.publish(DeliveryMessage(organization_id=org, delivery_id=row.id))
             self.store.save_delivery(
