@@ -31,7 +31,7 @@ are implemented through owning services. A durable automation consumer, real
 Dramatiq worker and scoped dispatcher are implemented and tested. Audited private
 storage reconciliation is implemented and verified locally/hosted (TD-005).
 Bounded scheduled timers and task due/overdue source generation are implemented
-and verified locally; periodic evidence is immutable and task lifecycle stays intact.
+and verified locally/hosted; periodic evidence is immutable and task lifecycle stays intact.
 Generic tasks,
 tags/flags, webhook/notification adapters and UI remain current-phase
 work. 0/8 accepted; Q-006 is resolved.
@@ -123,7 +123,11 @@ private drafts, scoped revocation, 104-task pending pagination and duplicate eff
 Real committed concurrency verifies eight timer ticks and eight deadline ticks
 emit two occurrences/two marks total, with locked-task revisit and task state preserved.
 Migration a39df7b251c0 is applied to all three local databases; populated downgrade
-refuses before evidence removal. Hosted verification is pending this increment.
+refuses before evidence removal. Hosted
+[37499621510](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/37499621510)
+passes both jobs on exact code `3beb19d610d67cbabb6cfb9e8025e1e99f762b06`, including
+Linux tests/types, prior browser/worker flows, committed periodic concurrency,
+source/evidence guards, migration roundtrip/drift and generated API contracts.
 ADR-0013 and the runbook record the policy. Phase 6 remains 0/8 accepted.
 
 ## Migration status

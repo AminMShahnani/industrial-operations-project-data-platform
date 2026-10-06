@@ -660,7 +660,10 @@ Eight concurrent timer ticks and eight independent concurrent deadline ticks emi
 two slots/two marks total; a separately locked task is safely revisited after release.
 All 178 backend tests pass without skips in 140.19s; 11 frontend tests pass.
 Ruff lint/format, Windows/Linux strict mypy (229 files), frontend lint/types/build,
-generated-contract/OpenAPI drift and migration gates pass. Hosted verification is
-pending this increment. Phase 6 stays 0/8; no Phase 7 work or deferred acceptance.
+generated-contract/OpenAPI drift and migration gates pass. Hosted run
+https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/37499621510
+passes both jobs on exact code 3beb19d610d67cbabb6cfb9e8025e1e99f762b06, including
+Linux tests/types, browser/worker flows, committed periodic concurrency and migration/
+contract checks. Phase 6 stays 0/8; no Phase 7 work or deferred acceptance.
 Generic tasks, tags/flags, notification/webhook/email/invitation adapters, scoped
 API/UI and queue/run telemetry remain required Phase 6 implementation work.
