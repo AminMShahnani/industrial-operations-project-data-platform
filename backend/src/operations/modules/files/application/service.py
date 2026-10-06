@@ -101,6 +101,7 @@ class FileService:
             object_key=key,
         )
         self._created_keys.append(key)
+        self.store.lock_key(key, wait=True)
         self.storage.put(key, data, content_type)
         self.store.add(attachment)
         form = self.submissions.forms.form(actor, org, workspace, parent.form_id)

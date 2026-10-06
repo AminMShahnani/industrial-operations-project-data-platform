@@ -100,3 +100,9 @@ workflow application-boundary refinement introduces no new domain decision.
 
 Final refinement 4f8f6da passes hosted run 37466610016. No unresolved question blocks
 the next Phase 6 implementation work; Q-006 remains resolved.
+
+Private-storage reconciliation: ADR-0012 implements the already required TD-005
+boundary using current tenant administrator authority and the existing trusted CLI
+model. Grace, reference preservation, upload serialization, conditional deletion and
+retained intent replay are explicit and tested. No unresolved domain/security question
+or new tenant/platform access bypass; no retained data was migrated or rewritten.

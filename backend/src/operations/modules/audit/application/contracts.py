@@ -32,6 +32,9 @@ class AuditDetails(Command):
     rule_version_id: UUID | None = None
     trigger_actor_id: UUID | None = None
     authorization_kind: str | None = None
+    storage_etag: str | None = Field(default=None, max_length=128)
+    storage_modified_at: datetime | None = None
+    storage_grace_seconds: int | None = Field(default=None, ge=86400, le=2592000)
 
 
 class AuditEvent(Command):
@@ -52,3 +55,7 @@ class AuditEvent(Command):
 
 class AuditWriter(Protocol):
     def append(self, event: AuditEvent) -> None: ...
+
+
+class AuditReader(Protocol):
+    def get(self, org: UUID, identifier: UUID) -> AuditEvent | None: ...

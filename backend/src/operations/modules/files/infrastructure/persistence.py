@@ -1,8 +1,10 @@
+import hashlib
 from uuid import UUID
 
-from sqlalchemy import CheckConstraint, ForeignKeyConstraint, Index, String, select
+from sqlalchemy import CheckConstraint, ForeignKeyConstraint, Index, String, func, select
 from sqlalchemy.orm import Mapped, Session, mapped_column
 
+from operations.contracts import ServiceError
 from operations.modules.files.application.contracts import Attachment
 from operations.platform.database import Base
 
@@ -44,8 +46,27 @@ class FileRepository:
         self.session = session
 
     def add(self, attachment: Attachment) -> None:
+        self.lock_key(attachment.object_key, wait=True)
         self.session.add(FileRow(**attachment.model_dump()))
         self.session.flush()
+
+    def lock_key(self, key: str, wait: bool = False) -> bool:
+        # Upload and reconciliation share a transaction-held lock even before a row exists.
+        identifier = int.from_bytes(hashlib.sha256(key.encode()).digest()[:8], signed=True)
+        if wait:
+            self.session.execute(select(func.pg_advisory_xact_lock(identifier)))
+            return True
+        if self.session.connection().get_isolation_level() != "READ COMMITTED":
+            raise ServiceError(503, "cleanup_isolation_not_supported")
+        return bool(self.session.scalar(select(func.pg_try_advisory_xact_lock(identifier))))
+
+    def referenced(self, org: UUID, key: str) -> bool:
+        return (
+            self.session.scalar(
+                select(FileRow.id).where(FileRow.organization_id == org, FileRow.object_key == key)
+            )
+            is not None
+        )
 
     def get(self, org: UUID, workspace: UUID, identifier: UUID) -> Attachment | None:
         row = self.session.scalar(

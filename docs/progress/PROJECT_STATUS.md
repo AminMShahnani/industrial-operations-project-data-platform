@@ -45,7 +45,7 @@ Legacy export absent.
 1. Implement generic task, tag/flag and notification/webhook action handlers.
 2. Add timer and due/overdue generation, delivery adapters and telemetry.
 3. Expose scoped rule/run management and audited replay through typed API/UI.
-4. Integrate notifications/invitations, scoped UI and TD-005 reconciliation.
+4. Integrate notifications/invitations and scoped UI.
 5. Verify all Phase 6 local/hosted criteria before any Phase 7 work.
 
 ## Test status
@@ -94,6 +94,17 @@ Hosted refinement [37466610016](https://github.com/AminMShahnani/industrial-oper
 passes both jobs on final code `4f8f6dab18e491ca10a80fdbedfa048c2d21dfb7`.
 Phase 6 remains in progress with 0/8 accepted; no Phase 7 work.
 No migration is added; existing development/test/browser head remains 8323b0dbac0e.
+
+Private-storage reconciliation increment: 166 backend tests pass without skips in
+113.16s, including ten new cleanup tests. 11 frontend tests pass. Ruff lint/format,
+Windows/Linux strict mypy (223 files), frontend lint/types/build, Alembic/OpenAPI
+drift and CLI help pass. Cleanup preserves referenced/recent/unknown objects,
+rechecks authorization and references, serializes with in-flight uploads and uses
+conditional deletion. Immutable committed intents survive delete/DB-commit crashes;
+replay records missing objects without repeating effects. Actual S3-compatible
+pagination and wrong/stale/matching ETag behavior pass. ADR-0012 records boundaries.
+TD-005 implementation is complete locally; hosted verification is pending this
+increment. No migration or retained-data rewrite. Phase 6 remains 0/8 accepted.
 
 ## Migration status
 Development, isolated test and browser databases are at 8323b0dbac0e.

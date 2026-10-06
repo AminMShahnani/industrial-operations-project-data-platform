@@ -7,6 +7,7 @@ from operations.modules.automation.application.actions import ApplicationActions
 from operations.modules.automation.application.event_bus import AuditedEventBus
 from operations.modules.automation.application.service import AutomationService, EventCapture
 from operations.modules.automation.infrastructure.persistence import AutomationRepository
+from operations.modules.files.application.reconciliation import FileReconciler
 from operations.modules.files.application.service import FileService
 from operations.modules.files.infrastructure.adapters import ClamScanner, S3Storage
 from operations.modules.files.infrastructure.persistence import FileRepository
@@ -55,6 +56,7 @@ class Services:
     forms: FormService
     submissions: SubmissionService
     files: FileService
+    file_reconciliation: FileReconciler
     identity: IdentityService
     authorization: Authorization
     organizations: OrganizationService
@@ -129,6 +131,9 @@ def compose(
         forms,
         submissions,
         files,
+        FileReconciler(
+            FileRepository(session), S3Storage(settings), organizations, AuditRepository(session)
+        ),
         identity,
         authorization,
         organizations,

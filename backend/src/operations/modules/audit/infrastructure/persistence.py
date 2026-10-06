@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import DateTime, Index, String
+from sqlalchemy import DateTime, Index, String, select
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, Session, mapped_column
 
@@ -38,3 +38,15 @@ class AuditRepository:
             values.update(actor_issuer=self.principal.issuer, actor_subject=self.principal.subject)
         self.session.add(AuditRow(**values, payload=event.payload.model_dump(mode="json")))
         self.session.flush()
+
+    def get(self, org: UUID, identifier: UUID) -> AuditEvent | None:
+        row = self.session.scalar(
+            select(AuditRow).where(AuditRow.organization_id == org, AuditRow.id == identifier)
+        )
+        return (
+            AuditEvent.model_validate(
+                {name: getattr(row, name) for name in AuditEvent.model_fields}
+            )
+            if row
+            else None
+        )

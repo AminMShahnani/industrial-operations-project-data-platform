@@ -2,6 +2,9 @@
 
 ## Unreleased - Phase 6 in progress (2026-10-06)
 
+- Implement bounded tenant-private orphan reconciliation with explicit grace,
+  fresh authority/reference checks, shared upload locks, immutable requested/result
+  audits, conditional S3 deletion and resumable crash recovery (ADR-0012, TD-005).
 - Record eight automation/notification acceptance criteria and ADR-0011.
 - Add typed event/delivery contracts, bounded retry/causation rules and Dramatiq
   transport with five tests, including real Redis. Full local suite: 141 backend

@@ -3,6 +3,7 @@ import struct
 from contextlib import closing
 from typing import TYPE_CHECKING
 from urllib.parse import quote
+from uuid import UUID
 
 import boto3
 from botocore.config import Config
@@ -12,6 +13,7 @@ if TYPE_CHECKING:
     from mypy_boto3_s3 import S3Client
 
 from operations.contracts import ServiceError
+from operations.modules.files.application.reconciliation import InventoryPage, StoredObject
 from operations.platform.config import Settings
 
 
@@ -102,3 +104,62 @@ class S3Storage:
                 )
         except (BotoCoreError, ClientError) as error:
             raise ServiceError(503, "storage_unavailable") from error
+
+    def inventory(self, org: UUID, cursor: str | None) -> InventoryPage:
+        try:
+            with closing(self.client()) as client:
+                if cursor:
+                    result = client.list_objects_v2(
+                        Bucket=self.settings.s3_bucket,
+                        Prefix=f"organizations/{org}/",
+                        MaxKeys=100,
+                        ContinuationToken=cursor,
+                    )
+                else:
+                    result = client.list_objects_v2(
+                        Bucket=self.settings.s3_bucket,
+                        Prefix=f"organizations/{org}/",
+                        MaxKeys=100,
+                    )
+                return InventoryPage(
+                    objects=[
+                        StoredObject(
+                            key=item["Key"], etag=item["ETag"], modified_at=item["LastModified"]
+                        )
+                        for item in result.get("Contents", [])
+                    ],
+                    cursor=result.get("NextContinuationToken"),
+                )
+        except BotoCoreError, ClientError:
+            raise ServiceError(503, "storage_inventory_unavailable") from None
+
+    def inspect(self, key: str) -> StoredObject | None:
+        try:
+            with closing(self.client()) as client:
+                result = client.head_object(Bucket=self.settings.s3_bucket, Key=key)
+                return StoredObject(
+                    key=key, etag=result["ETag"], modified_at=result["LastModified"]
+                )
+        except ClientError as error:
+            if error.response["Error"]["Code"] in {"404", "NoSuchKey", "NotFound"}:
+                return None
+            raise ServiceError(503, "storage_inventory_unavailable") from None
+        except BotoCoreError:
+            raise ServiceError(503, "storage_inventory_unavailable") from None
+
+    def delete_if_match(self, key: str, etag: str) -> bool:
+        try:
+            with closing(self.client()) as client:
+                client.delete_object(Bucket=self.settings.s3_bucket, Key=key, IfMatch=etag)
+                return True
+        except ClientError as error:
+            if error.response["Error"]["Code"] in {
+                "412",
+                "PreconditionFailed",
+                "409",
+                "ConditionalRequestConflict",
+            }:
+                return False
+            raise ServiceError(503, "storage_cleanup_unavailable") from None
+        except BotoCoreError:
+            raise ServiceError(503, "storage_cleanup_unavailable") from None

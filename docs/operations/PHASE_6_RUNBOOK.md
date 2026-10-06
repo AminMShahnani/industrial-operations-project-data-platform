@@ -77,5 +77,46 @@ Complete scoped consumer/action handlers, bounded backoff/dead letters,
 audited replay API/UI and fresh recipient/target access. Redis does not own business
 success or durable retry evidence. Notification/email and invitation adapters must
 preserve private data and credentials; SMTP uncertainty must not silently resend.
-TD-005 orphan reconciliation requires explicit grace, file-owned reference checks
-and audited idempotent cleanup. Document guarded migration rollback before rollout.
+TD-005 orphan reconciliation is implemented below. Other rollout requirements
+remain current-phase work; no production worker rollout is authorized by this checkpoint.
+
+## Private upload orphan reconciliation
+ADR-0012 owns the cleanup policy and race/crash boundaries. Preview one bounded
+tenant batch using the configured trusted issuer and known current tenant administrator:
+
+```powershell
+uv run python scripts/reconcile_storage.py --organization <UUID> --subject <trusted-subject>
+```
+
+The default grace is 24 hours; `--grace-hours` accepts 24–720. Inventory is capped at
+100 objects, returns counts and `next_cursor`, and does not expose filenames or
+contents. Pass a returned cursor using `--cursor` to inspect the next page. Only
+canonical upload paths qualify. Every file row remains a reference, including unused
+attachments. Unknown paths, referenced files and objects within grace are preserved.
+
+Apply a reviewed batch with `--apply --reason "Reconcile failed-upload objects"`.
+The CLI commits immutable requested intents before any deletion and prints their
+UUIDs. Each intent uses a separate transaction, fresh tenant authority, the shared
+upload lock and fresh reference/age/ETag checks. Busy, changed and referenced objects
+remain. Conditional S3 deletion has no unconditional fallback. Audit results record
+deleted/missing/referenced/changed/busy/failed; storage failure is resumable.
+
+Retry a retained request with:
+
+```powershell
+uv run python scripts/reconcile_storage.py --organization <UUID> --subject <original-subject> --apply --resume <intent-UUID>
+```
+
+Resume retains the original scope, ETag, grace, reason and requester. Revoked or
+suspended authority denies execution. A delete/DB-commit crash leaves requested
+evidence and a later missing outcome; it does not recreate or repeatedly delete
+objects. Audit failures stop processing, and pending intent UUIDs remain available
+in the requested evidence. Do not infer successful deletion from process exit alone.
+The cleanup adapter requires READ COMMITTED and conditional-delete support; other
+isolation levels or unsupported storage fail closed. Real storage conformance tests
+verify wrong/stale ETags preserve data before testing a matching deletion.
+
+No migration is required and no retained file/audit row is rewritten. Stop the CLI
+to disable cleanup. This does not implement attachment retention or version deletion.
+Restore any incorrectly removed object from a verified object-store backup while
+preserving its original reference and cleanup history.

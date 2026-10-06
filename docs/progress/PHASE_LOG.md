@@ -605,3 +605,27 @@ Final action/worker code 4f8f6dab18e491ca10a80fdbedfa048c2d21dfb7 passes hosted 
 https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/37466610016
 Both jobs pass, including full Linux backend tests, concurrent real Redis workers,
 browser flows, migrations and contracts. Phase 6 acceptance remains 0/8.
+
+### Phase 6 private-storage reconciliation - 2026-10-06
+Read AGENTS.md and numbered docs in order before implementation. ADR-0012 records
+the file-owned policy implementing TD-005, with no customer/industry Core behavior.
+The trusted scoped CLI previews one 100-object page, accepts a 24–720 hour grace,
+and preserves every referenced file, recent object and unknown object path.
+Apply commits immutable requested evidence before external effects, rechecks the
+original requester's current tenant authority and uses shared transaction-held
+upload locks, fresh references and ETag/age checks. Conditional deletion never
+falls back to unconditional cleanup. Per-intent result transactions and --resume
+preserve evidence across delete/DB-commit crashes. READ COMMITTED is enforced to
+avoid stale reference snapshots. No migration or operational-history rewrite.
+
+Ten new tests cover references added after preview, malformed/cross-tenant paths,
+grace/reason validation, revocation/platform isolation, upload-lock contention,
+changed objects, adapter failure, crash recovery, transaction isolation and real
+S3-compatible bounded inventory/conditional-delete conformance. All 166 backend
+tests pass without skips in 113.16s, including prior browser/worker/migration flows.
+11 frontend tests pass; Ruff lint/format, Windows/Linux strict mypy (223 files),
+frontend lint/types/build, Alembic/OpenAPI drift and CLI help pass. Hosted verification
+is pending this code checkpoint. P6-07 gains its reconciliation requirement;
+no complete P6 criterion is claimed. Phase 6 stays 0/8 and Phase 7 remains unstarted.
+All remaining action handlers, notifications/invitations, timer/due triggers,
+API/UI and queue/run telemetry remain required Phase 6 work, with none deferred.
