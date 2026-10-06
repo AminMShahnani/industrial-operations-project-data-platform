@@ -1,8 +1,8 @@
 # Project Status
 
-Status: PHASE 3 ACCEPTED
-Current phase: Phase 3 - form engine
-Last updated: 2026-10-05
+Status: PHASE 4 PREPARATION - ASSIGNMENT DECISION PENDING
+Current phase: Phase 4 - scheduling and tasks
+Last updated: 2026-10-06
 Overall completion: 4/11 phases accepted. Phase 0, Phase 1, Phase 2 and Phase 3 each
 satisfy 8/8 criteria. Phase 3: P3-01 through P3-08 PASS.
 No unsupported project-wide percentage is reported.
@@ -17,17 +17,20 @@ No unsupported project-wide percentage is reported.
 - Autosave, immutable submissions/signatures and private fail-closed attachments.
 
 ## In progress
-None. Phase 3 accepted; Phase 4 has not started.
+Phase 4 source review and acceptance checklist complete. P4-01 through P4-08:
+0/8 accepted. ADR-0009 is proposed; assignment-dependent implementation awaits Q-004.
 
 ## Blocked
-None. Q-003 is resolved by user; ADR-0007 accepted. Legacy export not supplied.
+Q-004: shared claimed group task versus separate per-recipient tasks. This determines
+claim/completion authority and submission ownership. User question pending; no
+assignment policy or schema has been implemented by assumption. Legacy export absent.
 
 ## Next 5 tasks
-1. Await the next phase instruction.
-2. Review Phase 4 scheduling/task requirements and write acceptance criteria.
-3. Resolve significant decisions through ADRs before implementation.
-4. Implement scheduling and connect authoritative shift default context.
-5. Run all Phase 4 gates before advancing to Phase 5 workflow.
+1. Resolve Q-004 and accept ADR-0009 with the selected assignment semantics.
+2. Add typed schedule, shift, occurrence and reminder contracts and guarded migrations.
+3. Implement bounded recurrence, idempotent materialization and scoped task execution.
+4. Add My Work/admin UI, reminders, shift defaults and positive/negative tests.
+5. Run all local/hosted gates and record Phase 4 acceptance before Phase 5.
 
 ## Test status
 90 backend tests pass locally without skips, including real Keycloak PKCE browser,

@@ -25,3 +25,9 @@ Phase 3 supplies trusted default-context ports. Scheduling/workflow providers ar
 owning-phase dependencies, without inferring an approved state. Scanner provisioning
 and patched engine/signature maintenance are deployment responsibilities. Missing
 scanners always deny uploads.
+
+Phase 4 preparation (2026-10-06): no new implementation debt introduced. Existing
+Phase 6 worker/notification and Phase 10 deployment responsibilities remain assigned
+to their owning phases. Phase 4 must provide reproducible periodic materialization,
+idempotent in-app reminders and typed handoffs; later delivery adapters do not waive
+its scheduling/task acceptance criteria. Q-004 is an open requirement, not tech debt.

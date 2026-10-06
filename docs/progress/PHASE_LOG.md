@@ -292,3 +292,39 @@ P3-07 PASS: composite ownership, database immutability, guarded migrations and t
 P3-08 PASS: all local/hosted quality gates, ADR/runbook/changelog/progress evidence.
 8/8 accepted; no Phase 3 acceptance item deferred. Future dependencies and TD-005
 remain assigned above. Overall 4/11 phases accepted. Phase 4 has not started.
+
+## 2026-10-06 - Phase 4 preparation
+User requested Phase 4. Read AGENTS.md first, then docs/00 through docs/28 in
+numeric order; reviewed accepted ADRs, operations guidance, module boundaries,
+progress and current application interfaces. Phase 3 is accepted on fad771b;
+acceptance records are committed/pushed as 91b42bc. Initial working tree clean.
+Sources: docs/03 FR-030 through FR-034; docs/05-09,11-12,14,17-23,25-28.
+Acceptance criteria written before Phase 4 feature implementation:
+- P4-01: Typed, tenant-scoped schedule/version and assignment contracts pin exact
+  published form versions. Activation/version changes use validated preview,
+  concurrency checks, immutable definitions and audit; historical tasks remain intact.
+- P4-02: Bounded one-time, interval, calendar/RRULE and shift recurrence; scoped
+  milestone/relative-event inputs; explicit timezone and UTC persistence. DST gaps,
+  overlaps, month boundaries and invalid/unbounded rules have deterministic tests.
+- P4-03: Rolling-horizon generation/extension is idempotent under retries and
+  concurrent execution, with database uniqueness on schedule/version/time/assignment
+  scope. Deterministic recipient snapshots never grant new workspace/project access.
+- P4-04: Authorized task claim/start/cancel/supersede and exact-version submission
+  linkage preserve ownership/history. Concurrency, revoked access and cross-scope
+  attacks are tested. Workflow-only review/approval actions remain Phase 5 authority.
+- P4-05: Cursor-paged personal/team/department/project inboxes expose due today,
+  overdue and upcoming work, with scope checks and UTC/timezone-correct filters.
+  Returned/waiting-review views use lifecycle contracts without inventing approvals.
+- P4-06: Idempotent due/overdue reminder records are visible in-app; documented
+  periodic execution extends horizons and reminders with tenant context. Phase 6
+  notification delivery consumes a typed handoff; email is not claimed in Phase 4.
+- P4-07: Accessible scheduling administration and My Work connect to form runtime;
+  authoritative shifts connect through the Phase 3 DefaultContext application port.
+  Tenant-safe migrations, history protection and guarded rollback are tested.
+- P4-08: All unit/integration/API/browser tests, migrations, lint/type/build and
+  generated contract checks pass locally and in hosted CI. ADR/runbook/changelog,
+  all progress files and phase-oriented commits contain evidence and deferrals.
+0/8 accepted. No implementation, migration or new framework introduced yet.
+Q-004 is pending: shared claim versus per-recipient completion for group targets.
+ADR-0009 records this unresolved ownership/security boundary. Do not guess it.
+Phase 5 has not started; no Phase 4 requirement is silently deferred.

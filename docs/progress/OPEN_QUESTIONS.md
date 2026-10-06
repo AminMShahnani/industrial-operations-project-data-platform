@@ -39,3 +39,16 @@ restricted fields, declarative evaluation, immutable snapshots and fail-closed f
 Basic authenticated acknowledgement is V1; configurable signatures stay V1.5.
 Shift and previous-approved defaults have trusted ports; authoritative records are
 owned by Phase 4/5, with explicit unavailable-context errors until connected.
+
+## Pending Phase 4 assignment decision
+- Q-004 (2026-10-06): For team, department, scoped-role and shift targets, is one
+  occurrence shared and claimed/completed by one eligible member, or does every
+  eligible member receive a separately completed task?
+  docs/11 specifies deterministic recipients and assignment snapshots but not
+  group completion/claim semantics. This changes task uniqueness, claim authority,
+  submission ownership and whose work is satisfied by a submission.
+  Recommended: one shared task per assignment scope with an atomic single-member
+  claim, eligible-recipient snapshot and fresh permission checks on every action.
+  Alternative: separately materialized tasks per eligible recipient.
+  User question submitted; no answer assumed. ADR-0009 remains proposed.
+  AGENTS.md requires stopping rather than guessing an ambiguous security boundary.
