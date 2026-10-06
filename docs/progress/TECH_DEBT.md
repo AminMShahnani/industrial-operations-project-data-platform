@@ -114,4 +114,4 @@ with eight new integration tests, real PKCE browser delivery/read verification a
 all local gates passing (186 backend/11 frontend). ADR-0014 documents boundaries.
 Automatic task/workflow consumers, email/invitations, remaining handlers, rule/run
 management UI and telemetry stay in Phase 6; no new debt or acceptance deferral.
-Hosted verification of this increment is pending.
+Hosted run 37504095044 passes both jobs on exact code 11b7818; no new debt.

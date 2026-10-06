@@ -681,8 +681,13 @@ refresh. Ruff lint/format (298 files), Windows strict mypy (236 source files),
 frontend lint/types/build, empty migration roundtrip/drift, generated API drift and
 OpenAPI drift pass. Migration 73eddd554d17 is applied to development, isolated test
 and retained browser databases; no existing artifact is rewritten. ADR-0014 records
-source-owned access and minimal notice policy. Hosted verification is pending on
-the next exact code commit. Phase 6 remains in progress with 0/8 accepted.
+source-owned access and minimal notice policy. Hosted
+[37504095044](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/37504095044)
+passes both backend/frontend jobs on exact code
+`11b7818004d25754583d244d048992d41ca6c80b`, including Linux strict types,
+real PKCE browser notice delivery/read, prior worker/periodic concurrency,
+migration roundtrip/drift and generated contracts. Phase 6 remains in progress
+with 0/8 accepted.
 
 Completed increment: durable notify action for supported source links, immutable
 read receipts, owning-service authorization, minimal scoped API/inbox UI and

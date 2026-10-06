@@ -2,6 +2,13 @@
 
 ## Unreleased - Phase 6 in progress (2026-10-06)
 
+- Add immutable, recipient-scoped in-app automation notices and read receipts,
+  fresh source authorization, chronological paging and workspace inbox/API
+  (ADR-0014). Preserve private drafts and roll back all effects on recipient failure.
+  Verify 186 backend/11 frontend tests and all local gates; hosted run 37504095044
+  passes both jobs on 11b7818, including real PKCE browser delivery/read.
+  Email/automatic intents and remaining Phase 6 work are not accepted or deferred.
+
 - Add bounded timer/deadline generation, exact timer-version matching, immutable
   occurrence evidence and scoped preview/apply CLI (ADR-0013). Preserve task
   lifecycle/private drafts and serialize duplicate ticks; populated rollback is guarded.
