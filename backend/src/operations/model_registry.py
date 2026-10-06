@@ -46,6 +46,10 @@ from operations.modules.submissions.infrastructure.persistence import Submission
 from operations.modules.tasks.infrastructure.persistence import RecipientRow as RecipientRow
 from operations.modules.tasks.infrastructure.persistence import ReminderRow as ReminderRow
 from operations.modules.tasks.infrastructure.persistence import TaskRow as TaskRow
+from operations.modules.workflows.infrastructure.persistence import WorkflowRow as WorkflowRow
+from operations.modules.workflows.infrastructure.persistence import (
+    WorkflowVersionRow as WorkflowVersionRow,
+)
 from operations.modules.workspaces.infrastructure.groups import (
     GroupMembershipRow as GroupMembershipRow,
 )

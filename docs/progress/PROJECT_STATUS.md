@@ -1,7 +1,7 @@
 # Project Status
 
-Status: PHASE 4 ACCEPTED
-Current phase: Phase 4 - scheduling and tasks
+Status: PHASE 5 IN PROGRESS
+Current phase: Phase 5 - workflow and audit
 Last updated: 2026-10-06
 Overall completion: 5/11 phases accepted. Phase 0 through Phase 4 each
 satisfy 8/8 criteria. Phase 4: P4-01 through P4-08 PASS.
@@ -20,29 +20,38 @@ No unsupported project-wide percentage is reported.
 - Transactional task/submission linkage and scoped periodic generation CLI.
 
 ## In progress
-None. Phase 4 accepted (8/8); Phase 5 has not started.
+Phase 5 typed graph/assignment/version/instance/action contracts, approval-policy
+invariants and scoped immutable definition persistence. Migration e049d194ba38
+adds definition tables; runtime/API/UI integration remains outstanding.
+Phase 5: 0/8 criteria accepted; no claim of completed workflow runtime.
 
 ## Blocked
-None. Q-004 resolved by user: shared task claimed by one eligible member.
+None. Q-005 resolved: independent approval is mandatory, including administrators.
+ADR-0010 accepted on 2026-10-06.
+Q-004 resolved by user: shared task claimed by one eligible member.
 Legacy export absent.
 
 ## Next 5 tasks
-1. Await the next phase instruction.
-2. Review Phase 5 workflow/audit requirements and write acceptance criteria.
-3. Resolve significant workflow policy decisions through ADRs.
-4. Implement governed review/approval and connect trusted task workflow transitions.
-5. Run all Phase 5 gates before advancing to Phase 6 automation/notifications.
+1. Implement audited workflow administration and validated immutable activation.
+2. Add persisted assigned steps/actions and transactional submission startup.
+3. Implement assigned review/approval, preserved revisions and task transitions.
+4. Connect workflow UI, audit history and authoritative approved defaults.
+5. Run all Phase 5 local/hosted gates before advancing to Phase 6.
 
 ## Test status
-111 backend tests pass locally without skips, including real Keycloak PKCE browser,
+122 backend tests pass locally without skips, including real Keycloak PKCE browser,
 PostgreSQL isolation/history and migration roundtrip, Redis and private S3.
-9 frontend tests pass. Ruff lint/format, strict mypy on Windows and Linux (184 files),
+9 frontend tests pass. Phase 5 foundation Ruff lint/format and strict mypy on
+Windows (190 files),
 Alembic drift, OpenAPI drift, frontend lint/types and production build pass.
 Hosted Phase 4 run [37432881526](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/37432881526) passes both jobs on
 code commit d92a10f, including Linux tests, concurrent real PKCE browser and contract drift.
 
 ## Migration status
-Development, isolated test and browser databases are at b71acf0449b2. Phase 4 adds
+Development, isolated test and browser databases are at e049d194ba38. The Phase 5
+foundation adds scoped workflow definitions/versions and immutable activation
+guards. Local migration roundtrip/drift and populated rollback refusal pass.
+Phase 5 runtime persistence is not implemented yet. Phase 4 adds
 guarded immutable schedules, tasks, recipients, shifts, triggers, reminders and
 project milestones. Empty roundtrip/drift pass; populated downgrade refuses.
 Phase 3 adds

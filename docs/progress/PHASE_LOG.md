@@ -381,3 +381,56 @@ frontend lint/types/build. No Phase 4 acceptance item deferred. Approval/workflo
 email/queue delivery and production deployment remain Phase 5/6/10 responsibilities.
 Documented recurrence/recipient/generation/supersession bounds remain intentional.
 Overall 5/11 phases accepted. Phase 5 has not started.
+
+## Phase 5 preparation - 2026-10-06
+Read AGENTS.md first and numbered docs in order; reviewed docs/10 and existing
+Phase 4 composition/progress. Phase 4 remains accepted on d92a10f, hosted run
+37432881526. Sources: docs/03,05,07,09-12,17-22,25-28.
+Acceptance criteria before Phase 5 implementation:
+- P5-01: Scoped definitions and immutable activated workflow versions validate
+  start/review/approval/decision/notify/end graphs and typed assignment policies.
+- P5-02: Submitted records start instances pinned to exact workflow/form versions;
+  routing, retries and concurrent actions are transactional and deterministic.
+- P5-03: Assigned review/approval enforces fresh server authorization, tenant and
+  project isolation, independent-approval policy once resolved, and one/all/quorum/
+  sequential completion. Unauthorized and stale actions fail without side effects.
+- P5-04: Return/reject/resubmit and governed corrections/amendments preserve prior
+  snapshots, evidence, actor/reason history and immutable audit events.
+- P5-05: Trusted workflow application contracts update task review/return/approval
+  states and supply authoritative previous-approved defaults without table coupling.
+- P5-06: Accessible assigned-action inbox and review administration show permitted
+  evidence, action reasons, status and audit/history; private drafts remain private.
+- P5-07: Scoped migrations, immutability/concurrency constraints and documented
+  populated rollback safeguards pass integration tests; durable notification intents
+  hand off to Phase 6 without prematurely selecting its worker framework.
+- P5-08: Unit/integration/API/browser tests, migrations, lint/types/build and generated
+  contracts pass locally and in hosted CI; ADR/runbook/changelog/progress and
+  phase-oriented commits provide acceptance evidence and explicit deferrals.
+0/8 accepted. Q-005 is pending; ADR-0010 proposed. No Phase 5 feature code or
+migration introduced. No Phase 6 work started.
+
+### Phase 5 approval authority resolved
+User accepted recommended independent approval on 2026-10-06. Q-005 resolved;
+ADR-0010 accepted. Approval authority is checked server-side and administrators
+cannot approve their own submissions. Implementation begins with typed contracts.
+
+### Phase 5 definition foundation checkpoint
+Implemented typed workflow graphs, assignments, policies, definitions/versions and
+runtime contract shapes. Pure domain validation enforces bounded reachable graphs,
+explicit decision branches, separate return targets and no forward cycles. Approval
+policies support one/all/quorum/sequential; submitter exclusion and distinct voter
+identity preserve independent approval. No workflow API/runtime is exposed yet.
+Added workflow-owned persistence and migration e049d194ba38 with composite scope
+keys, exact scoped form pins, optimistic revisions, immutable activated content,
+history deletion/truncation refusal and populated downgrade refusal. Tested tenant/
+workspace isolation, stale writes, immutable versions and guarded rollback.
+Local checkpoint gates: all 122 backend tests pass without skips, including existing
+real PKCE browser and migration roundtrip; Ruff and strict mypy (190 files) pass;
+OpenAPI drift and Alembic drift pass. Frontend gates are being rechecked.
+This is a foundation checkpoint, not Phase 5 acceptance. P5-01 through P5-08 remain
+unaccepted (0/8). Audited administration/activation, persisted runtime/actions,
+resubmission/amendments, task/default integration, inbox/UI and hosted acceptance
+remain required. Phase 6 has not started. Runbook describes guarded rollback.
+
+Frontend checkpoint gates PASS: lint, strict TypeScript, all 9 tests and production
+build. Local foundation checks complete; hosted results pending. Phase 5 stays 0/8.

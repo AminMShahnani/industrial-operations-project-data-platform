@@ -43,3 +43,12 @@ the durable typed handoff for that phase's notification delivery.
 Phase 4 accepted on d92a10f / hosted run 37432881526. No deferred Phase 4 acceptance
 criterion. TD-001 through TD-005 and the explicitly documented future-phase
 deployment/delivery responsibilities remain assigned to their owners.
+
+Phase 5 preparation (2026-10-06): no implementation debt introduced. Q-005 is a
+pending security requirement, not deferred work. Phase 5 acceptance is 0/8;
+Phase 6 worker delivery and Phase 10 deployment obligations retain their owners.
+
+Phase 5 definition foundation: migration e049d194ba38 preserves prior forms,
+submissions, attachments and tasks. Missing runtime/UI integration remains current
+Phase 5 work; it is not reclassified as technical debt or deferred acceptance.
+Q-005 resolved; no new industry dependency or execution framework introduced.
