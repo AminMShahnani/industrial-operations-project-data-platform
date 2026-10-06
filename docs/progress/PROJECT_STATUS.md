@@ -58,6 +58,11 @@ passes backend/frontend jobs on exact code commit
 `d91dfceabeeb0906395d57e42805e235c8d5f5e4`, including Linux tests, separate PKCE
 identities, concurrent approval, migration and generated-contract drift.
 
+Phase 6 foundation hosted [37456658887](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/37456658887)
+passes both jobs on `66a321a55c12766d004567f168490d4c3d51a57d`, including strict
+Linux types, real Redis, prior browser flows and migration/contract checks. This
+does not accept Phase 6 criteria; Q-006 and dependent implementations remain open.
+
 ## Migration status
 Development, isolated test and browser databases are at 71db385e7a02. Phase 5 adds
 scoped definitions/versions, instances, visits/recipient snapshots, immutable
