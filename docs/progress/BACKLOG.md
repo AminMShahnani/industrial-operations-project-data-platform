@@ -8,7 +8,7 @@ Phases are sequential. No later phase starts until the current checklist passes.
 | 1 | Identity, organizations, workspaces, invitations, scoped IAM, audited grants | Authentication decision resolved; tenant isolation and privilege escalation tests |
 | 2 | Projects, departments, grants, governed master data | Relational invariants, history preservation, import dry runs |
 | 3 | Immutable form versions, safe expressions, validation, submissions, attachments | Cycle/immutability tests, tenant-safe runtime, upload security |
-| 4 | Schedule versions, deterministic occurrences, inbox, reminders | PHASE_LOG P4-01 through P4-08; Q-004 pending before assignment implementation |
+| 4 | Schedule versions, deterministic occurrences, inbox, reminders | Accepted: P4-01 through P4-08; Q-004 resolved; hosted run 37432881526 |
 | 5 | Workflow versions, approval policies, reject/resubmit, amendments | Immutable action/audit history and authorization tests |
 | 6 | Automation, durable outbox processing, notifications | Safe actions, retries, dead letters and idempotency |
 | 7 | Governed datasets, dashboards, CSV/XLSX/PDF, import wizard | Generation/download authorization, bounded reads |

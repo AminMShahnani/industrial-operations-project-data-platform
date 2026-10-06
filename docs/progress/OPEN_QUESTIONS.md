@@ -52,3 +52,6 @@ owned by Phase 4/5, with explicit unavailable-context errors until connected.
   Alternative: separately materialized tasks per eligible recipient.
   User selected the recommended shared claimed task on 2026-10-06.
   ADR-0009 accepted. No unresolved Phase 4 assignment blocker.
+
+Phase 4 accepted on d92a10f with hosted run 37432881526. No unresolved Phase 4
+security/domain question. Workflow policies are reviewed before Phase 5 implementation.

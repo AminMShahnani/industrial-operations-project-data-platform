@@ -5,7 +5,8 @@
 - Add idempotent shared occurrences, atomic claims, private drafts and transactional task submission.
 - Add scoped My Work, version administration and durable in-app reminders with periodic CLI.
 - Add tenant-safe migrations/history protection, ADR-0009 and the Phase 4 runbook.
-- Acceptance pending final local and hosted gates.
+- Accept all 8 Phase 4 criteria: 111 backend tests, 9 frontend tests; hosted run
+  37432881526 passes backend/frontend on code commit d92a10f.
 
 ## 0.4.0 - Phase 3 governed forms (2026-10-05)
 - Add immutable versioned forms, reusable pinned libraries and bounded declarative expressions.

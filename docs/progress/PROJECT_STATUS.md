@@ -1,10 +1,10 @@
 # Project Status
 
-Status: PHASE 4 IN PROGRESS
+Status: PHASE 4 ACCEPTED
 Current phase: Phase 4 - scheduling and tasks
 Last updated: 2026-10-06
-Overall completion: 4/11 phases accepted. Phase 0, Phase 1, Phase 2 and Phase 3 each
-satisfy 8/8 criteria. Phase 3: P3-01 through P3-08 PASS.
+Overall completion: 5/11 phases accepted. Phase 0 through Phase 4 each
+satisfy 8/8 criteria. Phase 4: P4-01 through P4-08 PASS.
 No unsupported project-wide percentage is reported.
 
 ## Completed modules
@@ -15,29 +15,31 @@ No unsupported project-wide percentage is reported.
 - Typed API/client, scope-aware UI and migration/operations runbooks.
 - Versioned forms/libraries, bounded expressions, Form Studio and scoped runtime.
 - Autosave, immutable submissions/signatures and private fail-closed attachments.
+- Immutable schedules, shifts and project milestones; bounded timezone-aware recurrence.
+- Idempotent shared tasks, atomic claims, My Work and durable in-app reminders.
+- Transactional task/submission linkage and scoped periodic generation CLI.
 
 ## In progress
-Phase 4 implementation and full local gates pass. P4-01 through P4-08:
-0/8 finally accepted pending hosted CI. ADR-0009 accepted; Q-004 resolved.
+None. Phase 4 accepted (8/8); Phase 5 has not started.
 
 ## Blocked
 None. Q-004 resolved by user: shared task claimed by one eligible member.
 Legacy export absent.
 
 ## Next 5 tasks
-1. Finish final targeted checks after live group/role authorization hardening.
-2. Commit and push the Phase 4 implementation.
-3. Verify hosted backend/frontend CI on that exact implementation commit.
-4. Record accepted criteria, run evidence and final phase-oriented progress commit.
-5. Await the next phase instruction; Phase 5 remains unstarted.
+1. Await the next phase instruction.
+2. Review Phase 5 workflow/audit requirements and write acceptance criteria.
+3. Resolve significant workflow policy decisions through ADRs.
+4. Implement governed review/approval and connect trusted task workflow transitions.
+5. Run all Phase 5 gates before advancing to Phase 6 automation/notifications.
 
 ## Test status
 111 backend tests pass locally without skips, including real Keycloak PKCE browser,
 PostgreSQL isolation/history and migration roundtrip, Redis and private S3.
 9 frontend tests pass. Ruff lint/format, strict mypy on Windows and Linux (184 files),
 Alembic drift, OpenAPI drift, frontend lint/types and production build pass.
-Hosted Phase 3 run [37363436134](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/37363436134) passes both jobs on
-code commit fad771b, including Linux tests, real PKCE browser and contract drift.
+Hosted Phase 4 run [37432881526](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/37432881526) passes both jobs on
+code commit d92a10f, including Linux tests, concurrent real PKCE browser and contract drift.
 
 ## Migration status
 Development, isolated test and browser databases are at b71acf0449b2. Phase 4 adds

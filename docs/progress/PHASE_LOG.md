@@ -361,3 +361,23 @@ workflow approval/actions and production deployment retain their Phase 6/5/10 ow
 Final targeted revalidation PASS: all 8 Phase 4 API cases including tenant user
 revocation, removed-team-member denial, cancellation and exact task submission;
 strict mypy, Ruff and frontend lint/types pass. Generated OpenAPI remains in sync.
+
+### Phase 4 final acceptance
+Code commit: d92a10f. Hosted run:
+https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/37432881526
+Backend and frontend jobs PASS on that exact commit, including Linux non-browser
+tests, real Chromium/Keycloak concurrency/task runtime, migrations and contract drift.
+P4-01 PASS: scoped typed schedules, exact form pins, immutable version activation.
+P4-02 PASS: bounded recurrence, shifts/events/milestones and deterministic DST/calendar rules.
+P4-03 PASS: rolling generation, deterministic snapshots and concurrent database idempotency.
+P4-04 PASS: atomic claims, fresh authorization, private drafts and exact transactional submission.
+P4-05 PASS: cursor-paged scoped My Work and timezone-correct derived status views.
+P4-06 PASS: idempotent in-app reminders and reproducible scoped periodic execution.
+P4-07 PASS: accessible scheduling/task runtime, authoritative shift defaults and guarded migrations.
+P4-08 PASS: all local/hosted gates, ADR/runbook/changelog/progress and phase commits.
+8/8 accepted. Local suite: 111 backend tests without skips, 9 frontend tests;
+Ruff, strict mypy Windows/Linux (184 files), migration roundtrip/drift, OpenAPI drift,
+frontend lint/types/build. No Phase 4 acceptance item deferred. Approval/workflow,
+email/queue delivery and production deployment remain Phase 5/6/10 responsibilities.
+Documented recurrence/recipient/generation/supersession bounds remain intentional.
+Overall 5/11 phases accepted. Phase 5 has not started.

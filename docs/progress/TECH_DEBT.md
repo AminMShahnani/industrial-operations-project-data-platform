@@ -39,3 +39,7 @@ replacement plans and throughput/load verification remain explicit operational
 planning and Phase 10 validation; these bounds are not silently expanded. No queue
 framework introduced before Phase 6 selection. Current in-app reminder records are
 the durable typed handoff for that phase's notification delivery.
+
+Phase 4 accepted on d92a10f / hosted run 37432881526. No deferred Phase 4 acceptance
+criterion. TD-001 through TD-005 and the explicitly documented future-phase
+deployment/delivery responsibilities remain assigned to their owners.
