@@ -32,8 +32,9 @@ Dramatiq worker and scoped dispatcher are implemented and tested. Audited privat
 storage reconciliation is implemented and verified locally/hosted (TD-005).
 Bounded scheduled timers and task due/overdue source generation are implemented
 and verified locally/hosted; periodic evidence is immutable and task lifecycle stays intact.
-Generic tasks,
-tags/flags, webhook/notification adapters and UI remain current-phase
+In-app automation notices and their personal scoped API/inbox UI are implemented.
+Generic tasks, tags/flags, webhooks, automatic notifications/email/invitations,
+rule/run UI and telemetry remain current-phase
 work. 0/8 accepted; Q-006 is resolved.
 Phase 5 remains accepted on d91dfce / hosted run 37454353238.
 
@@ -46,10 +47,10 @@ Q-004 resolved by user: shared task claimed by one eligible member.
 Legacy export absent.
 
 ## Next 5 tasks
-1. Implement generic task, tag/flag and notification/webhook action handlers.
+1. Integrate automatic task/workflow notifications, email and invitation adapters.
 2. Complete delivery adapters and queue/run telemetry.
 3. Expose scoped rule/run management and audited replay through typed API/UI.
-4. Integrate notifications/invitations and scoped UI.
+4. Implement generic task, tag/flag and webhook handlers.
 5. Verify all Phase 6 local/hosted criteria before any Phase 7 work.
 
 ## Test status
@@ -130,8 +131,25 @@ Linux tests/types, prior browser/worker flows, committed periodic concurrency,
 source/evidence guards, migration roundtrip/drift and generated API contracts.
 ADR-0013 and the runbook record the policy. Phase 6 remains 0/8 accepted.
 
+
+In-app automation notice increment: 186 backend tests pass without skips in
+154.05 seconds; 11 frontend tests pass. Eight new integration tests cover atomic
+recipient privacy failure, transient retry rollback, task assignment/source links,
+revoked source access, duplicate worker/read effects, immutable evidence, guarded
+populated rollback and 120-notice chronological pagination. Typed inbox/detail/read
+HTTP endpoints enforce tenant/workspace/recipient scope. The actual Keycloak PKCE
+browser flow delivers one committed notice, reads it and retains read state after
+refresh. Ruff lint/format (298 files), Windows strict mypy (236 source files),
+frontend lint/types/build, empty migration roundtrip/drift, generated API drift and
+OpenAPI drift pass. Migration 73eddd554d17 is applied to development, isolated test
+and retained browser databases; no existing artifact is rewritten. ADR-0014 records
+source-owned access and minimal notice policy. Hosted verification is pending on
+the next exact code commit. Phase 6 remains in progress with 0/8 accepted.
+
 ## Migration status
-Development, isolated test and browser databases are at a39df7b251c0.
+Development, isolated test and browser databases are at 73eddd554d17.
+Immutable notice/read evidence adds composite tenant keys and exact source/action
+binding; populated rollback refuses before dropping retained history.
 Periodic generation adds immutable timer/task-deadline evidence with exact
 source/slot binding and guarded populated rollback. No retained artifact is rewritten.
 Phase 6 adds seven guarded outbox/rule/run/attempt/receipt tables. Empty roundtrip

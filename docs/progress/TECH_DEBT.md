@@ -107,3 +107,11 @@ pass (178 backend/11 frontend); hosted run 37499621510 passes both jobs on exact
 code 3beb19d. No new debt or
 acceptance deferral is introduced. Notifications/actions/API/UI/telemetry remain
 current-phase implementation requirements; TD-005 stays resolved.
+
+
+In-app automation notices and their typed personal inbox API/UI are implemented
+with eight new integration tests, real PKCE browser delivery/read verification and
+all local gates passing (186 backend/11 frontend). ADR-0014 documents boundaries.
+Automatic task/workflow consumers, email/invitations, remaining handlers, rule/run
+management UI and telemetry stay in Phase 6; no new debt or acceptance deferral.
+Hosted verification of this increment is pending.

@@ -35,6 +35,18 @@ class IdentityService:
         )
         self.revokers = revokers or []
 
+    def active_context(
+        self, organization_id: UUID, identifier: UUID, source: RequestContext
+    ) -> RequestContext:
+        """Trusted application handoff; resolve a current tenant membership, never a token."""
+        self.organizations.active(organization_id)
+        user = self.store.by_id(organization_id, identifier)
+        if user is None or not user.active:
+            raise ServiceError(403, "notification_recipient_unavailable")
+        return RequestContext(
+            Principal(user.issuer, user.subject), source.request_id, source.correlation_id
+        )
+
     def bootstrap(self, principal: Principal, reason: str) -> None:
         self.store.bootstrap(principal)
         event_id = uuid7()

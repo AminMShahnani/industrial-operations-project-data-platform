@@ -27,6 +27,7 @@ from operations.modules.master_data.infrastructure.persistence import (
 from operations.modules.master_data.infrastructure.persistence import (
     DataTypeRow as DataTypeRow,
 )
+from operations.modules.notifications.infrastructure.persistence import NoticeRow as NoticeRow
 from operations.modules.organizations.infrastructure.persistence import (
     OrganizationRow as OrganizationRow,
 )

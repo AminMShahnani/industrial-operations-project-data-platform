@@ -14,12 +14,16 @@ from alembic import command
 from alembic.config import Config
 from operations.composition import compose
 from operations.modules.audit.infrastructure.persistence import AuditRow
+from operations.modules.automation.application.contracts import NotifyAction, RuleDefinition
+from operations.modules.automation.application.events import DeliveryMessage
+from operations.modules.automation.domain.reliability import delivery_id
 from operations.modules.iam.application.contracts import Role, Scope, ScopeType
 from operations.modules.identity.application.contracts import Principal, RequestContext
 from operations.modules.organizations.application.contracts import OrganizationSettings
 from operations.modules.projects.application.contracts import ProjectRole
 from operations.platform.config import Settings
 from operations.platform.database import create_database_engine
+from operations.worker import process_automation
 from playwright.sync_api import expect, sync_playwright
 from pydantic import SecretStr
 from sqlalchemy import func, select
@@ -152,7 +156,43 @@ def test_real_oidc_pkce_login_and_workspace_creation(monkeypatch: pytest.MonkeyP
                     page.get_by_role("status").filter(has_text="Workspace created.")
                 ).to_be_visible()
                 page.get_by_label("Project name", exact=True).fill("Browser created project")
-                page.get_by_role("button", name="Create project", exact=True).click()
+                with page.expect_response(
+                    lambda response: (
+                        response.request.method == "POST" and response.url.endswith("/projects")
+                    )
+                ) as project_response:
+                    page.get_by_role("button", name="Create project", exact=True).click()
+                created_project = project_response.value.json()
+                notice_workspace = UUID(created_project["workspace_id"])
+                notice_project = UUID(created_project["id"])
+                actor = RequestContext(principal, uuid7(), uuid7())
+                with Session(engine) as session, session.begin():
+                    services = compose(session, principal)
+                    user = services.authorization.user(actor, organization.id)
+                    rule = services.automation.create(
+                        actor,
+                        organization.id,
+                        notice_workspace,
+                        notice_project,
+                        "Browser notice",
+                        RuleDefinition(
+                            trigger="project.phase.changed",
+                            actions=[NotifyAction(kind="notify", recipients=[user.id])],
+                        ),
+                    )
+                    preview = services.automation.activate(
+                        actor, organization.id, notice_workspace, rule.id, 1, 1, True, None
+                    )
+                    services.automation.activate(
+                        actor,
+                        organization.id,
+                        notice_workspace,
+                        rule.id,
+                        1,
+                        1,
+                        False,
+                        preview.content_sha256,
+                    )
                 expect(
                     page.get_by_role("status").filter(has_text="Project created.")
                 ).to_be_visible()
@@ -165,6 +205,28 @@ def test_real_oidc_pkce_login_and_workspace_creation(monkeypatch: pytest.MonkeyP
                 ).to_be_visible()
                 page.get_by_role("button", name="Apply transition", exact=True).click()
                 expect(page.get_by_text("Project state changed.", exact=True)).to_be_visible()
+                with Session(engine) as session, session.begin():
+                    source = session.scalar(
+                        select(AuditRow).where(
+                            AuditRow.organization_id == organization.id,
+                            AuditRow.aggregate_id == notice_project,
+                            AuditRow.type == "project.transitioned",
+                        )
+                    )
+                    assert source
+                    notice_message = DeliveryMessage(
+                        organization_id=organization.id,
+                        delivery_id=delivery_id(source.id, "automation"),
+                    )
+                    assert process_automation(session, notice_message).state == "completed"
+                    assert process_automation(session, notice_message).state == "completed"
+                notifications = page.get_by_role("region", name="Notifications")
+                notifications.get_by_role("button", name="Refresh notifications").click()
+                expect(notifications.get_by_text("Operational notice", exact=True)).to_be_visible()
+                notifications.get_by_role("button", name="Mark as read", exact=True).click()
+                expect(notifications.get_by_text("Read", exact=True)).to_be_visible()
+                notifications.get_by_role("button", name="Refresh notifications").click()
+                expect(notifications.get_by_text("Read", exact=True)).to_be_visible()
                 page.get_by_label("Group name", exact=True).fill("Browser department")
                 page.get_by_role("button", name="Create department or team", exact=True).click()
                 expect(page.get_by_text("Department or team created.", exact=True)).to_be_visible()

@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from sqlalchemy.orm import Session
 
 from operations.modules.audit.infrastructure.persistence import AuditRepository
-from operations.modules.automation.application.actions import ApplicationActions, UnavailableActions
+from operations.modules.automation.application.actions import ApplicationActions
 from operations.modules.automation.application.event_bus import AuditedEventBus
 from operations.modules.automation.application.service import AutomationService, EventCapture
 from operations.modules.automation.application.timers import TimerService
@@ -25,6 +25,9 @@ from operations.modules.master_data.application.references import DataReferences
 from operations.modules.master_data.application.service import MasterDataService
 from operations.modules.master_data.infrastructure.persistence import DataRepository
 from operations.modules.master_data.infrastructure.tabular import TabularFiles
+from operations.modules.notifications.application.service import NotificationService
+from operations.modules.notifications.application.sources import NoticeSources
+from operations.modules.notifications.infrastructure.persistence import NoticeRepository
 from operations.modules.organizations.application.service import OrganizationService
 from operations.modules.organizations.infrastructure.persistence import OrganizationRepository
 from operations.modules.projects.application.service import ProjectService
@@ -50,6 +53,7 @@ from operations.platform.config import Settings
 
 @dataclass(frozen=True)
 class Services:
+    notifications: NotificationService
     automation: AutomationService
     timers: TimerService
     workflows: WorkflowService
@@ -120,13 +124,19 @@ def compose(
     )
     submissions.review_access = workflow_runtime
     submissions.observer = SubmissionLifecycle(tasks, workflow_runtime)
+    notifications = NotificationService(
+        NoticeRepository(session),
+        identity,
+        NoticeSources(forms, submissions, tasks, workflow_runtime),
+    )
     automation = AutomationService(
         AutomationRepository(session),
         forms,
         audit,
-        ApplicationActions(forms, submissions, tasks, workflow_runtime, UnavailableActions()),
+        ApplicationActions(forms, submissions, tasks, workflow_runtime, notifications),
     )
     return Services(
+        notifications,
         automation,
         TimerService(TimerRepository(session), automation),
         workflows,

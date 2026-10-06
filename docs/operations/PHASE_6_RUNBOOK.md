@@ -9,9 +9,33 @@ adds typed outbox delivery, immutable activated rules and retained run evidence.
 Source writes now capture supported operational events atomically with their audit.
 Metadata/related-record/form-task/pinned-workflow handlers and the automation
 consumer are implemented. Generic tasks without forms, tags/flags, webhooks,
-notifications and email remain incomplete. Do not roll out production workers
+automatic notifications and email remain incomplete. In-app automation notices
+and their typed API/workspace inbox are implemented (ADR-0014). Do not roll out production workers
 before the complete Phase 6 acceptance gates pass. Periodic timer/deadline generation
 and private-storage reconciliation are now implemented; see their sections below.
+
+## In-app automation notices
+
+Migration `73eddd554d17` adds immutable notices and read receipts. Configure a
+`notify` action with explicit active recipient UUIDs and `channels: ["in_app"]`.
+Rule administration currently uses the typed application service; its HTTP/UI is
+remaining Phase 6 work. Activation/execution recheck recipients and source access;
+unsupported email channels and timer/integration/master-data notice sources fail
+closed. Task, workflow, submission and project source links use their owning
+services. Task notices never disclose another claimant's private draft link.
+
+The automation worker delivers these notices transactionally with run receipts.
+It does not dispatch the separate automatic `notifications` outbox consumer.
+Selecting a workspace shows the personal Notifications inbox. Refresh/paging and
+mark-as-read use the scoped `/notifications`, `/notifications/{id}` and
+`/notifications/{id}/read` endpoints; all require authenticated recipient access.
+Revoked source access hides retained notices. Read writes are serialized and
+audited once. No form values, arbitrary bodies or invitation secrets are stored.
+
+Empty migration rollback to `a39df7b251c0` is reversible. Once notices or read
+receipts exist, downgrade refuses before deletion. Preserve a verified backup and
+restore to a separate environment for reconciliation; never remove immutable
+evidence to force an application rollback. No existing artifact is rewritten.
 
 Run unit/boundary tests with `uv run pytest backend/tests/test_phase6_reliability.py
 backend/tests/test_boundaries.py`. The real Redis transport test additionally needs

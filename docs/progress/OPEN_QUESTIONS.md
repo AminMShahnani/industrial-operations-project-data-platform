@@ -119,3 +119,10 @@ events in the three local databases; no historical envelope was rewritten.
 
 Periodic code 3beb19d passes hosted run 37499621510. No new unresolved security/
 domain question or Phase 7 work; existing authority decisions remain in force.
+
+
+ADR-0014 implements in-app automation notices under existing Q-006 authority.
+Fresh source-owning service checks, original task assignment eligibility and
+recipient-only inbox/read access retain the accepted privacy boundary. No new
+unresolved security/domain question, retained-data rewrite or industry coupling.
+Automatic notification/email/invitation policies remain required Phase 6 work.

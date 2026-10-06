@@ -23,6 +23,7 @@ from operations.phase2_api import router as phase2_router
 from operations.phase3_api import router as phase3_router
 from operations.phase4_api import router as phase4_router
 from operations.phase5_api import router as phase5_router
+from operations.phase6_api import router as phase6_router
 from operations.platform.body_limit import RequestBodyLimit
 from operations.platform.config import Settings
 from operations.platform.database import create_database_engine
@@ -194,6 +195,7 @@ def create_app(
     app.include_router(phase3_router)
     app.include_router(phase4_router)
     app.include_router(phase5_router)
+    app.include_router(phase6_router)
     return app
 
 

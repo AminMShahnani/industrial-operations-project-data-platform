@@ -3,6 +3,7 @@ import { useAuth } from 'react-oidc-context';
 import { apiClient } from './client';
 import type { components } from './api-schema';
 import { ProjectAdministration } from './ProjectAdmin';
+import { Notifications } from './Notifications';
 
 type Me = components['schemas']['Me'];
 type Workspace = components['schemas']['Workspace'];
@@ -149,6 +150,7 @@ export function Administration() {
       {invitation && <div><p>Share this code and organization ID with the intended member. The code expires in seven days.</p>
         <label>Invitation code<textarea readOnly value={invitation} /></label></div>}
     </section>}
+    {organization && workspace && <Notifications key={'notifications' + organization + workspace} api={api} organization={organization} workspace={workspace} />}
     {organization && workspace && <ProjectAdministration key={organization + workspace} api={api} organization={organization} workspace={workspace} />}
     <section><h2>Accept an invitation</h2><form onSubmit={event => void acceptInvitation(event)}>
       <label>Organization ID<input name="organization" required /></label>

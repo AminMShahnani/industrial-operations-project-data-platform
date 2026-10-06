@@ -667,3 +667,26 @@ Linux tests/types, browser/worker flows, committed periodic concurrency and migr
 contract checks. Phase 6 stays 0/8; no Phase 7 work or deferred acceptance.
 Generic tasks, tags/flags, notification/webhook/email/invitation adapters, scoped
 API/UI and queue/run telemetry remain required Phase 6 implementation work.
+
+## Phase 6 in-app automation notices - 2026-10-06
+
+In-app automation notice increment: 186 backend tests pass without skips in
+154.05 seconds; 11 frontend tests pass. Eight new integration tests cover atomic
+recipient privacy failure, transient retry rollback, task assignment/source links,
+revoked source access, duplicate worker/read effects, immutable evidence, guarded
+populated rollback and 120-notice chronological pagination. Typed inbox/detail/read
+HTTP endpoints enforce tenant/workspace/recipient scope. The actual Keycloak PKCE
+browser flow delivers one committed notice, reads it and retains read state after
+refresh. Ruff lint/format (298 files), Windows strict mypy (236 source files),
+frontend lint/types/build, empty migration roundtrip/drift, generated API drift and
+OpenAPI drift pass. Migration 73eddd554d17 is applied to development, isolated test
+and retained browser databases; no existing artifact is rewritten. ADR-0014 records
+source-owned access and minimal notice policy. Hosted verification is pending on
+the next exact code commit. Phase 6 remains in progress with 0/8 accepted.
+
+Completed increment: durable notify action for supported source links, immutable
+read receipts, owning-service authorization, minimal scoped API/inbox UI and
+local/browser/migration tests. Remaining current-phase items: automatic task/
+workflow intents, email/invitations, generic tasks, tags/flags, webhooks, rule/run
+management/replay UI and telemetry. No acceptance criterion is prematurely marked
+PASS and nothing is deferred to Phase 7.

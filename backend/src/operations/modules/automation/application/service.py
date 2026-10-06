@@ -9,6 +9,7 @@ from operations.modules.audit.application.contracts import AuditDetails, AuditEv
 from operations.modules.automation.application.contracts import (
     AutomationAction,
     AutomationStore,
+    NotifyAction,
     Receipt,
     Rule,
     RuleDefinition,
@@ -154,6 +155,12 @@ class AutomationService:
         if definition.condition:
             validate_condition(definition.condition, keys)
         for action in definition.actions:
+            if isinstance(action, NotifyAction) and definition.trigger in {
+                "scheduled.timer",
+                "integration.event",
+                "master_data.changed",
+            }:
+                raise ServiceError(422, "notification_source_not_configured")
             self.actions.validate(actor, rule, action)
 
     def create(
