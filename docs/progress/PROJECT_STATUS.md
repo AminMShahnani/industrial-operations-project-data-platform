@@ -159,8 +159,11 @@ notify-only access, cancellation, retry/dead letters, atomic rollback and immuta
 evidence. Real Redis duplicate delivery and concurrent first-read tests each produce
 one effect. Ruff lint/format (303 files), strict mypy (240 files), frontend
 lint/types/build, empty migration roundtrip/drift, generated API/OpenAPI drift and
-dispatcher CLI checks pass. ADR-0015 records the policy. Hosted exact-code
-verification is pending; Phase 6 remains 0/8 accepted.
+dispatcher CLI checks pass. ADR-0015 records the policy. Hosted
+[37511023333](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/37511023333)
+passes both jobs on exact code `2cebf5ed8e4235e90056721c16932a45cc7e37de`, including
+Linux tests/types, real PKCE browser and Redis worker flows, migrations and contracts.
+Phase 6 remains 0/8 accepted.
 
 ## Migration status
 Development, isolated test and browser databases are at a5fa16a227ff.

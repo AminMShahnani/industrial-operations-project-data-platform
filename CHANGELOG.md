@@ -10,6 +10,8 @@
   current Phase 6 requirements.
   Verify 195 backend/11 frontend tests and all local gates, including real Redis
   duplicate delivery, concurrent read receipts and guarded migration rollback.
+  Hosted run 37511023333 passes both jobs on exact code 2cebf5e, including Linux
+  tests/types, real PKCE browser, worker, migration and contract gates.
 
 - Add immutable, recipient-scoped in-app automation notices and read receipts,
   fresh source authorization, chronological paging and workspace inbox/API

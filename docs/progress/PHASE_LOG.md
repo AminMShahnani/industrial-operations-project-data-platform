@@ -714,8 +714,12 @@ first reads create one receipt/audit. Browser setup now waits for outstanding re
 before its separate audited fixture transaction, avoiding a setup lock-order deadlock.
 All 195 backend tests pass without skips in 157.33s; 11 frontend tests pass. Ruff
 lint/format (303 files), strict mypy (240 files), frontend lint/types/build, generated
-API/OpenAPI drift and dispatcher CLI checks pass. Hosted exact-code verification is
-pending. All four progress files and the operations runbook are updated.
+API/OpenAPI drift and dispatcher CLI checks pass. Hosted run
+[37511023333](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/37511023333)
+passes both jobs on exact code `2cebf5ed8e4235e90056721c16932a45cc7e37de`,
+including Linux tests/types, real PKCE browser and Redis worker flows, migration
+roundtrip/drift and generated contracts. All four progress files and the operations
+runbook are updated.
 
 Completed increment: automatic source notices, current eligibility checks, durable
 retry/skip evidence, worker routing and guarded additive migration. No full Phase 6

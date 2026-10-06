@@ -123,4 +123,5 @@ additive migration. Historical handoff reconciliation, controlled notification
 replay, email/invitations, remaining handlers/UI and telemetry remain current-phase
 requirements. No new debt, data rewrite or acceptance deferral is introduced.
 All local gates pass (195 backend/11 frontend tests), including real worker duplicate
-delivery and concurrent first reads. Hosted exact-code verification is pending.
+delivery and concurrent first reads. Hosted run 37511023333 passes both jobs on
+exact code 2cebf5e, including Linux gates, browser/worker flows and migrations.
