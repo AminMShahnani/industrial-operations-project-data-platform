@@ -85,3 +85,7 @@ implemented and tested. Generic tasks, tags/flags, notification/webhook adapters
 timer/due events, email/invitations, API/UI, telemetry and TD-005 reconciliation remain
 required Phase 6 work. No production rollout or acceptance is claimed for partial
 adapters. The existing migration and operational-history safeguards remain in force.
+
+Action/worker code 700db02 passes hosted run 37465763364. Pinned-start persistence
+is owned by the workflow application service; no direct cross-module persistence
+access is introduced. Phase 6 remains in progress without deferred acceptance.

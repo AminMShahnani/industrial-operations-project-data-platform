@@ -235,20 +235,14 @@ class ApplicationActions:
         if isinstance(action, WorkflowAction):
             if event.payload.submission_id is None:
                 raise ServiceError(422, "automation_workflow_submitted_source_required")
-            submission = self.submissions.access(actor, org, workspace, event.payload.submission_id)
-            if submission.state != "submitted":
-                raise ServiceError(422, "automation_workflow_submitted_source_required")
-            _, version = self.workflows.workflows.version(
-                actor, org, workspace, action.workflow_id, action.workflow_number, True
+            instance = self.workflows.start_pinned(
+                actor,
+                org,
+                workspace,
+                event.payload.submission_id,
+                action.workflow_id,
+                action.workflow_number,
+                project,
             )
-            if submission.form_version_id != version.form_version_id:
-                raise ServiceError(422, "automation_workflow_form_mismatch")
-            existing = self.workflows.store.by_submission(org, workspace, submission.id)
-            if existing and existing.workflow_version_id != version.id:
-                raise ServiceError(409, "automation_workflow_already_bound")
-            self.workflows.submitted(actor, submission)
-            instance = self.workflows.store.by_submission(org, workspace, submission.id)
-            if instance is None or instance.workflow_version_id != version.id:
-                raise ServiceError(409, "automation_workflow_binding_changed")
             return instance.id
         return self.additional.execute(actor, rule, event, run, position, action)

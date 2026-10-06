@@ -592,3 +592,11 @@ unpinned workflow actions in development/test/browser databases. No retained
 definition or history is rewritten; no schema migration is required.
 Phase 6 remains 0/8; all remaining handlers, notifications/invitations, trigger
 generation, API/UI, telemetry and TD-005 reconciliation remain current-phase work.
+
+Action/worker code 700db02b39dd94b8e7fdae2dff00ad8ddfcaee13 passes hosted run
+https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/37465763364
+Both jobs pass, including real concurrent Redis workers, Linux strict types and
+prior PKCE browser flows. Final review moves pinned-workflow start into the workflow
+application service so automation never calls its persistence port directly.
+Affected action/worker/workflow/boundary revalidation: 24 tests pass in 43.45s;
+Windows/Linux strict types pass. No additional schema or API contract change.

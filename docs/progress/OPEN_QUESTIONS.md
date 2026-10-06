@@ -94,3 +94,6 @@ resolved; remaining Phase 6 work does not require reopening its authority decisi
 Action/consumer increment: no new security/domain ambiguity. ADR-0011 records
 exact workflow action pins, source privacy, task materialization receipts and atomic
 consumer/savepoint boundaries. Q-006 delegation is verified by real worker tests.
+
+Action/worker hosted verification passes on 700db02 / run 37465763364. The final
+workflow application-boundary refinement introduces no new domain decision.

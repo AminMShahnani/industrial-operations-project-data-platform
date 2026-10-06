@@ -227,6 +227,39 @@ class WorkflowRuntime:
             pass
         return output
 
+    def start_pinned(
+        self,
+        actor: RequestContext,
+        org: UUID,
+        workspace: UUID,
+        submission_id: UUID,
+        workflow_id: UUID,
+        workflow_number: int,
+        project_id: UUID | None,
+    ) -> WorkflowInstance:
+        submission = self.submissions.access(actor, org, workspace, submission_id)
+        if submission.state != "submitted":
+            raise ServiceError(422, "automation_workflow_submitted_source_required")
+        workflow, version = self.workflows.version(
+            actor, org, workspace, workflow_id, workflow_number, True
+        )
+        if (
+            workflow.project_id != project_id
+            or version.state != "active"
+            or workflow.active_number != version.number
+        ):
+            raise ServiceError(422, "automation_workflow_scope_or_state")
+        if submission.form_version_id != version.form_version_id:
+            raise ServiceError(422, "automation_workflow_form_mismatch")
+        existing = self.store.by_submission(org, workspace, submission.id)
+        if existing and existing.workflow_version_id != version.id:
+            raise ServiceError(409, "automation_workflow_already_bound")
+        self.submitted(actor, submission)
+        instance = self.store.by_submission(org, workspace, submission.id)
+        if instance is None or instance.workflow_version_id != version.id:
+            raise ServiceError(409, "automation_workflow_binding_changed")
+        return instance
+
     def submitted(self, actor: RequestContext, submission: Submission) -> None:
         org, workspace = submission.organization_id, submission.workspace_id
         if self.store.by_submission(org, workspace, submission.id):
