@@ -28,7 +28,8 @@ Dramatiq transport. Durable outbox/rule/run persistence, transactional source ca
 delegated authority, receipts/attempts and replay application services are implemented.
 Authorized project metadata, related-record, form-task and pinned workflow handlers
 are implemented through owning services. A durable automation consumer, real
-Dramatiq worker and scoped dispatcher are implemented and tested. Generic tasks,
+Dramatiq worker and scoped dispatcher are implemented and tested. Audited private
+storage reconciliation is implemented and verified locally/hosted (TD-005). Generic tasks,
 tags/flags, webhook/notification adapters, periodic triggers and UI remain current-phase
 work. 0/8 accepted; Q-006 is resolved.
 Phase 5 remains accepted on d91dfce / hosted run 37454353238.
@@ -103,8 +104,11 @@ rechecks authorization and references, serializes with in-flight uploads and use
 conditional deletion. Immutable committed intents survive delete/DB-commit crashes;
 replay records missing objects without repeating effects. Actual S3-compatible
 pagination and wrong/stale/matching ETag behavior pass. ADR-0012 records boundaries.
-TD-005 implementation is complete locally; hosted verification is pending this
-increment. No migration or retained-data rewrite. Phase 6 remains 0/8 accepted.
+TD-005 is resolved. Hosted
+[37480916988](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/37480916988)
+passes both jobs on exact code `adea461d687d2a07bf8a8bb8b335a15e9145c623`, including
+Linux tests/types, browser/worker flows, migrations and contract drift. No migration
+or retained-data rewrite. Phase 6 remains 0/8 accepted.
 
 ## Migration status
 Development, isolated test and browser databases are at 8323b0dbac0e.
@@ -127,5 +131,6 @@ strategies are in docs/operations/PHASE_2_RUNBOOK.md, PHASE_3_RUNBOOK.md and PHA
 No legacy migration performed.
 
 ## Known tech debt
-TD-001 through TD-005 remain assigned to their owning/deployment phases.
+TD-001 through TD-004 remain assigned to their owning/deployment phases. TD-005
+reconciliation is resolved; retention/quota/backup verification remains Phase 10.
 Large background transfers belong to Phase 7. See TECH_DEBT.md.

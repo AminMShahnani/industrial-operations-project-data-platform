@@ -5,6 +5,8 @@
 - Implement bounded tenant-private orphan reconciliation with explicit grace,
   fresh authority/reference checks, shared upload locks, immutable requested/result
   audits, conditional S3 deletion and resumable crash recovery (ADR-0012, TD-005).
+- Resolve TD-005 after 166 backend/11 frontend tests and all local gates pass;
+  hosted run 37480916988 passes both jobs on adea461. Phase 6 remains in progress.
 - Record eight automation/notification acceptance criteria and ADR-0011.
 - Add typed event/delivery contracts, bounded retry/causation rules and Dramatiq
   transport with five tests, including real Redis. Full local suite: 141 backend

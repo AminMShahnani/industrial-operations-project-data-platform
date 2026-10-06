@@ -9,7 +9,7 @@ Empty at project start. Every intentional compromise must include owner/context,
 | TD-003 | Migration team; legacy source/data absent | Cannot inspect actual Mongo schema or validate live migration counts | Phase 10: obtain immutable legacy fixtures/export inventory; mapping/checksum and parallel-read tests; no cutover until verified |
 | TD-004 | Identity/operations; external provider deployment | Local PKCE fixture is verified; production provider, restricted runtime DB role and ingress topology are not deployed | Phase 10 deployment gate: provision provider and runtime/migration roles, validate rate limits and end-to-end production trust |
 
-| TD-005 | Files/operations; DB and object storage have separate transactions | Reconciliation implemented and verified locally; hosted verification pending | Phase 6: bounded inventory, explicit grace, fresh references/authority, upload locks, conditional deletion and audited replay implemented (ADR-0012); Phase 10 retains retention/quota/backup verification |
+| TD-005 (resolved) | Files/operations; DB and object storage have separate transactions | Reconciliation verified locally and hosted on adea461 / run 37480916988 | Phase 6: bounded inventory, explicit grace, fresh references/authority, upload locks, conditional deletion and audited replay implemented (ADR-0012); Phase 10 retains retention/quota/backup verification |
 
 Phase 1 introduces audited tenant persistence without an authentication bypass or
 industry coupling. Later phase namespaces remain planned ownership rather than
@@ -96,6 +96,7 @@ or deferred phase requirement is introduced by this increment.
 Private-storage reconciliation implements TD-005 with ten new tests and all local
 checks passing (166 backend/11 frontend). ADR-0012 and the Phase 6 runbook document
 grace, committed intents, upload/reference race protection, conditional deletes and
-crash-safe replay. Hosted verification remains pending for this increment. Attachment
+crash-safe replay. Hosted run 37480916988 passes both jobs on exact code adea461;
+TD-005 reconciliation is resolved. Attachment
 retention, quota and backup policies retain their Phase 10 owners. Remaining Phase 6
 requirements are not converted into debt or deferred to Phase 7.

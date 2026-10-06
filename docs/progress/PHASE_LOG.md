@@ -624,8 +624,11 @@ changed objects, adapter failure, crash recovery, transaction isolation and real
 S3-compatible bounded inventory/conditional-delete conformance. All 166 backend
 tests pass without skips in 113.16s, including prior browser/worker/migration flows.
 11 frontend tests pass; Ruff lint/format, Windows/Linux strict mypy (223 files),
-frontend lint/types/build, Alembic/OpenAPI drift and CLI help pass. Hosted verification
-is pending this code checkpoint. P6-07 gains its reconciliation requirement;
+frontend lint/types/build, Alembic/OpenAPI drift and CLI help pass. Hosted run
+https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/37480916988
+passes both jobs on exact code adea461d687d2a07bf8a8bb8b335a15e9145c623, including
+Linux tests/types, browser/worker flows, migrations and contract drift. TD-005 is
+resolved. P6-07 gains its reconciliation requirement;
 no complete P6 criterion is claimed. Phase 6 stays 0/8 and Phase 7 remains unstarted.
 All remaining action handlers, notifications/invitations, timer/due triggers,
 API/UI and queue/run telemetry remain required Phase 6 work, with none deferred.
