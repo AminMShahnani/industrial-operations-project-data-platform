@@ -76,3 +76,6 @@ outbox/rule/run persistence and source capture are implemented and tested. Actio
 handlers, worker consumers, notifications/email/invitations, scoped UI and TD-005
 reconciliation remain Phase 6 implementation requirements, not deferred debt.
 No production worker rollout or new authority bypass is introduced.
+
+Ledger checkpoint e1e84af passes hosted run 37462108788 and all local checks.
+No remaining Phase 6 requirement is deferred or converted into technical debt.

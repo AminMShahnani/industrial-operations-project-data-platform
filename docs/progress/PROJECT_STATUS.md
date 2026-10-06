@@ -63,14 +63,19 @@ identities, concurrent approval, migration and generated-contract drift.
 Phase 6 foundation hosted [37456658887](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/37456658887)
 passes both jobs on `66a321a55c12766d004567f168490d4c3d51a57d`, including strict
 Linux types, real Redis, prior browser flows and migration/contract checks. This
-does not accept Phase 6 criteria; Q-006 and dependent implementations remain open.
+does not accept Phase 6 criteria. Q-006 is now resolved; dependent acceptance work
+remains in progress.
 
 Delegated-ledger checkpoint: 148 backend tests pass without skips in 108.66s;
 11 frontend tests pass. Seven new integration tests cover source transaction rollback,
 exact form metadata, revoked delegation, activation authority, retirement/duplicate
 capture, immutable evidence, populated rollback refusal, loop/retry bounds and
 broker-publish crash recovery. Ruff lint/format, Windows/Linux strict mypy (213
-files), frontend lint/types/build and OpenAPI drift pass. Hosted verification pending.
+files), frontend lint/types/build and OpenAPI drift pass.
+Hosted [37462108788](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/37462108788)
+passes both jobs on exact code commit `e1e84af7c04bd2a616c93d7e9ed256cd5b288ca2`,
+including Linux tests/types, real browser identities, migrations and contract drift.
+This verifies the ledger checkpoint; Phase 6 remains 0/8 accepted.
 
 ## Migration status
 Development, isolated test and browser databases are at 8323b0dbac0e.

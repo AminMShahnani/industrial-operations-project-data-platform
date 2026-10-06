@@ -87,3 +87,6 @@ security/domain boundary; Phase 6 decisions remain subject to its own preparatio
 Delegated-ledger checkpoint: fresh authority, revocation and replay checks now have
 application-service integration tests. No new unresolved domain/security decision.
 ADR-0011 records atomic capture-time matching and retained execution evidence.
+
+Local and hosted ledger verification pass on e1e84af / run 37462108788. Q-006 stays
+resolved; remaining Phase 6 work does not require reopening its authority decision.

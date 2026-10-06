@@ -559,3 +559,9 @@ OpenAPI drift, empty migration roundtrip/drift and populated rollback refusal pa
 P6-01 through P6-08 remain 0/8 until API/UI, all authorized action handlers,
 worker/periodic consumers, notifications/invitations and TD-005 reconciliation pass
 their acceptance gates. No remaining acceptance requirement is deferred to Phase 7.
+
+Ledger code commit e1e84af7c04bd2a616c93d7e9ed256cd5b288ca2 passes hosted run
+https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/37462108788
+Both backend/frontend jobs pass, including Linux types, real PKCE browser flows,
+full migration roundtrip/drift and generated contracts. Development/test/browser
+databases are at 8323b0dbac0e. Phase 6 remains in progress with 0/8 accepted.
