@@ -1,7 +1,7 @@
 # Project Status
 
-Status: PHASE 5 COMPLETE
-Current phase: Phase 5 accepted; Phase 6 not started
+Status: PHASE 6 IN PROGRESS
+Current phase: Phase 6 - automation and notifications
 Last updated: 2026-10-06
 Overall completion: 6/11 phases accepted. Phase 0 through Phase 5 each
 satisfy 8/8 criteria. Phase 5: P5-01 through P5-08 PASS.
@@ -23,27 +23,34 @@ No unsupported project-wide percentage is reported.
 - Scoped assigned-action inbox, administration and immutable evidence/history UI.
 
 ## In progress
-None. Phase 5 accepted on d91dfce, hosted run 37454353238. Phase 6 unstarted.
+Phase 6 typed event/delivery contracts, bounded retry/causation rules and tested
+Dramatiq transport. Durable outbox persistence, rule/runtime and notification
+integration remain current-phase work. 0/8 accepted; Q-006 blocks dependent writes.
+Phase 5 remains accepted on d91dfce / hosted run 37454353238.
 
 ## Blocked
-None. Q-005 resolved: independent approval is mandatory, including administrators.
+Q-006: worker execution authority pending; dependent automated writes must wait.
+Independent worker/contracts preparation can proceed. Q-005 resolved: independent
+approval is mandatory, including administrators.
 ADR-0010 accepted on 2026-10-06.
 Q-004 resolved by user: shared task claimed by one eligible member.
 Legacy export absent.
 
 ## Next 5 tasks
-1. Review Phase 6 automation/notification requirements before implementation.
-2. Write Phase 6 acceptance criteria and resolve worker architecture through an ADR.
-3. Design typed immutable rule versions, event contracts and durable execution.
-4. Integrate idempotent notification delivery with retained workflow/task intents.
-5. Verify Phase 6 local/hosted gates before any Phase 7 work.
+1. Resolve Q-006 and finalize delegated execution authority in ADR-0011.
+2. Add guarded durable outbox, rule version/run/attempt and delivery migrations.
+3. Implement authorized idempotent actions, dispatcher/worker and audited replay.
+4. Integrate notifications/invitations, scoped UI and TD-005 reconciliation.
+5. Verify all Phase 6 local/hosted criteria before any Phase 7 work.
 
 ## Test status
-136 backend tests pass locally without skips, including separate real Keycloak PKCE
+141 backend tests pass locally without skips, including separate real Keycloak PKCE
 submitter/approver logins, concurrent approval retries, preserved corrections,
 live group/project revocation and 156-action paged history. PostgreSQL migration
 roundtrip/isolation, Redis and private S3 remain covered. 11 frontend tests pass.
-Ruff lint/format and strict mypy on Windows/Linux (202 files),
+Phase 6 adds five retry/loop/schema/broker tests, including real isolated Redis
+delivery. Ruff lint/format and strict mypy Windows (207 files) pass; prior Phase 5
+Windows/Linux strict types passed on 202 files.
 Alembic drift, OpenAPI drift, frontend lint/types and production build pass.
 Final targeted revalidation: 15 workflow API/browser tests pass in 59.19 seconds.
 Hosted [37454353238](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/37454353238)

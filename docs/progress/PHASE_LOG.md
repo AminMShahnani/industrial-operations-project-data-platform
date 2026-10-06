@@ -489,3 +489,40 @@ Notification workers/email/timer automation remain Phase 6; configurable signatu
 remain V1.5; deployment/load/backup validation remains Phase 10. Unsupported manager
 relations fail explicitly under the documented where-supported assignment profile.
 No industry-specific Core behavior or new execution framework. Phase 6 unstarted.
+
+## Phase 6 preparation - 2026-10-06
+Read AGENTS.md first and numbered docs in numeric order. Sources: docs/03-07,
+10-12,16-23,25-28. Phase 5 retains 8/8 acceptance; overall 6/11 accepted.
+Acceptance criteria before implementation:
+- P6-01: Scoped typed rule definitions and immutable activated versions, validated
+  declarative conditions/action schemas and audited preview/activation.
+- P6-02: Atomic typed outbox events for supported operational triggers, durable
+  bounded dispatch/consumption and deterministic causation/loop protection.
+- P6-03: Approved execution authority, fresh target/recipient authorization and
+  industry-neutral action services; no governance bypass or arbitrary code.
+- P6-04: Durable runs/attempts/action receipts, retries/backoff, dead letters and
+  audited scoped replay; crash/concurrent duplicate processing is idempotent.
+- P6-05: Scoped in-app notifications and email adapter, existing task/workflow
+  intents, authorized invitation delivery and explicit uncertain SMTP outcomes.
+- P6-06: Accessible scoped rule/run/notification UI, current authority enforcement
+  and safe bounded history; private operational data is not leaked through notices.
+- P6-07: Reproducible worker/periodic execution, queue/run telemetry, TD-005 orphan
+  reconciliation and guarded migrations/rollback/replay operations runbook.
+- P6-08: Full unit/integration/API/browser/worker tests, migrations, lint/type/build
+  and contracts pass locally/hosted; ADR/progress/changelog and phase commits.
+0/8 accepted; no Phase 7 implementation. ADR-0011 selects Dramatiq/Redis with a
+PostgreSQL durable ledger. Q-006 proposes activating-administrator delegated
+authority with fresh scope checks; dependent writes await user resolution.
+
+### Phase 6 safe foundation checkpoint
+Added strict event/context and scoped ID-only delivery contracts; deterministic
+consumer identity, bounded exponential backoff and causation cycle/depth rejection.
+Locked Dramatiq 2.2.1 and tested its transport with stub and actual isolated Redis.
+Business retries will be owned by PostgreSQL rather than broker automatic retries.
+No automation action, authority bypass, notification/email delivery or public
+worker endpoint is enabled. No schema migration yet; head remains 71db385e7a02.
+Local gates: 141 backend tests pass without skips in 91.50s; 11 frontend tests;
+Ruff lint/format, strict mypy (207 files), frontend lint/types/build, Alembic and
+OpenAPI drift pass. Phase 5 acceptance-document run 37455189713 also passes.
+P6-01 through P6-08 remain 0/8; remaining work is not deferred or accepted.
+Q-006 remains pending and must resolve before dependent governed writes.

@@ -74,3 +74,12 @@ relationships fail explicitly rather than inventing domain data.
 
 Phase 5 accepted on d91dfce / hosted run 37454353238. No unresolved Phase 5
 security/domain boundary; Phase 6 decisions remain subject to its own preparation.
+
+## Pending Phase 6 security decision
+- Q-006 (2026-10-06): Whose authority executes background automation? docs/12
+  requires elevated permission for governance-changing actions but does not define
+  the worker principal. Recommended: activating administrator's bounded delegated
+  authority, with fresh checks on each run. Alternative: dedicated tenant service
+  identity with explicit scoped grants. ADR-0011 records both. User question pending;
+  AGENTS.md prohibits guessing this boundary. Independent contracts/worker design
+  can proceed; automated governed writes cannot.

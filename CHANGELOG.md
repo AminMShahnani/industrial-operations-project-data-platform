@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased - Phase 6 in progress (2026-10-06)
+
+- Record eight automation/notification acceptance criteria and ADR-0011.
+- Add typed event/delivery contracts, bounded retry/causation rules and Dramatiq
+  transport with five tests, including real Redis. Full local suite: 141 backend
+  and 11 frontend tests pass.
+- Execution authority Q-006 is pending; no automation actions or notification
+  delivery enabled. Phase 6 remains unaccepted (0/8).
+
 ## Unreleased - Phase 5 complete (2026-10-06)
 - Accept mandatory independent approval in ADR-0010; administrators cannot self-approve.
 - Add typed bounded workflow graphs and one/all/quorum/sequential approval invariants.

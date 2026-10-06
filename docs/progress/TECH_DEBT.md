@@ -62,3 +62,11 @@ Phase 5 accepted on d91dfce / hosted run 37454353238 with no deferred acceptance
 criterion or new implementation debt. Documented bounds and unsupported manager
 context are explicit product profiles; delivery/deployment obligations retain their
 Phase 6/10 owners. Phase 6 has not started.
+
+Phase 6 preparation: TD-005 reconciliation and notification/invitation delivery
+remain current-phase requirements. Q-006 is a security decision, not deferred debt.
+Worker/outbox foundation alone will not satisfy Phase 6 acceptance.
+
+Phase 6 foundation: scoped event contracts and transport have tests, but durable
+outbox/runs, actions, notification delivery/UI and reconciliation remain current
+implementation work. No retained data or migration was changed; no new bypass.
