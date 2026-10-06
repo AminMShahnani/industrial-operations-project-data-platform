@@ -24,14 +24,14 @@ function errorCode(value: unknown): string {
 }
 const initial: Definition = { schema_version: 1, sections: [{ key: 'main', label: 'Main', components: [] }] };
 
-export function FormStudio({ api, organization, workspace, project, canManage, canManageLibrary }: {
-  api: Client; organization: string; workspace: string; project: string; canManage: boolean; canManageLibrary: boolean;
+export function FormStudio({ api, organization, workspace, project, canManage, canManageLibrary, taskForm, taskDraft }: {
+  api: Client; organization: string; workspace: string; project: string; canManage: boolean; canManageLibrary: boolean; taskForm?: string | undefined; taskDraft?: string | undefined;
 }) {
   const [libraries, setLibraries] = useState<components['schemas']['LibraryArtifact'][]>([]);
   const [library, setLibrary] = useState('');
   const [libraryCursor, setLibraryCursor] = useState<string | null>(null);
   const [forms, setForms] = useState<Form[]>([]);
-  const [form, setForm] = useState('');
+  const [form, setForm] = useState(taskForm ?? '');
   const [versions, setVersions] = useState<Version[]>([]);
   const [number, setNumber] = useState(1);
   const [definition, setDefinition] = useState<Definition>(initial);
@@ -53,6 +53,7 @@ export function FormStudio({ api, organization, workspace, project, canManage, c
   const autosavePending = useRef(false);
   const locked = useRef(false);
   const key = useRef<string>(crypto.randomUUID());
+  const loadedTask = useRef('');
   const path = { organization_id: organization, workspace_id: workspace };
   const version = versions.find(item => item.number === number);
   const fields = definition.sections[section]?.components ?? [];
@@ -71,10 +72,10 @@ export function FormStudio({ api, organization, workspace, project, canManage, c
   useEffect(() => {
     let active = true;
     void api.GET(formsPath, { params: { path: { organization_id: organization, workspace_id: workspace }, query: { ...(project ? { project_id: project } : {}) } } }).then(result => {
-      if (active && result.data) { setForms(result.data.items); setCursor(result.data.next_cursor); setForm(result.data.items[0]?.id ?? ''); }
+      if (active && result.data) { setForms(result.data.items); setCursor(result.data.next_cursor); setForm(taskForm ?? result.data.items[0]?.id ?? ''); }
     }).catch(() => { if (active) setMessage('Forms could not be loaded.'); });
     return () => { active = false; };
-  }, [api, organization, workspace, project]);
+  }, [api, organization, workspace, project, taskForm]);
 
   useEffect(() => {
     let active = true;
@@ -93,6 +94,13 @@ export function FormStudio({ api, organization, workspace, project, canManage, c
   }, [version]);
 
   useEffect(() => { setAdvanced(selected ? JSON.stringify(selected, null, 2) : ''); }, [selected]);
+
+  useEffect(() => {
+    if (taskDraft && taskForm === form && versions.length && loadedTask.current !== taskDraft) {
+      loadedTask.current = taskDraft;
+      void loadDraft(taskDraft);
+    }
+  }, [taskDraft, taskForm, form, versions.length]);
 
   function updateField(changes: Partial<Field>) {
     setDefinition(current => ({ ...current, sections: current.sections.map((item, index) => index === section ? { ...item, components: (item.components ?? []).map((component, position) => position === field ? { ...component, ...changes } : component) } : item) }));
@@ -190,7 +198,7 @@ export function FormStudio({ api, organization, workspace, project, canManage, c
     await action(async () => {
       const result = await api.GET(draftPath, { params: { path: { ...path, submission_id: identifier } } });
       if (!result.data) { setMessage(errorCode(result.error)); return; }
-      const exact = await api.GET(versionPath, { params: { path: { ...path, form_id: form, number: result.data.form_number } } });
+      const exact = await api.GET(versionPath, { params: { path: { ...path, form_id: result.data.form_id, number: result.data.form_number } } });
       if (!exact.data) { setMessage(errorCode(exact.error)); return; }
       setVersions(current => [...current.filter(item => item.id !== exact.data.id), exact.data]); setNumber(exact.data.number);
       setDraft(result.data); setValues(result.data.values.fields ?? {}); setRuntime(undefined); dirty.current = false; key.current = result.data.submit_key ?? crypto.randomUUID();
@@ -216,7 +224,7 @@ export function FormStudio({ api, organization, workspace, project, canManage, c
   async function moreVersions() { if (!versionCursor) return; await action(async () => { const result = await api.GET(versionsPath, { params: { path: { ...path, form_id: form }, query: { cursor: versionCursor } } }); if (result.data) { setVersions(current => [...current, ...result.data.items]); setVersionCursor(result.data.next_cursor); } }); }
   return <section aria-label="Form Studio"><h2>Form Studio</h2><p>{project ? 'Project forms' : 'Workspace forms'} ? Definitions are immutable after publication.</p>
     {message && <p role="status">{message.replaceAll('_', ' ')}</p>}
-    <label>Form<select disabled={busy} value={form} onChange={event => setForm(event.target.value)}><option value="">Choose a form</option>{forms.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
+    <label>Form<select aria-label="Form" disabled={busy} value={form} onChange={event => setForm(event.target.value)}><option value="">Choose a form</option>{forms.map(item => <option key={item.id} value={item.id}>{item.name}</option>)}</select></label>
     {cursor && <button disabled={busy} onClick={() => void moreForms()}>Load more forms</button>}
     {form && <><label>Version<select disabled={busy} value={number} onChange={event => { setNumber(Number(event.target.value)); setDraft(undefined); dirty.current = false; }}>
       {versions.map(item => <option key={item.id} value={item.number}>{item.number} ? {item.state}</option>)}</select></label>{versionCursor && <button disabled={busy} onClick={() => void moreVersions()}>Load more versions</button>}

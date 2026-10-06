@@ -1,6 +1,6 @@
 # Project Status
 
-Status: PHASE 4 PREPARATION - ASSIGNMENT DECISION PENDING
+Status: PHASE 4 IN PROGRESS
 Current phase: Phase 4 - scheduling and tasks
 Last updated: 2026-10-06
 Overall completion: 4/11 phases accepted. Phase 0, Phase 1, Phase 2 and Phase 3 each
@@ -17,37 +17,39 @@ No unsupported project-wide percentage is reported.
 - Autosave, immutable submissions/signatures and private fail-closed attachments.
 
 ## In progress
-Phase 4 source review and acceptance checklist complete. P4-01 through P4-08:
-0/8 accepted. ADR-0009 is proposed; assignment-dependent implementation awaits Q-004.
+Phase 4 implementation and full local gates pass. P4-01 through P4-08:
+0/8 finally accepted pending hosted CI. ADR-0009 accepted; Q-004 resolved.
 
 ## Blocked
-Q-004: shared claimed group task versus separate per-recipient tasks. This determines
-claim/completion authority and submission ownership. User question pending; no
-assignment policy or schema has been implemented by assumption. Legacy export absent.
+None. Q-004 resolved by user: shared task claimed by one eligible member.
+Legacy export absent.
 
 ## Next 5 tasks
-1. Resolve Q-004 and accept ADR-0009 with the selected assignment semantics.
-2. Add typed schedule, shift, occurrence and reminder contracts and guarded migrations.
-3. Implement bounded recurrence, idempotent materialization and scoped task execution.
-4. Add My Work/admin UI, reminders, shift defaults and positive/negative tests.
-5. Run all local/hosted gates and record Phase 4 acceptance before Phase 5.
+1. Finish final targeted checks after live group/role authorization hardening.
+2. Commit and push the Phase 4 implementation.
+3. Verify hosted backend/frontend CI on that exact implementation commit.
+4. Record accepted criteria, run evidence and final phase-oriented progress commit.
+5. Await the next phase instruction; Phase 5 remains unstarted.
 
 ## Test status
-90 backend tests pass locally without skips, including real Keycloak PKCE browser,
+111 backend tests pass locally without skips, including real Keycloak PKCE browser,
 PostgreSQL isolation/history and migration roundtrip, Redis and private S3.
-7 frontend tests pass. Ruff lint/format, strict mypy on Windows and Linux (172 files),
+9 frontend tests pass. Ruff lint/format, strict mypy on Windows and Linux (184 files),
 Alembic drift, OpenAPI drift, frontend lint/types and production build pass.
 Hosted Phase 3 run [37363436134](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/37363436134) passes both jobs on
 code commit fad771b, including Linux tests, real PKCE browser and contract drift.
 
 ## Migration status
-Development and isolated test databases are at dbd58764eb86. Phase 3 adds
+Development, isolated test and browser databases are at b71acf0449b2. Phase 4 adds
+guarded immutable schedules, tasks, recipients, shifts, triggers, reminders and
+project milestones. Empty roundtrip/drift pass; populated downgrade refuses.
+Phase 3 adds
 464245e2e729 and dbd58764eb86, with immutable versions/submissions/files,
 composite ownership protection and populated rollback guards. Phase 2 adds
 99e791752349 then 4c982bc7d8c5. Composite tenant/workspace keys, department-only
 relationships, immutable definitions/identities and history protection are tested.
 Populated downgrade refuses before deletion; documented restore/reconciliation
-strategies are in docs/operations/PHASE_2_RUNBOOK.md and PHASE_3_RUNBOOK.md.
+strategies are in docs/operations/PHASE_2_RUNBOOK.md, PHASE_3_RUNBOOK.md and PHASE_4_RUNBOOK.md.
 No legacy migration performed.
 
 ## Known tech debt

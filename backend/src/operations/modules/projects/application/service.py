@@ -10,6 +10,7 @@ from operations.modules.master_data.application.contracts import MasterDataReade
 from operations.modules.projects.application.contracts import (
     DepartmentProjectGrant,
     LifecycleDefinition,
+    Milestone,
     Project,
     ProjectContext,
     ProjectMembership,
@@ -27,6 +28,9 @@ PROJECT_PERMISSIONS = {
             "form.publish",
             "submission.create",
             "submission.read",
+            "schedule.manage",
+            "task.read",
+            "task.execute",
             "project.read",
             "project.manage",
             "project.members.manage",
@@ -34,9 +38,16 @@ PROJECT_PERMISSIONS = {
             "master_data.manage",
         }
     ),
-    ProjectRole.VIEWER: frozenset({"project.read", "master_data.read", "form.read"}),
+    ProjectRole.VIEWER: frozenset({"project.read", "master_data.read", "form.read", "task.read"}),
     ProjectRole.CONTRIBUTOR: frozenset(
-        {"project.read", "master_data.read", "form.read", "submission.create"}
+        {
+            "project.read",
+            "master_data.read",
+            "form.read",
+            "submission.create",
+            "task.read",
+            "task.execute",
+        }
     ),
 }
 
@@ -50,6 +61,21 @@ def effective(grant: ProjectMembership | DepartmentProjectGrant, now: datetime) 
 
 
 class ProjectService:
+    def add_milestone(self, actor: RequestContext, row: Milestone) -> Milestone:
+        project = self.require_access(
+            actor, row.organization_id, row.workspace_id, row.project_id, "project.manage"
+        )
+        if project.state in project.lifecycle.terminal:
+            raise ServiceError(409, "terminal_project")
+        self.store.add_milestone(row)
+        self.event(actor, project, "project.milestone.created", row.id)
+        return row
+
+    def milestone(
+        self, org: UUID, workspace: UUID, project: UUID, identifier: UUID
+    ) -> Milestone | None:
+        return self.store.milestone(org, workspace, project, identifier)
+
     def __init__(
         self,
         store: ProjectStore,

@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.5.0 - Phase 4 scheduling and shared tasks (2026-10-06)
+- Add immutable schedule versions, bounded timezone-aware recurrence and scoped shifts/triggers/milestones.
+- Add idempotent shared occurrences, atomic claims, private drafts and transactional task submission.
+- Add scoped My Work, version administration and durable in-app reminders with periodic CLI.
+- Add tenant-safe migrations/history protection, ADR-0009 and the Phase 4 runbook.
+- Acceptance pending final local and hosted gates.
+
 ## 0.4.0 - Phase 3 governed forms (2026-10-05)
 - Add immutable versioned forms, reusable pinned libraries and bounded declarative expressions.
 - Add scoped Form Studio, authoritative runtime validation, autosave and immutable submissions.

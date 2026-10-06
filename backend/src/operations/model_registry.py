@@ -29,13 +29,23 @@ from operations.modules.organizations.infrastructure.persistence import (
 from operations.modules.projects.infrastructure.persistence import (
     DepartmentProjectGrantRow as DepartmentProjectGrantRow,
 )
+from operations.modules.projects.infrastructure.persistence import MilestoneRow as MilestoneRow
 from operations.modules.projects.infrastructure.persistence import (
     ProjectMembershipRow as ProjectMembershipRow,
 )
 from operations.modules.projects.infrastructure.persistence import (
     ProjectRow as ProjectRow,
 )
+from operations.modules.scheduling.infrastructure.persistence import ScheduleRow as ScheduleRow
+from operations.modules.scheduling.infrastructure.persistence import (
+    ScheduleVersionRow as ScheduleVersionRow,
+)
+from operations.modules.scheduling.infrastructure.persistence import ShiftRow as ShiftRow
+from operations.modules.scheduling.infrastructure.persistence import TriggerRow as TriggerRow
 from operations.modules.submissions.infrastructure.persistence import SubmissionRow as SubmissionRow
+from operations.modules.tasks.infrastructure.persistence import RecipientRow as RecipientRow
+from operations.modules.tasks.infrastructure.persistence import ReminderRow as ReminderRow
+from operations.modules.tasks.infrastructure.persistence import TaskRow as TaskRow
 from operations.modules.workspaces.infrastructure.groups import (
     GroupMembershipRow as GroupMembershipRow,
 )

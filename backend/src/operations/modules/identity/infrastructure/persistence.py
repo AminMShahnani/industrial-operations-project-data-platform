@@ -68,6 +68,17 @@ def user_contract(row: UserRow) -> User:
 
 
 class IdentityRepository:
+    def active_users(self, organization_id: UUID, after: UUID | None) -> list[User]:
+        query = select(UserRow).where(
+            UserRow.organization_id == organization_id, UserRow.active.is_(True)
+        )
+        if after:
+            query = query.where(UserRow.id > after)
+        return [
+            User(row.id, row.organization_id, row.issuer, row.subject, row.email, row.active)
+            for row in self.session.scalars(query.order_by(UserRow.id).limit(101))
+        ]
+
     def __init__(self, session: Session) -> None:
         self.session = session
 

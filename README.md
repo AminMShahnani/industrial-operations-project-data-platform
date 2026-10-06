@@ -67,3 +67,5 @@ in Git. Production deployment, provider provisioning, backups and UAT remain gat
 Phase 2 project, department and master-data operations: [runbook](docs/operations/PHASE_2_RUNBOOK.md).
 
 Phase 3 form, submission and file operations: [runbook](docs/operations/PHASE_3_RUNBOOK.md).
+
+Phase 4 scheduling, shared tasks and reminders: [runbook](docs/operations/PHASE_4_RUNBOOK.md).

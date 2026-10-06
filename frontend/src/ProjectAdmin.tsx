@@ -5,6 +5,7 @@ import type { apiClient } from './client';
 import { FormStudio } from './FormStudio';
 import { MasterDataAdmin } from './MasterDataAdmin';
 import { MemberLookup } from './MemberLookup';
+import { Scheduling } from './Scheduling';
 
 type Project = MethodResponse<ReturnType<typeof apiClient>, 'get', '/api/v1/organizations/{organization_id}/workspaces/{workspace_id}/projects/{project_id}'>;
 type Group = components['schemas']['Group'];
@@ -16,6 +17,7 @@ export function ProjectAdministration({ api, organization, workspace }: { api: C
   const [projects, setProjects] = useState<Project[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
   const [selected, setSelected] = useState('');
+  const [taskForm, setTaskForm] = useState<{id:string;form:string;draft:string}>();
   const [permissions, setPermissions] = useState<string[]>([]);
   const [projectPermissions, setProjectPermissions] = useState<string[]>([]);
   const [cursor, setCursor] = useState<string | null>(null);
@@ -49,6 +51,7 @@ export function ProjectAdministration({ api, organization, workspace }: { api: C
 
   useEffect(() => {
     setPreview(undefined); setProjectPermissions([]); setMember(''); setLastMembership(undefined);
+    setTaskForm(undefined);
     if (!selected) return;
     let alive = true;
     void api.GET(`${projectPath}/permissions`, { params: { path: { ...path, project_id: selected } } }).then(result => {
@@ -267,8 +270,10 @@ export function ProjectAdministration({ api, organization, workspace }: { api: C
       </form>
       {lastMembership && <button disabled={busy} onClick={() => void revokeLastMembership()}>Revoke the last access grant</button>}
     </>}
-    <FormStudio key={'forms' + organization + workspace + selected} api={api} organization={organization} workspace={workspace} project={selected}
-      canManage={selected ? projectPermissions.includes('form.manage') : permissions.includes('form.manage')} canManageLibrary={permissions.includes('form.manage')} />
+    <Scheduling key={'work'+organization+workspace+selected} api={api} organization={organization} workspace={workspace} project={selected}
+      canManage={selected?projectPermissions.includes('schedule.manage'):permissions.includes('schedule.manage')} onOpen={task=>{if(task.submission_id)setTaskForm({id:task.id,form:task.form_id,draft:task.submission_id});}} />
+    <FormStudio key={'forms' + organization + workspace + selected + (taskForm?.id??'')} api={api} organization={organization} workspace={workspace} project={selected}
+      canManage={selected ? projectPermissions.includes('form.manage') : permissions.includes('form.manage')} canManageLibrary={permissions.includes('form.manage')} taskForm={taskForm?.form} taskDraft={taskForm?.draft}/>
     <MasterDataAdmin key={organization + workspace + selected} api={api} organization={organization} workspace={workspace} project={selected}
       canManage={selected ? projectPermissions.includes('master_data.manage') : permissions.includes('master_data.manage')} />
   </section>;

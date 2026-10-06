@@ -31,3 +31,11 @@ Phase 6 worker/notification and Phase 10 deployment responsibilities remain assi
 to their owning phases. Phase 4 must provide reproducible periodic materialization,
 idempotent in-app reminders and typed handoffs; later delivery adapters do not waive
 its scheduling/task acceptance criteria. Q-004 is an open requirement, not tech debt.
+
+Q-004 was subsequently resolved by the user: one shared task/atomic claimant.
+Phase 4 uses a bounded documented recurrence profile, 1000 recipients per assignment,
+2000 work items per generation window and bounded activation supersession. Large
+replacement plans and throughput/load verification remain explicit operational
+planning and Phase 10 validation; these bounds are not silently expanded. No queue
+framework introduced before Phase 6 selection. Current in-app reminder records are
+the durable typed handoff for that phase's notification delivery.

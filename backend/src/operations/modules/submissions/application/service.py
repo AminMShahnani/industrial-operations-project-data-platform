@@ -34,10 +34,16 @@ class AttachmentReader(Protocol):
     ) -> None: ...
 
 
+class SubmissionObserver(Protocol):
+    def validate_write(self, actor: RequestContext, submission: Submission) -> None: ...
+    def submitted(self, actor: RequestContext, submission: Submission) -> None: ...
+
+
 class SubmissionService:
     def __init__(self, store: SubmissionStore, forms: FormService) -> None:
         self.store, self.forms = store, forms
         self.attachments: AttachmentReader | None = None
+        self.observer: SubmissionObserver | None = None
 
     def access(
         self,
@@ -59,6 +65,8 @@ class SubmissionService:
                 raise ServiceError(403, "submission_owner_required")
             if row.state != "draft":
                 raise ServiceError(409, "immutable_submission")
+            if self.observer:
+                self.observer.validate_write(actor, row)
         elif row.owner_id != user.id and (
             row.state != "submitted" or "submission.read" not in permissions
         ):
@@ -300,4 +308,6 @@ class SubmissionService:
         if row.revision != expected or not self.store.save(updated, expected):
             raise ServiceError(409, "version_conflict")
         self.forms.event(actor, form, "submission.submitted", identifier, updated.revision)
+        if self.observer:
+            self.observer.submitted(actor, updated)
         return updated

@@ -1,8 +1,11 @@
+import json
 import os
 import subprocess
 import time
 import urllib.error
 import urllib.request
+from concurrent.futures import ThreadPoolExecutor
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from uuid import uuid7
 
@@ -227,6 +230,88 @@ def test_real_oidc_pkce_login_and_workspace_creation(monkeypatch: pytest.MonkeyP
                     page.get_by_role("status").filter(
                         has_text="Submission preserved as an immutable snapshot."
                     )
+                ).to_be_visible()
+                form_id = page.get_by_label("Form", exact=True).input_value()
+                page.get_by_text("Schedule administration", exact=True).click()
+                page.get_by_label("Schedule name", exact=True).fill("Browser scheduled report")
+                page.get_by_label("Schedule form ID", exact=True).fill(form_id)
+                page.get_by_role("button", name="Create schedule draft", exact=True).click()
+                expect(
+                    page.get_by_role("status").filter(has_text="Schedule draft created.")
+                ).to_be_visible()
+                with page.expect_request(
+                    lambda request: request.url.endswith("/activate")
+                ) as activation_request:
+                    page.get_by_role("button", name="Preview activation", exact=True).click()
+                authorization = activation_request.value.headers["authorization"]
+                expect(
+                    page.get_by_role("button", name="Activate reviewed schedule", exact=True)
+                ).to_be_visible()
+                page.get_by_role("button", name="Activate reviewed schedule", exact=True).click()
+                expect(
+                    page.get_by_role("status").filter(has_text="Schedule activated.")
+                ).to_be_visible()
+                schedule_id = page.get_by_label("Schedule", exact=True).input_value()
+                workspace_id = page.get_by_label("Workspace", exact=True).input_value()
+                route = f"http://127.0.0.1:8077/api/v1/organizations/{organization.id}/workspaces/{workspace_id}"
+                now = datetime.now(UTC)
+                window = {
+                    "start": now.isoformat(),
+                    "end": (now + timedelta(days=30)).isoformat(),
+                    "dry_run": False,
+                }
+
+                def post(url: str, body: dict[str, object]) -> dict[str, object]:
+                    request = urllib.request.Request(
+                        url,
+                        data=json.dumps(body).encode(),
+                        headers={
+                            "Authorization": authorization,
+                            "Content-Type": "application/json",
+                        },
+                        method="POST",
+                    )
+                    with urllib.request.urlopen(request, timeout=30) as response:
+                        result: dict[str, object] = json.load(response)
+                        return result
+
+                with ThreadPoolExecutor(max_workers=2) as pool:
+                    futures = [
+                        pool.submit(post, route + f"/schedules/{schedule_id}/materialize", window)
+                        for _ in range(2)
+                    ]
+                    results = [future.result() for future in futures]
+                assert sum(int(str(result["created"])) for result in results) == 30
+                page.get_by_role("button", name="Refresh My Work", exact=True).click()
+                expect(
+                    page.get_by_role("button", name="Claim task", exact=True).first
+                ).to_be_visible()
+                with page.expect_request(
+                    lambda request: request.url.endswith("/start")
+                ) as claim_request:
+                    page.get_by_role("button", name="Claim task", exact=True).first.click()
+                expect(page.get_by_role("status").filter(has_text="Task claimed.")).to_be_visible()
+                with ThreadPoolExecutor(max_workers=2) as pool:
+                    futures = [
+                        pool.submit(post, claim_request.value.url, {"expected_revision": 1})
+                        for _ in range(2)
+                    ]
+                    claims = [future.result() for future in futures]
+                assert claims[0]["submission_id"] == claims[1]["submission_id"]
+                page.get_by_label("Reported count", exact=True).fill("7")
+                expect(page.get_by_role("status").filter(has_text="Draft saved.")).to_be_visible()
+                page.get_by_label("Submission reason", exact=True).fill("Scheduled work complete")
+                page.get_by_role("button", name="Submit form", exact=True).click()
+                expect(
+                    page.get_by_role("status").filter(
+                        has_text="Submission preserved as an immutable snapshot."
+                    )
+                ).to_be_visible()
+                page.get_by_role("button", name="Refresh My Work", exact=True).click()
+                expect(
+                    page.get_by_text("submitted", exact=False)
+                    .filter(has_text="Browser scheduled report")
+                    .first
                 ).to_be_visible()
                 assert page.evaluate(
                     "Object.keys(localStorage).concat(Object.keys(sessionStorage))"

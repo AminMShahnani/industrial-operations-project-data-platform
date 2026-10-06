@@ -328,3 +328,36 @@ Acceptance criteria written before Phase 4 feature implementation:
 Q-004 is pending: shared claim versus per-recipient completion for group targets.
 ADR-0009 records this unresolved ownership/security boundary. Do not guess it.
 Phase 5 has not started; no Phase 4 requirement is silently deferred.
+
+### Phase 4 assignment decision resolved
+User selected the recommended shared occurrence with one atomic claimant on
+2026-10-06. Q-004 resolved; ADR-0009 accepted. Every action rechecks live scoped
+permissions; assignment snapshots grant no access and private drafts remain owned
+by the claimant. Typed contracts and migrations now precede feature implementation.
+
+### Phase 4 implementation and targeted validation
+Added typed schedule/version/assignment/recurrence/shift/trigger/task/reminder
+contracts and guarded b71acf0449b2 migration before application slices. Version
+activation is preview/hash/revision guarded. Active definitions and recipient
+snapshots are immutable; history deletion/truncation and populated rollback deny.
+Generic milestones remain project-owned; shift defaults use the trusted Phase 3 port.
+Implemented bounded timezone/DST recurrence, deterministic snapshot recipients,
+idempotent generation, atomic shared claims and private drafts. Exact submission
+updates its task in the same transaction. Added My Work, version administration,
+in-app reminders and scoped periodic CLI. No industry semantics added to Core.
+Targeted results: 13 recurrence tests, 8 API tests, 9 frontend tests and the real
+PKCE browser flow pass. Browser exercises concurrent generation/claim retries,
+autosave and immutable task submission. Complete local/hosted gates pending;
+0/8 finally accepted. Phase 5 has not started.
+
+Full local gates PASS: 111 backend tests, zero skips; 9 frontend tests; Ruff,
+strict mypy Windows/Linux (184 files), migration roundtrip/drift, OpenAPI drift,
+frontend lint/types/build. Browser proves concurrent real HTTP materialization,
+claim idempotency and transactional exact-version submission. Final live group/role
+authorization checks added after that run; targeted revalidation pending. Hosted
+acceptance pending. No Phase 4 acceptance criterion deferred. Email/queue delivery,
+workflow approval/actions and production deployment retain their Phase 6/5/10 owners.
+
+Final targeted revalidation PASS: all 8 Phase 4 API cases including tenant user
+revocation, removed-team-member denial, cancellation and exact task submission;
+strict mypy, Ruff and frontend lint/types pass. Generated OpenAPI remains in sync.

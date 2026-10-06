@@ -85,6 +85,10 @@ class DepartmentProjectGrant(Command):
 
 
 class ProjectStore(Protocol):
+    def add_milestone(self, row: Milestone) -> None: ...
+    def milestone(
+        self, org: UUID, workspace: UUID, project: UUID, identifier: UUID
+    ) -> Milestone | None: ...
     def get(
         self, organization_id: UUID, workspace_id: UUID, project_id: UUID
     ) -> Project | None: ...
@@ -111,3 +115,18 @@ class ProjectStore(Protocol):
         self, organization_id: UUID, project_id: UUID, grant_id: UUID
     ) -> DepartmentProjectGrant | None: ...
     def revoke_department_grant(self, organization_id: UUID, grant_id: UUID) -> None: ...
+
+
+class Milestone(Command):
+    id: UUID
+    organization_id: UUID
+    workspace_id: UUID
+    project_id: UUID
+    name: str = Field(min_length=1, max_length=120)
+    planned_at: datetime
+
+    @model_validator(mode="after")
+    def aware(self) -> Milestone:
+        if self.planned_at.tzinfo is None:
+            raise ValueError("Aware milestone timestamp required")
+        return self

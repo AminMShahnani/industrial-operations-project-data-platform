@@ -18,12 +18,29 @@ from sqlalchemy.orm import Mapped, Session, mapped_column
 from operations.modules.projects.application.contracts import (
     DepartmentProjectGrant,
     LifecycleDefinition,
+    Milestone,
     Project,
     ProjectContext,
     ProjectMembership,
     ProjectRole,
 )
 from operations.platform.database import Base
+
+
+class MilestoneRow(Base):
+    __tablename__ = "project_milestones"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["organization_id", "workspace_id", "project_id"],
+            ["projects.organization_id", "projects.workspace_id", "projects.id"],
+        ),
+    )
+    id: Mapped[UUID] = mapped_column(primary_key=True)
+    organization_id: Mapped[UUID]
+    workspace_id: Mapped[UUID]
+    project_id: Mapped[UUID]
+    name: Mapped[str] = mapped_column(String(120))
+    planned_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
 
 class ProjectRow(Base):
@@ -163,6 +180,27 @@ def department_contract(row: DepartmentProjectGrantRow) -> DepartmentProjectGran
 
 
 class ProjectRepository:
+    def add_milestone(self, row: Milestone) -> None:
+        self.session.add(MilestoneRow(**row.model_dump()))
+        self.session.flush()
+
+    def milestone(
+        self, org: UUID, workspace: UUID, project: UUID, identifier: UUID
+    ) -> Milestone | None:
+        row = self.session.scalar(
+            select(MilestoneRow).where(
+                MilestoneRow.organization_id == org,
+                MilestoneRow.workspace_id == workspace,
+                MilestoneRow.project_id == project,
+                MilestoneRow.id == identifier,
+            )
+        )
+        return (
+            Milestone.model_validate({k: getattr(row, k) for k in Milestone.model_fields})
+            if row
+            else None
+        )
+
     def __init__(self, session: Session) -> None:
         self.session = session
 

@@ -22,8 +22,12 @@ from operations.modules.organizations.application.service import OrganizationSer
 from operations.modules.organizations.infrastructure.persistence import OrganizationRepository
 from operations.modules.projects.application.service import ProjectService
 from operations.modules.projects.infrastructure.persistence import ProjectRepository
+from operations.modules.scheduling.application.service import SchedulingDefaults, SchedulingService
+from operations.modules.scheduling.infrastructure.persistence import ScheduleRepository
 from operations.modules.submissions.application.service import SubmissionService
 from operations.modules.submissions.infrastructure.persistence import SubmissionRepository
+from operations.modules.tasks.application.service import TaskService
+from operations.modules.tasks.infrastructure.persistence import TaskRepository
 from operations.modules.workspaces.application.group_service import GroupService
 from operations.modules.workspaces.application.service import WorkspaceService
 from operations.modules.workspaces.infrastructure.groups import GroupRepository
@@ -33,6 +37,8 @@ from operations.platform.config import Settings
 
 @dataclass(frozen=True)
 class Services:
+    scheduling: SchedulingService
+    tasks: TaskService
     forms: FormService
     submissions: SubmissionService
     files: FileService
@@ -84,7 +90,13 @@ def compose(
         S3Storage(settings),
     )
     submissions.attachments = files
+    schedules = SchedulingService(ScheduleRepository(session), forms)
+    forms.default_context = SchedulingDefaults(schedules.store)
+    tasks = TaskService(TaskRepository(session), schedules, submissions)
+    submissions.observer = tasks
     return Services(
+        schedules,
+        tasks,
         forms,
         submissions,
         files,
