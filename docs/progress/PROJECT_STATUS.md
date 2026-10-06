@@ -34,7 +34,8 @@ Bounded scheduled timers and task due/overdue source generation are implemented
 and verified locally/hosted; periodic evidence is immutable and task lifecycle stays intact.
 In-app automation notices and their personal scoped API/inbox UI are implemented.
 Automatic task/review/notify/reminder delivery, retry/skip evidence and shared worker
-routing are implemented. Historical handoff reconciliation and notification replay,
+routing are implemented. Reviewed, audited notification replay is implemented through
+a scoped operator command. Historical handoff reconciliation,
 generic tasks, tags/flags, webhooks, email/invitations,
 rule/run UI and telemetry remain current-phase
 work. 0/8 accepted; Q-006 is resolved.
@@ -49,7 +50,7 @@ Q-004 resolved by user: shared task claimed by one eligible member.
 Legacy export absent.
 
 ## Next 5 tasks
-1. Implement bounded historical handoff reconciliation and notification replay.
+1. Implement bounded historical handoff reconciliation with explicit provenance.
 2. Complete email/invitation adapters and queue/run telemetry.
 3. Expose scoped rule/run management and audited replay through typed API/UI.
 4. Implement generic task, tag/flag and webhook handlers.
@@ -163,6 +164,16 @@ dispatcher CLI checks pass. ADR-0015 records the policy. Hosted
 [37511023333](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/37511023333)
 passes both jobs on exact code `2cebf5ed8e4235e90056721c16932a45cc7e37de`, including
 Linux tests/types, real PKCE browser and Redis worker flows, migrations and contracts.
+Phase 6 remains 0/8 accepted.
+
+Controlled replay increment: 203 backend tests pass without skips in 175.74s;
+11 frontend tests pass. Eight new cases cover reviewed replay, scope/authority,
+terminal states, preserved history, cancellation, stale progress and the attempt cap.
+Eight committed concurrent requests produce one requeue/audit. A forced two-session
+tenant/identity lock regression and the real browser/worker flows pass. Ruff
+lint/format (308 files), strict mypy (243 files), frontend lint/types/build, migration
+roundtrip/drift, generated API/OpenAPI drift and CLI checks pass. ADRs 0016/0017
+record replay and locking policy. Hosted exact-code verification is pending.
 Phase 6 remains 0/8 accepted.
 
 ## Migration status

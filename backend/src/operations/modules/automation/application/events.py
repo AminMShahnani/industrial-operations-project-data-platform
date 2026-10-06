@@ -112,6 +112,14 @@ class Delivery(Command):
     error_code: str | None = None
 
 
+class NotificationReplayReview(Command):
+    delivery: Delivery
+    workspace_id: UUID
+    project_id: UUID | None
+    review_sha256: str = Field(pattern=r"^[0-9a-f]{64}$")
+    applied: bool = False
+
+
 class EventWriter(Protocol):
     def append(self, event: OperationalEvent) -> None: ...
 

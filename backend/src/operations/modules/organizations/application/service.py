@@ -34,6 +34,10 @@ class OrganizationService:
             raise ServiceError(403, "organization_suspended")
         return organization
 
+    def lock(self, organization_id: UUID) -> None:
+        """Owning application handoff for consistent tenant-first transaction locking."""
+        self.store.get(organization_id)
+
     def read(self, context: RequestContext, organization_id: UUID) -> Organization:
         self.authorization.require(
             context,

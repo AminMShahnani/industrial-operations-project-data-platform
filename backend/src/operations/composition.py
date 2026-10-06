@@ -79,11 +79,12 @@ def compose(
 ) -> Services:
     audit = AuditedEventBus(AuditRepository(session, principal))
     audit.capture = EventCapture(AutomationRepository(session), audit).capture
-    identities = IdentityRepository(session)
+    organization_store = OrganizationRepository(session)
+    identities = IdentityRepository(session, organization_store)
     grants = GrantRepository(session)
     authorization = Authorization(identities, grants, audit)
     organizations = OrganizationService(
-        OrganizationRepository(session),
+        organization_store,
         identities,
         grants,
         authorization,

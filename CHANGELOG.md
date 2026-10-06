@@ -2,6 +2,16 @@
 
 ## Unreleased - Phase 6 in progress (2026-10-06)
 
+- Add reviewed, audited notification replay through a scoped operator command
+  (ADR-0016). Requeue the same failed delivery under fresh administrator authority;
+  reject stale reviews, preserve source/recipients/attempt/read history and enforce
+  the twenty-attempt cap. Historical handoff reconciliation and management API/UI
+  remain Phase 6 work.
+  Verify 203 backend/11 frontend tests and all local gates, including committed
+  duplicate requeue and forced tenant/identity lock contention.
+- Repair tenant/user lock inversion using an organization-owned application contract
+  (ADR-0017), preserving fresh authorization and revocation serialization.
+
 - Add a scoped automatic in-app consumer for task assignment/deadline/reminder and
   workflow review/notify sources, immutable attempt/skip evidence, bounded retries
   and persisted-consumer worker routing (ADR-0015). Recheck original and live

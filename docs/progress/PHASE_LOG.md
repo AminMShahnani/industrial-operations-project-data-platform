@@ -727,3 +727,35 @@ acceptance criterion is claimed; Phase 6 stays 0/8 and Phase 7 is unstarted.
 Historical handoff reconciliation, controlled notification replay, email/invitations,
 generic tasks, tags/flags, webhooks, rule/run UI and telemetry remain current-phase
 requirements. No item is deferred.
+
+## Phase 6 controlled notification replay - 2026-10-06
+
+Read AGENTS.md and numbered source documents in order. docs/12,19-23 require
+retryable idempotent work, fresh tenant authorization, immutable evidence and
+documented replay operations. ADR-0016 specifies a trusted scoped preview/apply
+command for one failed notification delivery. Fresh organization.manage and scoped
+automation.manage checks gate preview and apply. Apply compares a locked delivery
+to its reviewed SHA-256, requires a bounded reason and atomically audits requeue.
+No source, recipient, attempt, notice or read history is rewritten. Completed
+deliveries cannot replay and the twenty-attempt cap is never reset. Dispatch and
+worker eligibility checks remain authoritative. No schema migration is needed.
+
+Seven integration cases cover preview purity, success/duplicate apply, reasons,
+scope/consumer mismatch, revocation, cancellation after replay, stale worker
+progress, terminal states and the total attempt cap. One retained committed fixture
+tests eight concurrent apply requests: one requeue/audit and seven stale conflicts.
+The full suite reproduced the prior browser invitation/API user/organization
+deadlock; network-idle waiting was insufficient. ADR-0017 records organization-first
+identity/worker locking through owning application contracts, preserving policy and
+revocation serialization. A committed two-session regression forces both former
+call orders and actual PostgreSQL lock contention without weakening locks.
+
+All 203 backend tests pass without skips in 175.74s; 11 frontend tests pass.
+Ruff lint/format (308 files), strict mypy (243 files), frontend lint/types/build,
+empty migration roundtrip/drift, generated API/OpenAPI drift and replay CLI checks
+pass. Database head stays a5fa16a227ff; no stored evidence is rewritten. Hosted
+exact-code verification is pending. Completed implementation increment:
+reviewed replay command, typed review, immutable audit and concurrency repair.
+No full phase criterion is accepted; Phase 6 stays 0/8 and Phase 7 is unstarted.
+Historical handoff reconciliation, management API/UI, email/invitations, generic
+tasks, tags/flags, webhooks and telemetry remain required Phase 6 work. None deferred.

@@ -17,6 +17,7 @@ class AutomationConsumer:
 
     def consume(self, message: DeliveryMessage) -> Delivery:
         org = message.organization_id
+        self.service.lock_tenant(org)
         store = self.service.store
         delivery = store.delivery(org, message.delivery_id, True)
         if delivery is None:

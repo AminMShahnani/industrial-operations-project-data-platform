@@ -22,6 +22,7 @@ from operations.modules.automation.application.events import (
     Delivery,
     DeliveryMessage,
     JobPublisher,
+    NotificationReplayReview,
     OperationalEvent,
 )
 from operations.modules.automation.domain.reliability import (
@@ -351,6 +352,7 @@ class AutomationService:
         return actor
 
     def execute(self, org: UUID, identifier: UUID) -> Run:
+        self.lock_tenant(org)
         run = self.store.run(org, identifier, True)
         if run is None:
             raise ServiceError(404, "not_found")
@@ -523,6 +525,7 @@ class AutomationService:
         publisher: JobPublisher,
         consumer: Literal["automation", "notifications"] | None = None,
     ) -> int:
+        self.lock_tenant(org)
         now = datetime.now(UTC)
         rows = self.store.due_deliveries(org, now, consumer)
         for row in rows:
@@ -555,8 +558,84 @@ class AutomationService:
             )
         return len(rows)
 
+    def replay_notification(
+        self,
+        actor: RequestContext,
+        org: UUID,
+        workspace: UUID,
+        identifier: UUID,
+        *,
+        dry_run: bool = True,
+        review_sha256: str | None = None,
+        reason: str | None = None,
+    ) -> NotificationReplayReview:
+        """Review/requeue one failed delivery without changing its source or audience."""
+        self.forms.authorization.require(
+            actor, "organization.manage", Scope(org, ScopeType.ORGANIZATION, org)
+        )
+        row = self.store.delivery(org, identifier)
+        if row is None or row.consumer != "notifications":
+            raise ServiceError(404, "notification_delivery_not_found")
+        source = self.store.event(org, row.event_id)
+        if source is None or source.workspace_id != workspace:
+            raise ServiceError(404, "notification_delivery_not_found")
+        self.require(actor, org, workspace, source.project_id, True)
+        locked = self.store.delivery(org, identifier, True)
+        if locked is None:
+            raise ServiceError(404, "notification_delivery_not_found")
+        row = locked
+        if row.state not in {"retry", "dead_letter"}:
+            raise ServiceError(409, "notification_delivery_not_replayable")
+        if row.attempts >= 20:
+            raise ServiceError(409, "notification_attempt_limit")
+        digest = hashlib.sha256(
+            json.dumps(row.model_dump(mode="json"), sort_keys=True, separators=(",", ":")).encode()
+        ).hexdigest()
+        if not dry_run:
+            if review_sha256 != digest:
+                raise ServiceError(409, "notification_replay_review_required")
+            if reason is None or not reason.strip() or len(reason) > 500:
+                raise ServiceError(422, "notification_replay_reason_required")
+            user = self.forms.authorization.user(actor, org)
+            self.audit.append(
+                AuditEvent(
+                    id=uuid7(),
+                    type="outbox.notification.replayed",
+                    occurred_at=datetime.now(UTC),
+                    organization_id=org,
+                    actor_id=user.id,
+                    correlation_id=source.correlation_id,
+                    request_id=actor.request_id,
+                    aggregate_type="outbox_delivery",
+                    aggregate_id=row.id,
+                    payload=AuditDetails(
+                        workspace_id=workspace,
+                        project_id=source.project_id,
+                        target_id=source.id,
+                        version=row.attempts,
+                        outcome=row.state,
+                        reason=reason.strip(),
+                    ),
+                )
+            )
+            row = row.model_copy(
+                update={"state": "retry", "next_at": datetime.now(UTC), "error_code": None}
+            )
+            self.store.save_delivery(row)
+        return NotificationReplayReview(
+            delivery=row,
+            workspace_id=workspace,
+            project_id=source.project_id,
+            review_sha256=digest,
+            applied=not dry_run,
+        )
+
+    def lock_tenant(self, org: UUID) -> None:
+        self.forms.workspaces.organizations.lock(org)
+
     def notification_delivery(self, message: DeliveryMessage) -> tuple[Delivery, OperationalEvent]:
         """Trusted worker handoff; expose immutable source and a locked scoped delivery."""
+        self.lock_tenant(message.organization_id)
         delivery = self.store.delivery(message.organization_id, message.delivery_id, True)
         if delivery is None:
             raise ServiceError(404, "outbox_delivery_not_found")

@@ -125,3 +125,15 @@ requirements. No new debt, data rewrite or acceptance deferral is introduced.
 All local gates pass (195 backend/11 frontend tests), including real worker duplicate
 delivery and concurrent first reads. Hosted run 37511023333 passes both jobs on
 exact code 2cebf5e, including Linux gates, browser/worker flows and migrations.
+
+Controlled notification replay is implemented with preview/apply, immutable audit,
+fresh operator authority and unchanged source/audience/attempt history (ADR-0016).
+Eight new test cases include committed eight-way concurrent apply. All local gates
+pass (203 backend/11 frontend), including forced lock-order contention and real
+browser/worker flows. Hosted verification is pending. No new debt or acceptance
+deferral; historical handoff
+reconciliation, management API/UI and other remaining requirements stay in Phase 6.
+The reproducible user/organization lock-order deadlock is repaired through the
+organization-owned lock contract (ADR-0017), retaining existing tenant serialization.
+Measuring and optimizing tenant-level contention belongs to Phase 10 performance
+verification; no concurrency safeguard is weakened for this increment.

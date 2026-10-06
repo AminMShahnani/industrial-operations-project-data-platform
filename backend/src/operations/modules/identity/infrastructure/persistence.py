@@ -14,6 +14,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, Session, mapped_column
 
 from operations.modules.identity.application.contracts import Invitation, Principal, User
+from operations.modules.organizations.application.contracts import OrganizationLock
 from operations.platform.database import Base
 
 
@@ -79,8 +80,9 @@ class IdentityRepository:
             for row in self.session.scalars(query.order_by(UserRow.id).limit(101))
         ]
 
-    def __init__(self, session: Session) -> None:
+    def __init__(self, session: Session, organizations: OrganizationLock) -> None:
         self.session = session
+        self.organizations = organizations
 
     def active_by_email(self, organization_id: UUID, email: str) -> list[User]:
         return [
@@ -108,6 +110,7 @@ class IdentityRepository:
         self.session.flush()
 
     def user(self, organization_id: UUID, principal: Principal) -> User | None:
+        self.organizations.lock(organization_id)
         row = self.session.scalar(
             select(UserRow)
             .where(
@@ -120,6 +123,7 @@ class IdentityRepository:
         return user_contract(row) if row else None
 
     def by_id(self, organization_id: UUID, user_id: UUID) -> User | None:
+        self.organizations.lock(organization_id)
         row = self.session.scalar(
             select(UserRow)
             .where(

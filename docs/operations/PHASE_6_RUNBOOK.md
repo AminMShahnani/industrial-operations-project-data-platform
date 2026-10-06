@@ -69,8 +69,8 @@ parameters, data values and secrets. Unsupported source types complete without a
 Existing task/review outbox backlog can be dispatched under current checks.
 Pre-outbox historical notify/reminder intents are retained; an explicit bounded
 audited reconciliation is still required before Phase 6 acceptance. Do not rewrite
-old audits or infer a reminder-to-audit mapping. Controlled notification replay,
-email/invitations and complete queue telemetry are still Phase 6 work.
+old audits or infer a reminder-to-audit mapping. Email/invitations and complete
+queue telemetry are still Phase 6 work.
 
 Empty rollback to `73eddd554d17` is reversible. Populated automatic notices,
 attempts or new notify/reminder source types refuse downgrade before evidence loss.
@@ -80,6 +80,39 @@ Run unit/boundary tests with `uv run pytest backend/tests/test_phase6_reliabilit
 backend/tests/test_boundaries.py`. The real Redis transport test additionally needs
 `IOP_TEST_DATABASE_URL` and the existing development Compose services. Its cleanup
 is restricted to a uniquely generated fixture namespace.
+
+## Controlled notification replay
+
+Preview one failed delivery without writing or enqueueing:
+`uv run python scripts/notification_replay.py --organization <uuid> --workspace <uuid> --delivery <uuid> --subject <trusted-subject>`.
+The configured trusted issuer and operator must retain organization.manage and
+scoped automation.manage permissions. The command outputs a typed delivery review
+and `review_sha256`, containing scoped IDs and bounded status metadata, no recipient
+list or form values. This is a trusted host command, not an HTTP authentication path.
+
+After reviewing the failure and repairing its cause, run the same command with
+`--apply --review-sha256 <review-hash> --reason "Reviewed repair reason"`.
+Apply locks and compares the current delivery to the preview; stale previews fail
+with `notification_replay_review_required`. Only retry/dead-letter deliveries below
+twenty total attempts qualify. Pending/dispatched/completed deliveries cannot replay.
+Apply atomically records `outbox.notification.replayed` and makes the same delivery
+due now. It does not publish to Redis; the notification dispatcher above does that.
+
+Replay preserves source event, original recipients, notice/read evidence and attempt
+numbers. The worker rechecks live source/recipient access. Completed skipped deliveries
+cannot backfill recipients when access is restored. Attempts beyond the automatic
+eight-attempt window require another reviewed manual replay after failure. Duplicate
+apply requests using the same preview produce one requeue and audit, with stale
+conflicts for the others. Historical pre-outbox reconciliation and management API/UI
+remain Phase 6 work (ADR-0016).
+
+No new schema migration. For an application rollback, pause dispatch, retain all
+queued deliveries and immutable replay evidence, and resume with a compatible worker.
+
+Tenant identity checks and workers use organization-before-user/delivery/run locking
+(ADR-0017). Keep transactions bounded; the existing tenant row lock serializes work
+within an organization. Do not bypass these owning application lock interfaces during
+replay/dispatch or remove identity locks to work around contention.
 
 ## Migration and rollback
 Upgrade using `uv run alembic upgrade head`, then `uv run alembic check`. The

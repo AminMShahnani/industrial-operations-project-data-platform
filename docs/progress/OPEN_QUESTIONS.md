@@ -141,3 +141,12 @@ Phase 6 work, along with controlled replay/email/invitations, not a Phase 7 defe
 Automatic delivery verification: hosted run 37511023333 passes both jobs on
 2cebf5e after all local gates pass (195 backend/11 frontend tests). No additional
 security-sensitive question is introduced; Phase 6 remains unaccepted.
+
+Controlled notification replay: ADR-0016 uses the existing trusted operator model
+with fresh organization.manage and scoped automation.manage checks. Reviewed state
+comparison, twenty-attempt cap and terminal completed deliveries preserve ADR-0015.
+No unresolved authority decision or Core industry coupling is introduced.
+Historical handoff reconciliation remains a separate provenance-preserving slice.
+ADR-0017 records the tenant-before-identity locking repair for a reproducible browser/
+invitation deadlock. It preserves existing authorization and revocation serialization;
+no domain or security policy is changed.

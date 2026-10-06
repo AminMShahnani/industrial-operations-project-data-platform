@@ -43,6 +43,10 @@ class OrganizationRepository:
             row.version,
         )
 
+    def lock(self, organization_id: UUID) -> None:
+        """Serialize tenant identity checks before taking individual user locks."""
+        self.get(organization_id)
+
     def create(self, organization: Organization) -> None:
         self.session.add(
             OrganizationRow(
