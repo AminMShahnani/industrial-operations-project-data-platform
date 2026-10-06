@@ -52,7 +52,33 @@ class Reminder(Command):
     created_at: datetime
 
 
+class DeadlineEvent(Command):
+    id: UUID
+    organization_id: UUID
+    workspace_id: UUID
+    task_id: UUID
+    kind: Literal["due", "overdue"]
+    scheduled_at: datetime
+
+
+class DeadlineTick(Command):
+    candidates: int
+    created: int
+    cursor: UUID | None = None
+
+
 class TaskStore(Protocol):
+    def deadline_candidates(
+        self,
+        org: UUID,
+        workspace: UUID,
+        project: UUID | None,
+        now: datetime,
+        after: UUID | None,
+        lock: bool,
+    ) -> list[Task]: ...
+    def deadline_kinds(self, org: UUID, workspace: UUID, task: UUID) -> set[str]: ...
+    def add_deadline(self, row: DeadlineEvent) -> bool: ...
     def by_submission(self, org: UUID, workspace: UUID, submission: UUID) -> Task | None: ...
     def add(self, row: Task) -> bool: ...
     def get(self, org: UUID, workspace: UUID, identifier: UUID) -> Task | None: ...

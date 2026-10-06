@@ -109,3 +109,10 @@ or new tenant/platform access bypass; no retained data was migrated or rewritten
 
 Reconciliation passes hosted run 37480916988 on adea461. No new unresolved question;
 Phase 6 remains in progress under the existing resolved authority decisions.
+
+Periodic trigger generation: ADR-0013 records activation-aligned cadence, bounded
+catch-up, exact timer matching and once-per-task due/overdue evidence. Q-006's
+delegator authority is preserved, with a separately authorized scoped operator.
+No private draft access, lifecycle shortcut, industry coupling or unresolved new
+security/domain decision. Compatibility preflight found no stored unpinned timer
+events in the three local databases; no historical envelope was rewritten.

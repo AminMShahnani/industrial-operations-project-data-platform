@@ -44,11 +44,12 @@ class SchedulingService:
         *,
         project: UUID | None = None,
         source: EventContext | None = None,
+        event_id: UUID | None = None,
     ) -> None:
         user = self.forms.authorization.user(actor, org)
         self.forms.audit.append(
             AuditEvent(
-                id=uuid7(),
+                id=event_id or uuid7(),
                 type=action,
                 occurred_at=datetime.now(UTC),
                 organization_id=org,

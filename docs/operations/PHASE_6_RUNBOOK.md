@@ -10,7 +10,8 @@ Source writes now capture supported operational events atomically with their aud
 Metadata/related-record/form-task/pinned-workflow handlers and the automation
 consumer are implemented. Generic tasks without forms, tags/flags, webhooks,
 notifications and email remain incomplete. Do not roll out production workers
-before the complete Phase 6 acceptance gates pass.
+before the complete Phase 6 acceptance gates pass. Periodic timer/deadline generation
+and private-storage reconciliation are now implemented; see their sections below.
 
 Run unit/boundary tests with `uv run pytest backend/tests/test_phase6_reliability.py
 backend/tests/test_boundaries.py`. The real Redis transport test additionally needs
@@ -120,3 +121,54 @@ No migration is required and no retained file/audit row is rewritten. Stop the C
 to disable cleanup. This does not implement attachment retention or version deletion.
 Restore any incorrectly removed object from a verified object-store backup while
 preserving its original reference and cleanup history.
+
+## Timer and task deadline generation
+ADR-0013 defines the bounded detection/catch-up rules. Upgrade to `a39df7b251c0`
+using `uv run alembic upgrade head`, then check drift with `uv run alembic check`.
+This adds immutable timer occurrence and task deadline evidence without rewriting
+existing definitions, tasks, audits or runs. Read-only compatibility preflight found
+zero previously stored timer events lacking exact version/slot pins in development,
+isolated test and retained browser databases. Never rewrite historical envelopes to
+invent missing pins in another pre-rollout installation; preserve them and reconcile
+explicitly before enabling its periodic consumer.
+
+Preview one exact timer rule:
+
+```powershell
+uv run python scripts/automation_triggers.py timer --organization <UUID> --workspace <UUID> --rule <UUID> --subject <trusted-subject>
+```
+
+Add `--apply` to capture at most 100 slots and their pinned runs per invocation.
+Output is typed JSON with tenant/workspace, request/correlation IDs and batch counts.
+`more=true` means another bounded invocation has overdue slots; `next_at` is the
+next cadence slot. Only slots at or after the version's activation are eligible.
+Retirement stops generation; activating a new version does not inherit old progress.
+Each timer event matches its own exact version. Both operator scope and activating
+administrator delegation are rechecked before generation and effects.
+
+Preview task deadlines in one exact workspace or project scope:
+
+```powershell
+uv run python scripts/automation_triggers.py deadlines --organization <UUID> --workspace <UUID> --subject <trusted-subject>
+```
+
+Use `--project <UUID>` for a project; workspace batches do not fan out into projects.
+Add `--apply` to capture the first 100 pending tasks (at most 200 due/overdue events).
+`--cursor <UUID>` continues the returned cursor. Start each new periodic scan without
+a cursor so skipped locked tasks are revisited. Already captured marks are filtered
+before pagination and never generate duplicate events or starve new pending work.
+Due is inclusive of the deadline; overdue is strictly after it. Unfinished work is
+open/in-progress/returned. These events preserve task state/revision and never read
+private draft values. Source audit/outbox/run/marker writes commit atomically.
+
+Invoke scoped batches periodically (for example every 30 seconds), then use the
+existing automation dispatcher and worker to process captured runs. Detection time
+and original slot/deadline are retained separately. Broker acknowledgment does not
+mean effects committed. No background service identity or HTTP bypass is introduced.
+
+An empty periodic migration can downgrade to `8323b0dbac0e`. Populated downgrade
+refuses before dropping either table or its guards. Stop generation/dispatch before
+rollback, preserve evidence and use a reviewed forward fix or a verified complete
+database restore with a write-replay plan. Existing already-captured runs keep their
+exact version and fresh delegation checks. Never delete marks/history to force a
+downgrade or use a cursor as a permanent completeness watermark.

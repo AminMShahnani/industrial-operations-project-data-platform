@@ -632,3 +632,35 @@ resolved. P6-07 gains its reconciliation requirement;
 no complete P6 criterion is claimed. Phase 6 stays 0/8 and Phase 7 remains unstarted.
 All remaining action handlers, notifications/invitations, timer/due triggers,
 API/UI and queue/run telemetry remain required Phase 6 work, with none deferred.
+
+### Phase 6 periodic trigger generation - 2026-10-06
+Read AGENTS.md and numbered docs in numeric order. docs/11–12,19–23 and
+ADR-0009/0011 require bounded idempotent periodic sources, tenant authority,
+immutable evidence and preservation of task state/private drafts. ADR-0013 records
+explicit activation-aligned UTC timer slots, no pre-activation backfill, self-version
+matching, 100-slot catch-up and separate detection/deadline timestamps.
+
+The scoped preview/apply CLI emits one bounded timer or deadline batch with typed
+tenant/request/correlation output. Operators and timer delegators retain fresh
+permission checks. Rule/version locks serialize timer progress/retirement; task
+row locks and SKIP LOCKED protect cancellation/submission races. Pending marks are
+filtered before pagination; each scan restarts without a permanent watermark.
+Source audits, outbox events, matched pinned runs and immutable occurrence marks
+commit atomically. Due/overdue records neither mutate task state nor read private
+draft values. Exact timer version matching has application and database guards.
+
+Migration a39df7b251c0 adds two source-bound immutable evidence tables. Empty
+roundtrip/drift pass; populated downgrade refuses before history removal. No
+retained definition/event/task is rewritten. Compatibility preflight finds zero
+stored unpinned timer events in development/test/browser databases; all three
+are at the new head. Twelve new tests cover boundaries, 103-slot catch-up, own-version
+binding, action deduplication, rollback, private drafts, cancellation, revocation,
+104-task pending pagination, immutable evidence and committed concurrency.
+Eight concurrent timer ticks and eight independent concurrent deadline ticks emit
+two slots/two marks total; a separately locked task is safely revisited after release.
+All 178 backend tests pass without skips in 140.19s; 11 frontend tests pass.
+Ruff lint/format, Windows/Linux strict mypy (229 files), frontend lint/types/build,
+generated-contract/OpenAPI drift and migration gates pass. Hosted verification is
+pending this increment. Phase 6 stays 0/8; no Phase 7 work or deferred acceptance.
+Generic tasks, tags/flags, notification/webhook/email/invitation adapters, scoped
+API/UI and queue/run telemetry remain required Phase 6 implementation work.

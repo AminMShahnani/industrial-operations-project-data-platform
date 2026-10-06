@@ -2,6 +2,9 @@
 
 ## Unreleased - Phase 6 in progress (2026-10-06)
 
+- Add bounded timer/deadline generation, exact timer-version matching, immutable
+  occurrence evidence and scoped preview/apply CLI (ADR-0013). Preserve task
+  lifecycle/private drafts and serialize duplicate ticks; populated rollback is guarded.
 - Implement bounded tenant-private orphan reconciliation with explicit grace,
   fresh authority/reference checks, shared upload locks, immutable requested/result
   audits, conditional S3 deletion and resumable crash recovery (ADR-0012, TD-005).

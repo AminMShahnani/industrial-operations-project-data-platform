@@ -8,13 +8,16 @@ from sqlalchemy import (
     Index,
     String,
     UniqueConstraint,
+    exists,
+    or_,
     select,
     update,
 )
 from sqlalchemy.dialects.postgresql import JSONB, insert
 from sqlalchemy.orm import Mapped, Session, mapped_column
+from sqlalchemy.sql.elements import ColumnElement
 
-from operations.modules.tasks.application.contracts import Reminder, Task
+from operations.modules.tasks.application.contracts import DeadlineEvent, Reminder, Task
 from operations.platform.database import Base
 
 
@@ -164,11 +167,89 @@ class ReminderRow(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
 
+class DeadlineRow(Base):
+    __tablename__ = "task_deadline_events"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["organization_id", "workspace_id", "task_id"],
+            [
+                "task_occurrences.organization_id",
+                "task_occurrences.workspace_id",
+                "task_occurrences.id",
+            ],
+        ),
+        ForeignKeyConstraint(
+            ["organization_id", "id"], ["outbox_events.organization_id", "outbox_events.id"]
+        ),
+        UniqueConstraint("organization_id", "task_id", "kind", name="uq_task_deadline_once"),
+        CheckConstraint("kind IN ('due','overdue')", name="deadline_kind"),
+    )
+    id: Mapped[UUID] = mapped_column(primary_key=True)
+    organization_id: Mapped[UUID]
+    workspace_id: Mapped[UUID]
+    task_id: Mapped[UUID]
+    kind: Mapped[str] = mapped_column(String(10))
+    scheduled_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
 def task_contract(row: TaskRow) -> Task:
     return Task.model_validate({k: getattr(row, k) for k in Task.model_fields})
 
 
 class TaskRepository:
+    def deadline_candidates(
+        self,
+        org: UUID,
+        workspace: UUID,
+        project: UUID | None,
+        now: datetime,
+        after: UUID | None,
+        lock: bool,
+    ) -> list[Task]:
+        def missing(kind: str) -> ColumnElement[bool]:
+            return ~exists().where(
+                DeadlineRow.organization_id == org,
+                DeadlineRow.task_id == TaskRow.id,
+                DeadlineRow.kind == kind,
+            )
+
+        query = select(TaskRow).where(
+            TaskRow.organization_id == org,
+            TaskRow.workspace_id == workspace,
+            TaskRow.project_id == project,
+            TaskRow.state.in_(["open", "in_progress", "returned"]),
+            TaskRow.due_at <= now,
+            or_(missing("due"), (TaskRow.due_at < now) & missing("overdue")),
+        )
+        if after:
+            query = query.where(TaskRow.id > after)
+        query = query.order_by(TaskRow.id).limit(101)
+        if lock:
+            query = query.with_for_update(skip_locked=True)
+        return [task_contract(row) for row in self.session.scalars(query)]
+
+    def deadline_kinds(self, org: UUID, workspace: UUID, task: UUID) -> set[str]:
+        return set(
+            self.session.scalars(
+                select(DeadlineRow.kind).where(
+                    DeadlineRow.organization_id == org,
+                    DeadlineRow.workspace_id == workspace,
+                    DeadlineRow.task_id == task,
+                )
+            )
+        )
+
+    def add_deadline(self, row: DeadlineEvent) -> bool:
+        return (
+            self.session.scalar(
+                insert(DeadlineRow)
+                .values(**row.model_dump())
+                .on_conflict_do_nothing(constraint="uq_task_deadline_once")
+                .returning(DeadlineRow.id)
+            )
+            is not None
+        )
+
     def by_submission(self, org: UUID, workspace: UUID, submission: UUID) -> Task | None:
         row = self.session.scalar(
             select(TaskRow)

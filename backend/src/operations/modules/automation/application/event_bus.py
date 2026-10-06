@@ -55,6 +55,7 @@ class AuditedEventBus:
             "project.transitioned": "project.phase.changed",
             "master_data.record.created": "master_data.changed",
             "master_data.record.updated": "master_data.changed",
+            "timer.fired": "scheduled.timer",
         }
         kind = mapping.get(event.type)
         if event.type == "workflow.instance.approved":
@@ -69,6 +70,7 @@ class AuditedEventBus:
             "task": "task",
             "project": "project",
             "master_data": "master_data",
+            "timer": "timer",
         }
         category = aggregate.get(event.aggregate_type)
         if category is None:

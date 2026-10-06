@@ -250,6 +250,9 @@ class AutomationRepository:
                 RuleRow.project_id == event.project_id,
                 VersionRow.state == "active",
                 VersionRow.definition["trigger"].astext == event.type,
+                VersionRow.id == event.payload.timer_version_id
+                if event.type == "scheduled.timer"
+                else true(),
             )
             .order_by(VersionRow.id)
             .limit(1001)

@@ -100,3 +100,9 @@ crash-safe replay. Hosted run 37480916988 passes both jobs on exact code adea461
 TD-005 reconciliation is resolved. Attachment
 retention, quota and backup policies retain their Phase 10 owners. Remaining Phase 6
 requirements are not converted into debt or deferred to Phase 7.
+
+Periodic triggers are implemented in their owning Phase 6 with ADR-0013, guarded
+evidence migration, bounded restart/catch-up and twelve new tests. All local checks
+pass (178 backend/11 frontend); hosted verification is pending. No new debt or
+acceptance deferral is introduced. Notifications/actions/API/UI/telemetry remain
+current-phase implementation requirements; TD-005 stays resolved.

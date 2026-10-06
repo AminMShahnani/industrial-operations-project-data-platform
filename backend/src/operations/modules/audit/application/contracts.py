@@ -35,6 +35,8 @@ class AuditDetails(Command):
     storage_etag: str | None = Field(default=None, max_length=128)
     storage_modified_at: datetime | None = None
     storage_grace_seconds: int | None = Field(default=None, ge=86400, le=2592000)
+    scheduled_at: datetime | None = None
+    timer_version_id: UUID | None = None
 
 
 class AuditEvent(Command):

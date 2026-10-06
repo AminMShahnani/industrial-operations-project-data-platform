@@ -36,11 +36,15 @@ class EventContext(Command):
     master_data_record_id: UUID | None = None
     phase: str | None = Field(default=None, min_length=1, max_length=60)
     recipient_ids: list[UUID] = Field(default_factory=list, max_length=1000)
+    scheduled_at: datetime | None = None
+    timer_version_id: UUID | None = None
 
     @model_validator(mode="after")
     def coherent(self) -> EventContext:
         if (self.form_id is None) != (self.form_number is None):
             raise ValueError("event_form_pin_required")
+        if self.scheduled_at is not None and self.scheduled_at.utcoffset() is None:
+            raise ValueError("event_schedule_requires_timezone")
         return self
 
 
@@ -70,6 +74,12 @@ class OperationalEvent(Command):
             raise ValueError("duplicate_event_causation")
         if self.project_id is not None and self.workspace_id is None:
             raise ValueError("event_project_requires_workspace")
+        if self.type == "scheduled.timer" and (
+            self.payload.timer_version_id != self.aggregate_id
+            or self.payload.scheduled_at is None
+            or self.aggregate_type != "timer"
+        ):
+            raise ValueError("timer_event_requires_exact_version_and_slot")
         return self
 
 

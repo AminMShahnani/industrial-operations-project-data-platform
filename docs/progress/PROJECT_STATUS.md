@@ -29,8 +29,11 @@ delegated authority, receipts/attempts and replay application services are imple
 Authorized project metadata, related-record, form-task and pinned workflow handlers
 are implemented through owning services. A durable automation consumer, real
 Dramatiq worker and scoped dispatcher are implemented and tested. Audited private
-storage reconciliation is implemented and verified locally/hosted (TD-005). Generic tasks,
-tags/flags, webhook/notification adapters, periodic triggers and UI remain current-phase
+storage reconciliation is implemented and verified locally/hosted (TD-005).
+Bounded scheduled timers and task due/overdue source generation are implemented
+and verified locally; periodic evidence is immutable and task lifecycle stays intact.
+Generic tasks,
+tags/flags, webhook/notification adapters and UI remain current-phase
 work. 0/8 accepted; Q-006 is resolved.
 Phase 5 remains accepted on d91dfce / hosted run 37454353238.
 
@@ -44,7 +47,7 @@ Legacy export absent.
 
 ## Next 5 tasks
 1. Implement generic task, tag/flag and notification/webhook action handlers.
-2. Add timer and due/overdue generation, delivery adapters and telemetry.
+2. Complete delivery adapters and queue/run telemetry.
 3. Expose scoped rule/run management and audited replay through typed API/UI.
 4. Integrate notifications/invitations and scoped UI.
 5. Verify all Phase 6 local/hosted criteria before any Phase 7 work.
@@ -110,8 +113,23 @@ passes both jobs on exact code `adea461d687d2a07bf8a8bb8b335a15e9145c623`, inclu
 Linux tests/types, browser/worker flows, migrations and contract drift. No migration
 or retained-data rewrite. Phase 6 remains 0/8 accepted.
 
+Periodic trigger increment: 178 backend tests pass without skips in 140.19s,
+including twelve new timer/deadline tests and concurrent committed sessions.
+11 frontend tests pass. Ruff lint/format, Windows/Linux strict mypy (229 files),
+frontend lint/types/build/generated-contract drift, Alembic roundtrip/drift and
+OpenAPI drift pass. Tests cover exact activation boundaries, 100-slot catch-up,
+self-version matching, retirement/new-version progress, rollback, immutable marks,
+private drafts, scoped revocation, 104-task pending pagination and duplicate effects.
+Real committed concurrency verifies eight timer ticks and eight deadline ticks
+emit two occurrences/two marks total, with locked-task revisit and task state preserved.
+Migration a39df7b251c0 is applied to all three local databases; populated downgrade
+refuses before evidence removal. Hosted verification is pending this increment.
+ADR-0013 and the runbook record the policy. Phase 6 remains 0/8 accepted.
+
 ## Migration status
-Development, isolated test and browser databases are at 8323b0dbac0e.
+Development, isolated test and browser databases are at a39df7b251c0.
+Periodic generation adds immutable timer/task-deadline evidence with exact
+source/slot binding and guarded populated rollback. No retained artifact is rewritten.
 Phase 6 adds seven guarded outbox/rule/run/attempt/receipt tables. Empty roundtrip
 and Alembic drift pass; populated downgrade refuses before evidence deletion.
 Rollback strategy: docs/operations/PHASE_6_RUNBOOK.md. Phase 5 adds

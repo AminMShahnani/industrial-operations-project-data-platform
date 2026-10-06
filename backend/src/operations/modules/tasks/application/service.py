@@ -8,7 +8,13 @@ from operations.modules.identity.application.contracts import RequestContext
 from operations.modules.scheduling.application.service import SchedulingService
 from operations.modules.submissions.application.contracts import Submission
 from operations.modules.submissions.application.service import SubmissionService
-from operations.modules.tasks.application.contracts import Reminder, Task, TaskStore
+from operations.modules.tasks.application.contracts import (
+    DeadlineEvent,
+    DeadlineTick,
+    Reminder,
+    Task,
+    TaskStore,
+)
 
 
 class TaskService:
@@ -18,7 +24,15 @@ class TaskService:
         self.store, self.schedules, self.submissions = store, schedules, submissions
 
     def event(
-        self, actor: RequestContext, row: Task, action: str, reason: str | None = None
+        self,
+        actor: RequestContext,
+        row: Task,
+        action: str,
+        reason: str | None = None,
+        *,
+        event_id: UUID | None = None,
+        scheduled_at: datetime | None = None,
+        include_submission: bool = True,
     ) -> None:
         self.schedules.event(
             actor,
@@ -28,14 +42,64 @@ class TaskService:
             action,
             reason,
             project=row.project_id,
+            event_id=event_id,
             source=EventContext(
                 form_id=row.form_id,
                 form_number=row.form_number,
                 task_id=row.id,
                 recipient_ids=row.recipient_ids,
                 subject_user_id=row.claimant_id,
-                submission_id=row.submission_id,
+                submission_id=row.submission_id if include_submission else None,
+                scheduled_at=scheduled_at,
             ),
+        )
+
+    def generate_deadlines(
+        self,
+        actor: RequestContext,
+        org: UUID,
+        workspace: UUID,
+        project: UUID | None,
+        after: UUID | None = None,
+        dry_run: bool = True,
+        *,
+        now: datetime | None = None,
+    ) -> DeadlineTick:
+        self.schedules.require(actor, org, workspace, project, True)
+        now = now or datetime.now(UTC)
+        if now.utcoffset() is None:
+            raise ServiceError(422, "deadline_timezone_required")
+        rows = self.store.deadline_candidates(org, workspace, project, now, after, not dry_run)
+        candidates = created = 0
+        for row in rows[:100]:
+            seen = self.store.deadline_kinds(org, workspace, row.id)
+            for kind in ("due", "overdue"):
+                if kind in seen or (kind == "overdue" and row.due_at >= now):
+                    continue
+                candidates += 1
+                if dry_run:
+                    continue
+                event = DeadlineEvent(
+                    id=uuid7(),
+                    organization_id=org,
+                    workspace_id=workspace,
+                    task_id=row.id,
+                    kind=kind,
+                    scheduled_at=row.due_at,
+                )
+                self.event(
+                    actor,
+                    row,
+                    "task." + kind,
+                    event_id=event.id,
+                    scheduled_at=row.due_at,
+                    include_submission=False,
+                )
+                if not self.store.add_deadline(event):
+                    raise ServiceError(409, "deadline_event_conflict")
+                created += 1
+        return DeadlineTick(
+            candidates=candidates, created=created, cursor=rows[99].id if len(rows) > 100 else None
         )
 
     def access(

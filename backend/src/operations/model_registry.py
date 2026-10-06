@@ -2,6 +2,9 @@
 
 from operations.modules.audit.infrastructure.persistence import AuditRow as AuditRow
 from operations.modules.automation.infrastructure.persistence import EventRow as EventRow
+from operations.modules.automation.infrastructure.timers import (
+    TimerOccurrenceRow as TimerOccurrenceRow,
+)
 from operations.modules.files.infrastructure.persistence import FileRow as FileRow
 from operations.modules.forms.infrastructure.persistence import (
     FormRow as FormRow,
