@@ -5,6 +5,7 @@ from uuid import UUID, uuid7
 
 from operations.contracts import ServiceError
 from operations.modules.audit.application.contracts import AuditDetails, AuditEvent
+from operations.modules.automation.application.events import EventContext
 from operations.modules.forms.application.expressions import validate_condition
 from operations.modules.forms.application.runtime import components
 from operations.modules.forms.application.service import FormService
@@ -52,6 +53,8 @@ class WorkflowService:
         action: str,
         version: int | None = None,
         reason: str | None = None,
+        *,
+        source: EventContext | None = None,
     ) -> None:
         user = self.forms.authorization.user(actor, row.organization_id)
         self.forms.audit.append(
@@ -70,6 +73,9 @@ class WorkflowService:
                     scope_id=row.project_id or row.workspace_id,
                     version=version,
                     reason=reason,
+                    workspace_id=row.workspace_id,
+                    project_id=row.project_id,
+                    **(source.model_dump() if source else {}),
                 ),
             )
         )

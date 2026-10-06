@@ -35,6 +35,7 @@ class EventContext(Command):
     master_data_type_id: UUID | None = None
     master_data_record_id: UUID | None = None
     phase: str | None = Field(default=None, min_length=1, max_length=60)
+    recipient_ids: list[UUID] = Field(default_factory=list, max_length=1000)
 
     @model_validator(mode="after")
     def coherent(self) -> EventContext:
@@ -48,7 +49,7 @@ class OperationalEvent(Command):
     type: EventType
     occurred_at: datetime
     organization_id: UUID
-    workspace_id: UUID
+    workspace_id: UUID | None = None
     project_id: UUID | None = None
     actor_id: UUID | None = None
     correlation_id: UUID
@@ -67,12 +68,25 @@ class OperationalEvent(Command):
             raise ValueError("event_timestamp_requires_timezone")
         if len(set(self.causation_path)) != len(self.causation_path):
             raise ValueError("duplicate_event_causation")
+        if self.project_id is not None and self.workspace_id is None:
+            raise ValueError("event_project_requires_workspace")
         return self
 
 
 class DeliveryMessage(Command):
     organization_id: UUID
     delivery_id: UUID
+
+
+class Delivery(Command):
+    id: UUID
+    organization_id: UUID
+    event_id: UUID
+    consumer: Literal["automation", "notifications"]
+    state: Literal["pending", "dispatched", "completed", "retry", "dead_letter"] = "pending"
+    attempts: int = Field(default=0, ge=0, le=20)
+    next_at: datetime
+    error_code: str | None = None
 
 
 class EventWriter(Protocol):

@@ -58,6 +58,8 @@ PROJECT_PERMISSIONS[ProjectRole.APPROVER] = PROJECT_PERMISSIONS[ProjectRole.REVI
     "submission.approve"
 }
 PROJECT_PERMISSIONS[ProjectRole.MANAGER] |= {
+    "automation.read",
+    "automation.manage",
     "workflow.read",
     "workflow.manage",
     "workflow.act",
@@ -202,7 +204,14 @@ class ProjectService:
                 request_id=context.request_id,
                 aggregate_type="project",
                 aggregate_id=project.id,
-                payload=AuditDetails(target_id=identifier, version=project.version, reason=reason),
+                payload=AuditDetails(
+                    target_id=identifier,
+                    version=project.version,
+                    reason=reason,
+                    workspace_id=project.workspace_id,
+                    project_id=project.id,
+                    phase=project.state,
+                ),
             )
         )
 

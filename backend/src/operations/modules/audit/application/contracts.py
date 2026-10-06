@@ -15,6 +15,23 @@ class AuditDetails(Command):
     scope_type: str | None = None
     scope_id: UUID | None = None
     version: int | None = None
+    workspace_id: UUID | None = None
+    project_id: UUID | None = None
+    form_id: UUID | None = None
+    form_number: int | None = None
+    submission_id: UUID | None = None
+    workflow_instance_id: UUID | None = None
+    task_id: UUID | None = None
+    master_data_type_id: UUID | None = None
+    master_data_record_id: UUID | None = None
+    recipient_ids: list[UUID] = Field(default_factory=list, max_length=1000)
+    subject_user_id: UUID | None = None
+    phase: str | None = None
+    outcome: str | None = None
+    run_id: UUID | None = None
+    rule_version_id: UUID | None = None
+    trigger_actor_id: UUID | None = None
+    authorization_kind: str | None = None
 
 
 class AuditEvent(Command):

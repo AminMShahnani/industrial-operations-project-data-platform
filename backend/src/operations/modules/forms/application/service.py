@@ -84,6 +84,8 @@ class FormService:
         identifier: UUID,
         version: int | None = None,
         reason: str | None = None,
+        *,
+        form_number: int | None = None,
     ) -> None:
         user = self.authorization.user(actor, form.organization_id)
         self.audit.append(
@@ -112,6 +114,12 @@ class FormService:
                     reason=reason,
                     scope_type="project" if form.project_id else "workspace",
                     scope_id=form.project_id or form.workspace_id,
+                    workspace_id=form.workspace_id,
+                    project_id=form.project_id,
+                    form_id=form.id if form_number is not None else None,
+                    form_number=form_number,
+                    submission_id=identifier if action.startswith("submission.") else None,
+                    subject_user_id=user.id if action.startswith("submission.") else None,
                 ),
             )
         )

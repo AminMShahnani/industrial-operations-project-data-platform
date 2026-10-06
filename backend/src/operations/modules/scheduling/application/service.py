@@ -6,6 +6,7 @@ from zoneinfo import ZoneInfo
 
 from operations.contracts import ServiceError
 from operations.modules.audit.application.contracts import AuditDetails, AuditEvent
+from operations.modules.automation.application.events import EventContext
 from operations.modules.forms.application.contracts import Cell
 from operations.modules.forms.application.service import FormService
 from operations.modules.identity.application.contracts import Principal, RequestContext, User
@@ -40,6 +41,9 @@ class SchedulingService:
         identifier: UUID,
         action: str,
         reason: str | None = None,
+        *,
+        project: UUID | None = None,
+        source: EventContext | None = None,
     ) -> None:
         user = self.forms.authorization.user(actor, org)
         self.forms.audit.append(
@@ -53,7 +57,14 @@ class SchedulingService:
                 correlation_id=actor.correlation_id,
                 aggregate_type=action.split(".")[0],
                 aggregate_id=identifier,
-                payload=AuditDetails(scope_type="workspace", scope_id=workspace, reason=reason),
+                payload=AuditDetails(
+                    scope_type="project" if project else "workspace",
+                    scope_id=project or workspace,
+                    reason=reason,
+                    workspace_id=workspace,
+                    project_id=project,
+                    **(source.model_dump() if source else {}),
+                ),
             )
         )
 

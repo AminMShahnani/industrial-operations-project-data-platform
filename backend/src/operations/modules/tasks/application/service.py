@@ -3,6 +3,7 @@ from uuid import UUID, uuid7
 from zoneinfo import ZoneInfo
 
 from operations.contracts import ServiceError
+from operations.modules.automation.application.events import EventContext
 from operations.modules.identity.application.contracts import RequestContext
 from operations.modules.scheduling.application.service import SchedulingService
 from operations.modules.submissions.application.contracts import Submission
@@ -19,7 +20,23 @@ class TaskService:
     def event(
         self, actor: RequestContext, row: Task, action: str, reason: str | None = None
     ) -> None:
-        self.schedules.event(actor, row.organization_id, row.workspace_id, row.id, action, reason)
+        self.schedules.event(
+            actor,
+            row.organization_id,
+            row.workspace_id,
+            row.id,
+            action,
+            reason,
+            project=row.project_id,
+            source=EventContext(
+                form_id=row.form_id,
+                form_number=row.form_number,
+                task_id=row.id,
+                recipient_ids=row.recipient_ids,
+                subject_user_id=row.claimant_id,
+                submission_id=row.submission_id,
+            ),
+        )
 
     def access(
         self,

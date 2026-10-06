@@ -1,6 +1,7 @@
 """Schema composition only. Business modules never use each other's repositories."""
 
 from operations.modules.audit.infrastructure.persistence import AuditRow as AuditRow
+from operations.modules.automation.infrastructure.persistence import EventRow as EventRow
 from operations.modules.files.infrastructure.persistence import FileRow as FileRow
 from operations.modules.forms.infrastructure.persistence import (
     FormRow as FormRow,

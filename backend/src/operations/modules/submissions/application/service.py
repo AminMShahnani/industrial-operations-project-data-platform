@@ -150,7 +150,9 @@ class SubmissionService:
             values=result.values,
         )
         self.store.create(row)
-        self.forms.event(actor, form, "submission.draft.created", row.id, number)
+        self.forms.event(
+            actor, form, "submission.draft.created", row.id, number, form_number=number
+        )
         return DraftCreated(**row.model_dump(), initialization=public_runtime(result))
 
     def create_revision(
@@ -212,7 +214,13 @@ class SubmissionService:
         )
         self.store.create(row)
         self.forms.event(
-            actor, form, "submission.revision.draft.created", row.id, row.form_number, reason
+            actor,
+            form,
+            "submission.revision.draft.created",
+            row.id,
+            row.form_number,
+            reason,
+            form_number=row.form_number,
         )
         return DraftCreated(**row.model_dump(), initialization=public_runtime(result))
 
@@ -387,7 +395,14 @@ class SubmissionService:
         )
         if row.revision != expected or not self.store.save(updated, expected):
             raise ServiceError(409, "version_conflict")
-        self.forms.event(actor, form, "submission.submitted", identifier, updated.revision)
+        self.forms.event(
+            actor,
+            form,
+            "submission.submitted",
+            identifier,
+            updated.revision,
+            form_number=updated.form_number,
+        )
         if self.observer:
             self.observer.submitted(actor, updated)
         return updated

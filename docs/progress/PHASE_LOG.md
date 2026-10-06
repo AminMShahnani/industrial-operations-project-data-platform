@@ -531,3 +531,31 @@ Foundation code commit 66a321a55c12766d004567f168490d4c3d51a57d passes hosted ru
 https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/37456658887
 Both jobs pass, including Linux strict mypy, real Redis transport, existing PKCE
 browser flows, migrations and contracts. Phase 6 remains 0/8; Q-006 pending.
+
+### Phase 6 authority resolved - 2026-10-06
+User selected the recommended activating-administrator delegation. ADR-0011
+accepted; Q-006 resolved. Proceed with immutable activated action scope, fresh
+identity/permission/recipient checks on every run and replay, and retained evidence.
+No implicit service-admin bypass, triggering-actor privilege inheritance or automated
+approval. Phase 6 remains 0/8 while implementation and acceptance gates continue.
+
+### Phase 6 delegated ledger checkpoint - 2026-10-06
+Implemented scoped typed rule/version contracts, safe condition validation, immutable
+activation with reviewed hash and organization-administrator delegation. Added
+8323b0dbac0e: outbox events/deliveries, rules/versions, runs, attempts and receipts.
+PostgreSQL guards protect evidence, version transitions, indexed envelope identity,
+run scope/source/delegator binding and populated downgrade. Matching is pinned
+atomically at source capture, with shared version locks and no activation backfill.
+The composition root captures supported submission/project/master-data/workflow/task
+source audits into the same transaction, with exact form pins and recipient IDs.
+Application services implement fresh delegation checks, retained retirement semantics,
+idempotent terminal runs/receipts, bounded retry and audited scoped replay/dispatch.
+Production action/consumer implementations are still required; tests use a typed
+executor fixture to verify authority and orchestration without sending messages.
+
+Local verification: 148 backend tests without skips in 108.66s, 11 frontend tests;
+Ruff lint/format, strict mypy on Windows/Linux (213 files), frontend lint/types/build,
+OpenAPI drift, empty migration roundtrip/drift and populated rollback refusal pass.
+P6-01 through P6-08 remain 0/8 until API/UI, all authorized action handlers,
+worker/periodic consumers, notifications/invitations and TD-005 reconciliation pass
+their acceptance gates. No remaining acceptance requirement is deferred to Phase 7.

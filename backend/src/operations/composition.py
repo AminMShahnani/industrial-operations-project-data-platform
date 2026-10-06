@@ -3,6 +3,9 @@ from dataclasses import dataclass
 from sqlalchemy.orm import Session
 
 from operations.modules.audit.infrastructure.persistence import AuditRepository
+from operations.modules.automation.application.event_bus import AuditedEventBus
+from operations.modules.automation.application.service import EventCapture
+from operations.modules.automation.infrastructure.persistence import AutomationRepository
 from operations.modules.files.application.service import FileService
 from operations.modules.files.infrastructure.adapters import ClamScanner, S3Storage
 from operations.modules.files.infrastructure.persistence import FileRepository
@@ -63,7 +66,8 @@ class Services:
 def compose(
     session: Session, principal: Principal | None = None, settings: Settings | None = None
 ) -> Services:
-    audit = AuditRepository(session, principal)
+    audit = AuditedEventBus(AuditRepository(session, principal))
+    audit.capture = EventCapture(AutomationRepository(session), audit).capture
     identities = IdentityRepository(session)
     grants = GrantRepository(session)
     authorization = Authorization(identities, grants, audit)

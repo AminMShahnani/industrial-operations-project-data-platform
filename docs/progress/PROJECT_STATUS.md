@@ -24,22 +24,24 @@ No unsupported project-wide percentage is reported.
 
 ## In progress
 Phase 6 typed event/delivery contracts, bounded retry/causation rules and tested
-Dramatiq transport. Durable outbox persistence, rule/runtime and notification
-integration remain current-phase work. 0/8 accepted; Q-006 blocks dependent writes.
+Dramatiq transport. Durable outbox/rule/run persistence, transactional source capture,
+delegated authority, receipts/attempts and replay application services are implemented.
+Production action handlers, worker/notification integration and UI remain current-phase
+work. 0/8 accepted; Q-006 is resolved.
 Phase 5 remains accepted on d91dfce / hosted run 37454353238.
 
 ## Blocked
-Q-006: worker execution authority pending; dependent automated writes must wait.
-Independent worker/contracts preparation can proceed. Q-005 resolved: independent
+None. Q-006 resolved: activating administrator delegates bounded scoped authority,
+rechecked for every run/retry. ADR-0011 accepted. Q-005 resolved: independent
 approval is mandatory, including administrators.
 ADR-0010 accepted on 2026-10-06.
 Q-004 resolved by user: shared task claimed by one eligible member.
 Legacy export absent.
 
 ## Next 5 tasks
-1. Resolve Q-006 and finalize delegated execution authority in ADR-0011.
-2. Add guarded durable outbox, rule version/run/attempt and delivery migrations.
-3. Implement authorized idempotent actions, dispatcher/worker and audited replay.
+1. Implement authorized action handlers through owning application services.
+2. Add durable consumer/worker orchestration, timer and due/overdue generation.
+3. Expose scoped rule/run management and audited replay through typed API/UI.
 4. Integrate notifications/invitations, scoped UI and TD-005 reconciliation.
 5. Verify all Phase 6 local/hosted criteria before any Phase 7 work.
 
@@ -63,8 +65,18 @@ passes both jobs on `66a321a55c12766d004567f168490d4c3d51a57d`, including strict
 Linux types, real Redis, prior browser flows and migration/contract checks. This
 does not accept Phase 6 criteria; Q-006 and dependent implementations remain open.
 
+Delegated-ledger checkpoint: 148 backend tests pass without skips in 108.66s;
+11 frontend tests pass. Seven new integration tests cover source transaction rollback,
+exact form metadata, revoked delegation, activation authority, retirement/duplicate
+capture, immutable evidence, populated rollback refusal, loop/retry bounds and
+broker-publish crash recovery. Ruff lint/format, Windows/Linux strict mypy (213
+files), frontend lint/types/build and OpenAPI drift pass. Hosted verification pending.
+
 ## Migration status
-Development, isolated test and browser databases are at 71db385e7a02. Phase 5 adds
+Development, isolated test and browser databases are at 8323b0dbac0e.
+Phase 6 adds seven guarded outbox/rule/run/attempt/receipt tables. Empty roundtrip
+and Alembic drift pass; populated downgrade refuses before evidence deletion.
+Rollback strategy: docs/operations/PHASE_6_RUNBOOK.md. Phase 5 adds
 scoped definitions/versions, instances, visits/recipient snapshots, immutable
 actions/notification intents/revisions, proven task transitions and review roles.
 Empty migration roundtrip/drift and populated evidence rollback refusal are tested.

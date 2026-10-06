@@ -7,6 +7,7 @@ from uuid import UUID, uuid7
 
 from operations.contracts import ServiceError
 from operations.modules.audit.application.contracts import AuditDetails, AuditEvent, AuditWriter
+from operations.modules.automation.application.events import EventContext
 from operations.modules.iam.application.contracts import Scope, ScopeType
 from operations.modules.iam.application.service import Authorization
 from operations.modules.identity.application.contracts import RequestContext
@@ -139,6 +140,10 @@ class MasterDataService:
         identifier: UUID,
         version: int,
         reason: str | None = None,
+        *,
+        workspace_id: UUID | None = None,
+        project_id: UUID | None = None,
+        source: EventContext | None = None,
     ) -> None:
         actor_id = self.authorization.user(context, organization_id).id if organization_id else None
         self.audit.append(
@@ -152,7 +157,13 @@ class MasterDataService:
                 request_id=context.request_id,
                 aggregate_type="master_data",
                 aggregate_id=identifier,
-                payload=AuditDetails(version=version, reason=reason),
+                payload=AuditDetails(
+                    version=version,
+                    reason=reason,
+                    workspace_id=workspace_id,
+                    project_id=project_id,
+                    **(source.model_dump() if source else {}),
+                ),
             )
         )
 
@@ -296,7 +307,14 @@ class MasterDataService:
             raise ServiceError(409, "duplicate_master_data_code")
         self.store.create_record(record)
         self.event(
-            context, organization_id, "master_data.record.created", record.id, record.version
+            context,
+            organization_id,
+            "master_data.record.created",
+            record.id,
+            record.version,
+            workspace_id=definition.workspace_id,
+            project_id=definition.project_id,
+            source=EventContext(master_data_type_id=type_id, master_data_record_id=record.id),
         )
         return record
 
@@ -331,7 +349,14 @@ class MasterDataService:
         if not self.store.update_record(changed, expected_version):
             raise ServiceError(409, "version_conflict")
         self.event(
-            context, organization_id, "master_data.record.updated", record_id, changed.version
+            context,
+            organization_id,
+            "master_data.record.updated",
+            record_id,
+            changed.version,
+            workspace_id=definition.workspace_id,
+            project_id=definition.project_id,
+            source=EventContext(master_data_type_id=type_id, master_data_record_id=record_id),
         )
         return changed
 

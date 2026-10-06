@@ -70,3 +70,9 @@ Worker/outbox foundation alone will not satisfy Phase 6 acceptance.
 Phase 6 foundation: scoped event contracts and transport have tests, but durable
 outbox/runs, actions, notification delivery/UI and reconciliation remain current
 implementation work. No retained data or migration was changed; no new bypass.
+
+Phase 6 delegated ledger checkpoint: Q-006 resolved in accepted ADR-0011. Guarded
+outbox/rule/run persistence and source capture are implemented and tested. Action
+handlers, worker consumers, notifications/email/invitations, scoped UI and TD-005
+reconciliation remain Phase 6 implementation requirements, not deferred debt.
+No production worker rollout or new authority bypass is introduced.

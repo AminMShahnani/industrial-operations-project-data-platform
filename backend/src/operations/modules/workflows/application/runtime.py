@@ -3,6 +3,7 @@ from typing import Literal, Protocol
 from uuid import UUID, uuid7
 
 from operations.contracts import ServiceError
+from operations.modules.automation.application.events import EventContext
 from operations.modules.forms.application.expressions import condition_matches
 from operations.modules.identity.application.contracts import RequestContext
 from operations.modules.submissions.application.contracts import Submission
@@ -272,6 +273,18 @@ class WorkflowRuntime:
             if edge.source == key and edge.outcome == outcome
         )
 
+    def source(
+        self, row: WorkflowInstance, submission: Submission, recipients: list[UUID] | None = None
+    ) -> EventContext:
+        return EventContext(
+            form_id=submission.form_id,
+            form_number=submission.form_number,
+            submission_id=submission.id,
+            workflow_instance_id=row.id,
+            subject_user_id=submission.owner_id,
+            recipient_ids=recipients or [],
+        )
+
     def advance(
         self,
         actor: RequestContext,
@@ -310,7 +323,12 @@ class WorkflowRuntime:
                 )
                 self.store.add_step(step)
                 self.workflows.event(
-                    actor, workflow, step.id, "workflow.step.assigned", step.number
+                    actor,
+                    workflow,
+                    step.id,
+                    "workflow.step.assigned",
+                    step.number,
+                    source=self.source(row, submission, recipients),
                 )
                 changed = row.model_copy(update={"current_node": key, "revision": row.revision + 1})
                 break
@@ -329,7 +347,12 @@ class WorkflowRuntime:
                     }
                 )
                 self.workflows.event(
-                    actor, workflow, row.id, "workflow.instance." + changed.state, version.number
+                    actor,
+                    workflow,
+                    row.id,
+                    "workflow.instance." + changed.state,
+                    version.number,
+                    source=self.source(row, submission, [submission.owner_id]),
                 )
                 break
             if node.kind == "notify":
@@ -350,7 +373,11 @@ class WorkflowRuntime:
                 )
                 self.store.notify(notification)
                 self.workflows.event(
-                    actor, workflow, notification.id, "workflow.notification.requested"
+                    actor,
+                    workflow,
+                    notification.id,
+                    "workflow.notification.requested",
+                    source=self.source(row, submission, recipients),
                 )
             outcome = "continue"
             if node.kind == "decision":
@@ -455,12 +482,30 @@ class WorkflowRuntime:
         ):
             self.store.save_step(step.model_copy(update={"state": "completed"}))
             submission = self.submissions.snapshot(org, workspace, row.submission_id)
+            self.workflows.event(
+                actor,
+                workflow,
+                step.id,
+                "workflow.step.completed",
+                step.number,
+                source=self.source(row, submission),
+            )
             return self.advance(actor, row, version, submission, self.next_node(version, node.key))
         else:
             changed = row.model_copy(update={"revision": row.revision + 1})
         if not self.store.save_instance(changed, row.revision):
             raise ServiceError(409, "stale_revision")
         self.sync_tasks(actor, changed)
+        if kind == "reject" and changed.state == "rejected":
+            submission = self.submissions.snapshot(org, workspace, row.submission_id)
+            self.workflows.event(
+                actor,
+                workflow,
+                row.id,
+                "workflow.instance.rejected",
+                version.number,
+                source=self.source(row, submission, [submission.owner_id]),
+            )
         return changed
 
 
