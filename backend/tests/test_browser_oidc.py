@@ -13,11 +13,13 @@ import pytest
 from alembic import command
 from alembic.config import Config
 from operations.composition import compose
+from operations.email_worker import email_service
 from operations.modules.audit.infrastructure.persistence import AuditRow
 from operations.modules.automation.application.contracts import NotifyAction, RuleDefinition
 from operations.modules.automation.application.events import DeliveryMessage
 from operations.modules.automation.domain.reliability import delivery_id
 from operations.modules.identity.application.contracts import Principal, RequestContext
+from operations.modules.notifications.application.email_contracts import EmailResult
 from operations.modules.notifications.infrastructure.email_persistence import EmailRow
 from operations.modules.organizations.application.contracts import OrganizationSettings
 from operations.modules.projects.application.contracts import ProjectRole
@@ -380,7 +382,7 @@ def test_real_oidc_pkce_login_and_workspace_creation(monkeypatch: pytest.MonkeyP
                     "Sign-in invitation link", exact=True
                 ).input_value()
                 assert "token=" not in invitation_link and "email=" not in invitation_link
-                with Session(engine) as email_session:
+                with Session(engine) as email_session, email_session.begin():
                     queued_email = email_session.scalar(
                         select(EmailRow).where(
                             EmailRow.organization_id == organization.id,
@@ -392,6 +394,58 @@ def test_real_oidc_pkce_login_and_workspace_creation(monkeypatch: pytest.MonkeyP
                         and queued_email.state == "pending"
                         and queued_email.attempts == 0
                     )
+                    email_identifier = queued_email.id
+                    email = email_service(email_session)
+                    claim = email.claim(organization.id, email_identifier)
+                    assert claim
+                    # Fake provider evidence only; this browser test sends no email.
+                    email.finish(claim, EmailResult("uncertain", "smtp_connection_lost"))
+                email_console = page.get_by_role("region", name="Email delivery and recovery")
+                email_console.get_by_role(
+                    "button", name="Refresh email deliveries", exact=True
+                ).click()
+                email_console.get_by_role("button").filter(
+                    has_text="Outcome uncertain — invitation"
+                ).click()
+                expect(
+                    email_console.get_by_text("Email delivery evidence", exact=True)
+                ).to_be_visible()
+                email_console.get_by_role("button", name="Preview email replay", exact=True).click()
+                apply_email = email_console.get_by_role(
+                    "button", name="Apply email replay", exact=True
+                )
+                expect(apply_email).to_be_disabled()
+                email_console.get_by_label("Email replay reason", exact=True).fill(
+                    "Browser provider logs reviewed"
+                )
+                expect(apply_email).to_be_disabled()
+                email_console.get_by_label(
+                    "I reviewed the uncertain outcome and accept possible duplicate delivery",
+                    exact=True,
+                ).check()
+                apply_email.click()
+                expect(
+                    email_console.get_by_text(
+                        "Email queued for reviewed replay. Previous attempts are preserved.",
+                        exact=True,
+                    )
+                ).to_be_visible()
+                with Session(engine) as email_session, email_session.begin():
+                    email = email_service(email_session)
+                    claim = email.claim(organization.id, email_identifier)
+                    assert claim and claim.attempts == 2
+                    email.finish(claim, EmailResult("sent"))
+                email_console.get_by_role(
+                    "button", name="Refresh email evidence", exact=True
+                ).click()
+                expect(
+                    email_console.get_by_text(
+                        "Email attempt 2: Accepted by SMTP provider", exact=False
+                    )
+                ).to_be_visible()
+                expect(
+                    email_console.get_by_role("button", name="Preview email replay", exact=True)
+                ).to_have_count(0)
                 invitation_context = browser.new_context()
                 try:
                     invitation_page = invitation_context.new_page()
@@ -417,6 +471,9 @@ def test_real_oidc_pkce_login_and_workspace_creation(monkeypatch: pytest.MonkeyP
                     expect(invitation_page.get_by_label("Organization", exact=True)).to_have_value(
                         str(organization.id)
                     )
+                    expect(
+                        invitation_page.get_by_role("region", name="Email delivery and recovery")
+                    ).to_have_count(0)
                     invitation_page.wait_for_load_state("networkidle")
                     assert "invitation=" not in invitation_page.url
                 finally:

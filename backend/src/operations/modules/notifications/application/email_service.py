@@ -11,9 +11,12 @@ from operations.modules.notifications.application.email_contracts import (
     EmailAttempt,
     EmailContent,
     EmailDelivery,
+    EmailDeliveryPage,
+    EmailHistory,
     EmailKind,
     EmailResult,
     EmailReview,
+    EmailState,
     EmailStore,
 )
 from operations.modules.notifications.application.service import NotificationService
@@ -257,3 +260,45 @@ class EmailService:
             self.store.save(updated)
             self.audit(updated, "email.replayed", operator, reason.strip(), actor)
         return EmailReview(delivery=delivery, review_sha256=digest, applied=apply)
+
+    def page(
+        self,
+        actor: RequestContext,
+        org: UUID,
+        state: EmailState | None = None,
+        cursor: UUID | None = None,
+    ) -> EmailDeliveryPage:
+        self.administrator(actor, org)
+        rows = self.store.page(org, state, cursor)
+        return EmailDeliveryPage(
+            items=rows[:100], next_cursor=rows[99].id if len(rows) > 100 else None
+        )
+
+    def history(self, actor: RequestContext, org: UUID, identifier: UUID) -> EmailHistory:
+        self.administrator(actor, org)
+        row = self.store.get(org, identifier)
+        if row is None:
+            raise ServiceError(404, "email_not_found")
+        return EmailHistory(delivery=row, attempts=self.store.attempts(org, identifier))
+
+    def reviewed_replay(
+        self,
+        actor: RequestContext,
+        org: UUID,
+        identifier: UUID,
+        *,
+        dry_run: bool = True,
+        review_sha256: str | None = None,
+        reason: str | None = None,
+        acknowledge_uncertain: bool = False,
+    ) -> EmailReview:
+        row = self.history(actor, org, identifier).delivery
+        if not dry_run and row.state == "uncertain" and not acknowledge_uncertain:
+            raise ServiceError(422, "email_uncertain_acknowledgement_required")
+        result = self.replay(actor, org, identifier, not dry_run, review_sha256, reason)
+        if result.applied:
+            current = self.store.get(org, identifier)
+            if current is None:
+                raise ServiceError(409, "email_source_invalid")
+            return result.model_copy(update={"delivery": current})
+        return result

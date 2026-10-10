@@ -18,6 +18,7 @@ from starlette.exceptions import HTTPException
 from operations.api import router
 from operations.automation_api import router as automation_router
 from operations.contracts import ServiceError
+from operations.email_api import router as email_router
 from operations.modules.identity.application.contracts import TokenVerifier
 from operations.modules.identity.infrastructure.oidc import OidcVerifier
 from operations.phase2_api import router as phase2_router
@@ -198,6 +199,7 @@ def create_app(
     app.include_router(phase5_router)
     app.include_router(phase6_router)
     app.include_router(automation_router)
+    app.include_router(email_router)
     return app
 
 

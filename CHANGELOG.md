@@ -2,6 +2,15 @@
 
 ## Unreleased - Phase 6 in progress (2026-10-10)
 
+- Add organization-scoped email evidence and reviewed recovery API/UI under
+  ADR-0023. Preserve original delegation, immutable attempts, exact review/reason
+  and lifetime limits; require uncertain duplicate-delivery acknowledgement.
+  Return no addresses/content/secrets, and distinguish provider acceptance from
+  mailbox delivery. Add reversible chronological lookup indexes in ba6e379cc281.
+  All local gates pass (272 backend/18 frontend tests, real PKCE browser and
+  committed concurrent recovery, lint/types, migrations and generated contracts/
+  build); exact-code hosted verification is pending. Phase 6 remains unaccepted.
+
 - Add scoped automation rule/version administration and immutable run evidence
   API/UI under ADR-0022. Review exact saved content before activation; preserve
   pinned versions, fresh delegation, twenty-attempt limits and audit history.

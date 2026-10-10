@@ -61,6 +61,10 @@ class EmailStore(Protocol):
     def save(self, delivery: EmailDelivery) -> None: ...
     def attempt(self, attempt: EmailAttempt) -> None: ...
     def due(self, org: UUID, now: datetime) -> list[UUID]: ...
+    def page(
+        self, org: UUID, state: EmailState | None, cursor: UUID | None
+    ) -> list[EmailDelivery]: ...
+    def attempts(self, org: UUID, delivery: UUID) -> list[EmailAttempt]: ...
 
 
 class EmailCapture(Protocol):
@@ -86,3 +90,13 @@ class EmailDispatch(Command):
     organization_id: UUID
     due: int = Field(ge=0, le=100)
     dispatched: int = Field(ge=0, le=100)
+
+
+class EmailDeliveryPage(Command):
+    items: list[EmailDelivery]
+    next_cursor: UUID | None = None
+
+
+class EmailHistory(Command):
+    delivery: EmailDelivery
+    attempts: list[EmailAttempt]

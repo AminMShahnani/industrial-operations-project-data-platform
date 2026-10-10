@@ -54,7 +54,8 @@ automatic in-app projections remain unchanged.
 Scoped rule/run management and reviewed replay API/UI are implemented under
 ADR-0022; all local gates pass (261 backend/16 frontend tests). Hosted run 38047837127 passes both jobs on exact
 code fe4ebc8.
-Generic tasks, tags/flags, webhooks, email operator UI and telemetry remain current-phase
+Email delivery/recovery API/UI is implemented under ADR-0023; all local gates pass
+(272 backend/18 frontend tests). Exact-code hosted verification is pending. Generic tasks, tags/flags, webhooks and telemetry remain current-phase
 work. 0/8 accepted; Q-006 is resolved.
 Phase 5 remains accepted on d91dfce / hosted run 37454353238.
 
@@ -71,7 +72,7 @@ Q-004 resolved by user: shared task claimed by one eligible member.
 Legacy export absent.
 
 ## Next 5 tasks
-1. Expose scoped email delivery/recovery status through operator UI.
+1. Verify the exact email recovery console commit in hosted CI.
 2. Implement generic task, tag/flag and webhook handlers.
 3. Complete queue/run telemetry and operator failure visibility.
 4. Complete remaining Phase 6 acceptance and fault/recovery coverage.
@@ -251,9 +252,26 @@ passes backend and frontend jobs on exact code
 real PKCE administration/replay, committed concurrent applies, migrations and
 generated contracts. Phase 6 remains 0/8 accepted; no Phase 7 work.
 
+## Email recovery console validation
+
+All local gates pass: 272 backend tests without skips in 261.34s and 18 frontend
+tests. Ruff check/format (342 files), strict mypy (271 files), frontend lint/types/
+build, migration round-trip/drift and generated OpenAPI/client checks pass. Eleven
+new API/integration cases cover scope/privacy, exact filtered 104-row chronology
+with timestamp ties, invalid/foreign cursors, preserved evidence after source expiry
+and revoked delegation, replay reason/hash/uncertain acknowledgement, terminal
+states, lifetime cap and populated index rollback. Real PKCE browser recovery and
+eight committed concurrent reviews produce one requeue, then one provider effect.
+No external email is sent; fake/loopback tests only. Hosted exact-code verification
+is pending. Phase 6 remains 0/8 accepted.
+
 ## Migration status
 
-Development, isolated test and retained browser databases are at 5caef6ad5721.
+Development, isolated test and retained browser databases are at ba6e379cc281.
+Email console lookup indexes add chronological organization/state cursor access.
+Populated index downgrade preserves all delivery/attempt/audit evidence; no data
+rewrite is performed. All local gates pass; hosted evidence is pending.
+Prior explicit email channel migration 5caef6ad5721 remains intact.
 Explicit email channels add immutable notice visibility and a filtered cursor index.
 Existing notice IDs/source/audit/read history remain intact. Empty/default-only
 round-trip and drift pass; email channel evidence blocks populated rollback.

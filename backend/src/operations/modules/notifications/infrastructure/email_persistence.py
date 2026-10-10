@@ -10,11 +10,17 @@ from sqlalchemy import (
     UniqueConstraint,
     select,
     text,
+    tuple_,
     update,
 )
 from sqlalchemy.orm import Mapped, Session, mapped_column
 
-from operations.modules.notifications.application.email_contracts import EmailAttempt, EmailDelivery
+from operations.contracts import ServiceError
+from operations.modules.notifications.application.email_contracts import (
+    EmailAttempt,
+    EmailDelivery,
+    EmailState,
+)
 from operations.platform.database import Base
 
 
@@ -56,6 +62,8 @@ class EmailRow(Base):
             name="source",
         ),
         Index("ix_email_due", "organization_id", "state", "next_at", "id"),
+        Index("ix_email_created_cursor", "organization_id", "created_at", "id"),
+        Index("ix_email_state_cursor", "organization_id", "state", "created_at", "id"),
     )
     id: Mapped[UUID] = mapped_column(primary_key=True)
     organization_id: Mapped[UUID]
@@ -147,3 +155,44 @@ class EmailRepository:
                 .limit(100)
             )
         )
+
+    def page(self, org: UUID, state: EmailState | None, cursor: UUID | None) -> list[EmailDelivery]:
+        query = select(EmailRow).where(EmailRow.organization_id == org)
+        if state is not None:
+            query = query.where(EmailRow.state == state)
+        if cursor is not None:
+            boundary = self.session.scalar(
+                select(EmailRow).where(
+                    EmailRow.organization_id == org,
+                    EmailRow.id == cursor,
+                )
+            )
+            if boundary is None:
+                raise ServiceError(422, "email_cursor_invalid")
+            query = query.where(
+                tuple_(EmailRow.created_at, EmailRow.id) > (boundary.created_at, boundary.id)
+            )
+        return [
+            EmailDelivery.model_validate(
+                {key: getattr(row, key) for key in EmailDelivery.model_fields}
+            )
+            for row in self.session.scalars(
+                query.order_by(EmailRow.created_at, EmailRow.id).limit(101)
+            )
+        ]
+
+    def attempts(self, org: UUID, delivery: UUID) -> list[EmailAttempt]:
+        return [
+            EmailAttempt.model_validate(
+                {key: getattr(row, key) for key in EmailAttempt.model_fields}
+            )
+            for row in self.session.scalars(
+                select(EmailAttemptRow)
+                .where(
+                    EmailAttemptRow.organization_id == org,
+                    EmailAttemptRow.delivery_id == delivery,
+                )
+                .order_by(EmailAttemptRow.number)
+                .limit(20)
+            )
+        ]

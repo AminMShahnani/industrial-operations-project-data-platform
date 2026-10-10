@@ -201,3 +201,12 @@ minimal run evidence. Public replay adds exact state review and a reason without
 changing the approved authority or attempt limits. No unresolved domain/security
 question or industry coupling is introduced. All local gates pass (261 backend/16 frontend tests); hosted run 38047837127
 passes both jobs on exact code fe4ebc8. No phase acceptance gate is waived.
+
+## Email recovery console - 2026-10-10
+
+ADR-0023 uses existing organization-admin email authority and original delegation.
+Minimal evidence remains inspectable when a source expires or authority changes;
+this confers no source-read/send authority. Public uncertain replay requires explicit
+possible-duplicate acknowledgement. No new domain/security ambiguity or industry
+coupling. All local gates pass (272 backend/18 frontend tests); hosted exact-code verification
+is pending. No new unresolved question.

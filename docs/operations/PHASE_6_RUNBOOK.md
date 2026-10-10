@@ -438,8 +438,7 @@ does not reset accepted mail. Use the same scoped SMTP dispatcher and worker abo
 This does not introduce tenant-wide opt-in or implicit email for task assignment,
 workflow review/notify or reminder projections. Their existing in-app behavior and
 historical handoffs remain intact. Configure email on supported task/workflow events
-through explicitly activated notify rules. Rule management API/UI and other handlers/
-telemetry remain Phase 6 requirements.
+through explicitly activated notify rules. Remaining handlers and telemetry are Phase 6 requirements.
 
 Downgrade to `208f826ca492` is allowed only when no email-channel rule version or
 email-only notice exists; the old SQL channel guard and schema are restored. With
@@ -474,3 +473,32 @@ Rollback: disable the administration UI/routes and deploy the preceding code;
 there is no migration or data removal. Retain all newly created rules, immutable
 versions, run history and audits. Previously captured runs still need the worker;
 retirement stops new matches. ADR-0022 records the boundary.
+
+## Email delivery and recovery console
+
+Organization administrators open Email delivery and recovery for the selected
+organization. List all states or filter before chronological paging; timestamps
+and delivery UUID together define the cursor because IDs are deterministic UUIDv5.
+Inspect original source/operator IDs, correlation, next check and immutable attempts.
+The console returns no recipient addresses, SMTP content, invitation credentials or
+secret configuration. Sent means SMTP provider acceptance, not mailbox delivery.
+Evidence stays visible after source expiry/revocation; replay still requires the
+original queue administrator and current source/recipient eligibility.
+
+The organization-level API prefix is
+`/api/v1/organizations/{organization_id}/email-deliveries`: GET list with optional
+state/cursor, GET `/{delivery_id}` evidence, POST `/{delivery_id}/replay` preview
+with dry_run=true. Review the state, resolve the failure, then apply dry_run=false
+with review_sha256 and a nonblank reason. Uncertain sends additionally require
+acknowledge_uncertain=true after reviewing provider evidence and possible duplicate
+mail. A changed state invalidates the review. All attempts remain retained;
+sending/sent/skipped deliveries and the twenty-attempt lifetime limit refuse replay.
+No API dispatches mail or configures SMTP; the existing scoped dispatcher/worker
+processes the requeue. Expired sending claims become uncertain through that worker.
+
+Migration ba6e379cc281 adds organization/time and organization/state/time lookup
+indexes only. Upgrade all application databases before enabling the console.
+Downgrade to 5caef6ad5721 drops only those indexes, preserving populated deliveries,
+attempts and audits. Disable the console/routes before rolling back application
+code. Older ledger/source downgrade guards still apply; never delete evidence to
+force rollback. Use fake transports/loopback sinks for verification.

@@ -1,5 +1,6 @@
 import os
 import threading
+from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime, timedelta
 from typing import Any
 from unittest.mock import patch
@@ -134,8 +135,29 @@ def test_committed_workers_deduplicate_and_recover_uncertainty(
             service = email_service(session)
             current = service.store.get(org, crashed)
             assert current and current.state == "uncertain" and current.attempts == 1
-            review = service.replay(actor, org, crashed)
-            service.replay(actor, org, crashed, True, review.review_sha256, "Provider reviewed")
+            review = service.reviewed_replay(actor, org, crashed)
+
+        def reviewed_apply(_: int) -> str:
+            with Session(engine) as session, session.begin():
+                try:
+                    result = email_service(session).reviewed_replay(
+                        actor,
+                        org,
+                        crashed,
+                        dry_run=False,
+                        review_sha256=review.review_sha256,
+                        reason="Provider reviewed",
+                        acknowledge_uncertain=True,
+                    )
+                    assert result.applied and result.delivery.state == "retry"
+                    return "applied"
+                except ServiceError as error:
+                    assert error.code == "email_review_stale"
+                    return "stale"
+
+        with ThreadPoolExecutor(max_workers=8) as pool:
+            recovered = list(pool.map(reviewed_apply, range(8)))
+        assert recovered.count("applied") == 1 and recovered.count("stale") == 7
         process_email(org, crashed, settings, sink, "https://app.example.test")
         assert len(sink.calls) == 3 and sink.calls[1][0] == sink.calls[2][0] == crashed
         with Session(engine) as session, session.begin():

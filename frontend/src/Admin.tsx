@@ -4,6 +4,7 @@ import { apiClient } from './client';
 import type { components } from './api-schema';
 import { ProjectAdministration } from './ProjectAdmin';
 import { Notifications } from './Notifications';
+import { EmailRecovery } from './EmailRecovery';
 import { InvitationAcceptance } from './InvitationAcceptance';
 import { invitationPath, invitationRequestId, invitationTargetFromState, readInvitationTarget } from './invitation-link';
 
@@ -182,6 +183,7 @@ export function Administration() {
       {invitationLink && <div><p>This link expires in seven days. Share it only with the intended member.</p>
         <label>Sign-in invitation link<textarea aria-label="Sign-in invitation link" readOnly value={invitationLink} /></label></div>}
     </section>}
+    {organization && permissions.includes('organization.manage') && <EmailRecovery key={'email' + organization} api={api} organization={organization}/>}
     {organization && workspace && <Notifications key={'notifications' + organization + workspace} api={api} organization={organization} workspace={workspace} />}
     {organization && workspace && <ProjectAdministration key={organization + workspace} api={api} organization={organization} workspace={workspace} />}
     <section><h2>Accept an invitation</h2><form onSubmit={event => void acceptInvitation(event)}>

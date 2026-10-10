@@ -933,3 +933,27 @@ real PKCE administration/replay, committed concurrent applies, migrations and
 generated contracts. Phase 6 remains 0/8 accepted; no Phase 7 work.
 Email operator UI, remaining handlers and telemetry remain current-phase work;
 no acceptance item is deferred to Phase 7.
+
+## Phase 6 email recovery console - 2026-10-10
+
+Requirements: docs/12 correlated durable delivery/retry evidence, docs/20 fresh
+server authorization and docs/21 reviewed administrative recovery. ADR-0023
+exposes organization-scoped minimal email evidence under existing organization
+management authority. Typed list/detail/replay API and console show fixed statuses,
+source IDs and bounded immutable attempts, without addresses/content/secrets.
+Inspect expired/revoked evidence without rendering; replay rechecks original
+operator and source, exact state hash/reason and uncertain duplicate acknowledgement.
+Sending/sent/skipped states and twenty attempts refuse replay. Filtering precedes
+100-item chronological cursor pages, including UUIDv5/timestamp tie boundaries.
+Add reversible lookup indexes in migration ba6e379cc281; no evidence rewrite/drop.
+All local gates pass: 272 backend tests without skips in 261.34s and 18 frontend
+tests. Ruff check/format (342 files), strict mypy (271 files), frontend lint/types/
+build, migration round-trip/drift and generated OpenAPI/client checks pass. Eleven
+new API/integration cases cover scope/privacy, exact filtered 104-row chronology
+with timestamp ties, invalid/foreign cursors, preserved evidence after source expiry
+and revoked delegation, replay reason/hash/uncertain acknowledgement, terminal
+states, lifetime cap and populated index rollback. Real PKCE browser recovery and
+eight committed concurrent reviews produce one requeue, then one provider effect.
+No external email is sent; fake/loopback tests only. Hosted exact-code verification
+is pending. Phase 6 remains 0/8 accepted.
+Remaining handlers and telemetry are current-phase work, not Phase 7 deferrals.
