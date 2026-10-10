@@ -16,7 +16,10 @@ reported as passes. No outbound transport is enabled: safe
 delivery still needs immutable scoped endpoint versions, external secret resolver,
 pinned-address HTTPS transport, durable attempt ledger/retries, audited endpoint
 administration and reviewed replay. Phase 6 remains 0/8 accepted; no criteria are
-deferred or relaxed.
+deferred or relaxed. Hosted
+[38059383470](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/38059383470)
+passes both jobs on exact code 0f7e066f001196ee1d9851d42941ab513e688e95, including
+Linux type checks, backend/browser suites, migrations and generated API drift.
 
 ## Phase 6 controlled tags and flags - 2026-10-10
 

@@ -6,7 +6,9 @@
   identifiers-only event envelope, bounded canonical JSON, HMAC-SHA256 signature
   headers and HTTPS/DNS/address allowlist policy primitives. Five focused security
   tests pass. No network delivery is enabled pending scoped endpoint management,
-  external secrets and a verified pinned-address HTTPS transport.
+  external secrets and a verified pinned-address HTTPS transport. Hosted
+  [38059383470](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/38059383470)
+  passes both jobs on exact code 0f7e066f001196ee1d9851d42941ab513e688e95.
 
 - Add controlled project append_tag/append_flag actions through the owning service
   under ADR-0025. Preserve first-append authorship/audit, exact kind/case distinctions

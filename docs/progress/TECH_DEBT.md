@@ -4,7 +4,8 @@ Webhook delivery (2026-10-10): Q-009 is resolved under accepted ADR-0026. Typed
 identifiers-only envelope, HMAC signing and destination policy foundation pass
 focused checks. Delivery remains fail-closed; endpoint versions/API, external secret
 resolver, pinned-address HTTPS transport, durable attempts/retries, and reviewed
-replay are still current Phase 6 implementation work.
+replay are still current Phase 6 implementation work. Hosted run 38059383470 passes
+both jobs on exact code 0f7e066f001196ee1d9851d42941ab513e688e95.
 
 Controlled tags/flags (2026-10-10): implementation passes all local gates (298
 backend/18 frontend tests) under ADR-0025. Hosted run

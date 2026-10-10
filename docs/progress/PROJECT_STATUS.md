@@ -66,7 +66,9 @@ Q-009 is resolved and ADR-0026 accepted. Typed identifiers-only payload projecti
 canonical HMAC-SHA256 signing and DNS/IP policy validation are implemented with
 five focused tests. Delivery remains fail-closed pending endpoint registry,
 external secret resolution, pinned HTTPS transport, durable delivery ledger and
-reviewed replay. Telemetry and remaining coverage are current-phase work. 0/8
+reviewed replay. Hosted run 38059383470 passes both jobs on exact code
+0f7e066f001196ee1d9851d42941ab513e688e95. Telemetry and remaining coverage are
+current-phase work. 0/8
 accepted; Q-006 and Q-008 are resolved.
 Phase 5 remains accepted on d91dfce / hosted run 37454353238.
 
