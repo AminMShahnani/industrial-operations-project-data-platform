@@ -7,6 +7,7 @@ import urllib.request
 from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
+from typing import cast
 from uuid import UUID, uuid7
 
 import pytest
@@ -14,16 +15,30 @@ from alembic import command
 from alembic.config import Config
 from operations.composition import compose
 from operations.email_worker import email_service
-from operations.modules.audit.infrastructure.persistence import AuditRow
+from operations.modules.audit.infrastructure.persistence import AuditRepository, AuditRow
 from operations.modules.automation.application.contracts import (
     NotifyAction,
     RuleDefinition,
     TagAction,
     TaskAction,
+    WebhookAction,
 )
-from operations.modules.automation.application.events import DeliveryMessage
+from operations.modules.automation.application.events import DeliveryMessage, OperationalEvent
 from operations.modules.automation.domain.reliability import delivery_id
+from operations.modules.automation.infrastructure.persistence import AutomationRepository
 from operations.modules.identity.application.contracts import Principal, RequestContext
+from operations.modules.integrations.application.contracts import EndpointCreate
+from operations.modules.integrations.application.delivery import WebhookDeliveryService
+from operations.modules.integrations.application.webhooks import (
+    UnconfiguredTenantSecretResolver,
+    WebhookTransport,
+)
+from operations.modules.integrations.infrastructure.persistence import (
+    WebhookDeliveryRepository,
+    WebhookDeliveryStateRow,
+    WebhookEndpointRepository,
+    WebhookIntentRow,
+)
 from operations.modules.notifications.application.email_contracts import EmailResult
 from operations.modules.notifications.infrastructure.email_persistence import EmailRow
 from operations.modules.organizations.application.contracts import OrganizationSettings
@@ -511,6 +526,130 @@ def test_real_oidc_pkce_login_and_workspace_creation(monkeypatch: pytest.MonkeyP
                 expect(
                     email_console.get_by_role("button", name="Preview email replay", exact=True)
                 ).to_have_count(0)
+                with Session(engine) as webhook_session, webhook_session.begin():
+                    services = compose(webhook_session, principal)
+                    endpoint = services.webhook_endpoints.create(
+                        actor,
+                        organization.id,
+                        notice_workspace,
+                        notice_project,
+                        EndpointCreate(
+                            name="Browser recovery test",
+                            url="https://hooks.example.test/browser",
+                            secret_reference="browser/webhook/key-v1",
+                            signing_key_version=1,
+                        ),
+                    )
+                    rule = services.automation.create(
+                        actor,
+                        organization.id,
+                        notice_workspace,
+                        notice_project,
+                        "Browser webhook recovery",
+                        RuleDefinition(
+                            trigger="integration.event",
+                            actions=[
+                                WebhookAction(
+                                    kind="call_webhook",
+                                    endpoint_id=endpoint.endpoint_id,
+                                    endpoint_version=endpoint.version,
+                                )
+                            ],
+                        ),
+                    )
+                    activation = services.automation.activate(
+                        actor, organization.id, notice_workspace, rule.id, 1, 1, True, None
+                    )
+                    services.automation.activate(
+                        actor,
+                        organization.id,
+                        notice_workspace,
+                        rule.id,
+                        1,
+                        1,
+                        False,
+                        activation.content_sha256,
+                    )
+                    event = OperationalEvent(
+                        id=uuid7(),
+                        type="integration.event",
+                        occurred_at=datetime.now(UTC),
+                        organization_id=organization.id,
+                        workspace_id=notice_workspace,
+                        project_id=notice_project,
+                        actor_id=user.id,
+                        correlation_id=uuid7(),
+                        aggregate_type="integration",
+                        aggregate_id=uuid7(),
+                    )
+                    services.automation.capture(event)
+                    webhook_message = DeliveryMessage(
+                        organization_id=organization.id,
+                        delivery_id=delivery_id(event.id, "automation"),
+                    )
+                    assert process_automation(webhook_session, webhook_message).state == "completed"
+                    intent = webhook_session.scalar(
+                        select(WebhookIntentRow).where(
+                            WebhookIntentRow.organization_id == organization.id,
+                            WebhookIntentRow.event_id == event.id,
+                        )
+                    )
+                    assert intent
+                    webhook_delivery_id = intent.id
+                    delivery = WebhookDeliveryService(
+                        WebhookDeliveryRepository(webhook_session),
+                        WebhookEndpointRepository(webhook_session),
+                        AutomationRepository(webhook_session),
+                        AuditRepository(webhook_session),
+                        UnconfiguredTenantSecretResolver(),
+                        cast(WebhookTransport, object()),
+                    )
+                    claimed = delivery.claim(organization.id, intent.id)
+                    assert claimed
+                    assert (
+                        delivery.claim(
+                            organization.id, intent.id, now=claimed.next_at + timedelta(seconds=1)
+                        )
+                        is None
+                    )
+                webhook_console = page.get_by_role("region", name="Webhook delivery and recovery")
+                webhook_console.get_by_label("Webhook delivery status", exact=True).select_option(
+                    "uncertain"
+                )
+                webhook_console.get_by_role(
+                    "button", name="Refresh webhook deliveries", exact=True
+                ).click()
+                webhook_console.get_by_role("button").filter(has_text="uncertain —").click()
+                expect(
+                    webhook_console.get_by_text("Webhook delivery evidence", exact=True)
+                ).to_be_visible()
+                webhook_console.get_by_role(
+                    "button", name="Preview webhook replay", exact=True
+                ).click()
+                apply_webhook = webhook_console.get_by_role(
+                    "button", name="Apply webhook replay", exact=True
+                )
+                expect(apply_webhook).to_be_disabled()
+                webhook_console.get_by_label("Webhook replay reason", exact=True).fill(
+                    "Browser provider evidence reviewed"
+                )
+                expect(apply_webhook).to_be_disabled()
+                webhook_console.get_by_label(
+                    "I reviewed the uncertain outcome and accept possible duplicate delivery",
+                    exact=True,
+                ).check()
+                apply_webhook.click()
+                expect(
+                    webhook_console.get_by_text(
+                        "Webhook queued for reviewed replay. Previous attempts are preserved.",
+                        exact=True,
+                    )
+                ).to_be_visible()
+                with Session(engine) as webhook_session, webhook_session.begin():
+                    state = webhook_session.get(
+                        WebhookDeliveryStateRow, (webhook_delivery_id, organization.id)
+                    )
+                    assert state and state.status == "retry" and state.attempts == 1
                 invitation_context = browser.new_context()
                 try:
                     invitation_page = invitation_context.new_page()

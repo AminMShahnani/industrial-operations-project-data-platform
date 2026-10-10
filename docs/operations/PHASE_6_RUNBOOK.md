@@ -569,24 +569,47 @@ force rollback. Use fake transports/loopback sinks for verification.
 ## Signed webhook delivery
 
 The automation action transaction creates an immutable intent and pending state.
+Set `IOP_WEBHOOK_SECRETS_DIRECTORY` to the read-only mount populated by the external
+secret manager, following ADR-0027. Each `<organization-uuid>-<sha256(reference)>-v<version>.json`
+entry binds the organization, exact endpoint secret reference and key version to a
+base64 key of at least 32 bytes. Mount only the required versions into the worker
+identity; rotate by adding a new immutable version and endpoint revision. The mount
+and its encryption/access controls are deployment responsibilities. An unset setting
+keeps the worker fail-closed before consuming an attempt.
+
 Run the due-ID dispatcher periodically with `uv run python -m
-operations.webhook_dispatcher` and the worker with
+operations.webhook_dispatcher --interval-seconds 30` and the worker with
 `uv run dramatiq operations.webhook_consumer:broker --processes 1 --threads 4`.
 The queue carries only organization and delivery UUIDs. Duplicate publication is
 expected and safe: the database claim lease allows only one active attempt.
 
-The default worker intentionally has no secret provider and fails before claiming;
-it does not consume an attempt or send. Before enabling webhook delivery, wire the
-deployment's tenant-isolated `TenantSecretResolver` into `operations.webhook_consumer`
-and enforce the same outbound CIDR policy at the network boundary. Never store key
-bytes in the database, broker, audit records or logs. Keep automation action sends
-disabled until that provider has passed tenant-isolation and unknown-reference
-tests. Expired `sending` leases become `uncertain` and are not automatically resent.
-The eight-attempt retry limit is automatic; reviewed operator replay and delivery
-history UI remain unavailable until implemented. Use only fake transports or
-loopback sinks for verification, never customer endpoints.
+When the setting is absent, the worker intentionally fails before claiming; it does
+not consume an attempt or send. Enforce the same outbound CIDR policy at the network
+boundary. Never store key bytes in the database, broker, audit records or logs. Expired
+`sending` leases are selected by the dispatcher and become `uncertain`; they are not
+automatically resent. The eight-attempt retry limit is automatic.
+
+Organization administrators with `integration.manage` can inspect the webhook
+delivery and attempt history in **Webhook delivery and recovery**. The API is
+`GET /api/v1/organizations/{organization_id}/webhook-deliveries` with optional
+workspace/project/state filters and cursor, `GET /{delivery_id}`, and
+`POST /{delivery_id}/replay`. History omits destination URLs, payloads, secret
+references and key material. Replay preview binds the exact current state and retained
+attempts. Apply with the returned `review_sha256` and a nonblank reason; uncertain
+outcomes additionally require `acknowledge_uncertain=true` after reviewing possible
+duplicate delivery. The operator must hold current endpoint-scope integration authority
+and the original automation delegator must retain current organization.manage,
+automation.manage and integration.manage for replay; retained history stays inspectable
+under current endpoint-scope authority. Stale reviews, terminal states and attempts
+at the lifetime cap are rejected. Replay preserves the original delivery ID/history.
+
+Use only fake secret entries, fake transports or loopback sinks for verification,
+never customer endpoints. Bounded structured worker events include outcome and error
+code but omit endpoint URLs, payloads and secret references.
 
 Migration `ee31ac92bf10` adds delivery state and immutable audited attempt tables.
+Migration `fc5310a0d279` restores the webhook endpoint-to-audit tenant-composite
+foreign key where an earlier deployed schema has a tenant-bound variant.
 Pause dispatch and workers before rollback. Downgrade refuses while either table
 contains rows; restore a verified backup or apply a forward fix rather than deleting
 delivery evidence.

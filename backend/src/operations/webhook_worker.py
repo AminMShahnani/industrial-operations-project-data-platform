@@ -1,5 +1,6 @@
 """ID-only Dramatiq webhook delivery worker and durable intent poller."""
 
+import logging
 from datetime import UTC, datetime
 from typing import Protocol
 from uuid import UUID
@@ -15,6 +16,7 @@ from operations.modules.automation.infrastructure.persistence import AutomationR
 from operations.modules.integrations.application.delivery import WebhookDeliveryService
 from operations.modules.integrations.application.delivery_contracts import WebhookDeliveryState
 from operations.modules.integrations.application.webhooks import (
+    MountedTenantSecretResolver,
     PinnedHTTPSWebhookTransport,
     TenantSecretResolver,
     UnconfiguredTenantSecretResolver,
@@ -26,6 +28,8 @@ from operations.modules.integrations.infrastructure.persistence import (
 )
 from operations.platform.config import Settings
 from operations.platform.database import create_database_engine
+
+logger = logging.getLogger("operations.webhooks")
 
 
 class WebhookPublisher(Protocol):
@@ -52,7 +56,7 @@ def _service(
 def process_webhook(
     organization_id: UUID,
     delivery_id: UUID,
-    settings: Settings,
+    settings: Settings | None = None,
     secrets: TenantSecretResolver | None = None,
     transport: WebhookTransport | None = None,
 ) -> WebhookDeliveryState | None:
@@ -60,6 +64,7 @@ def process_webhook(
     if isinstance(resolver, UnconfiguredTenantSecretResolver):
         # Do not consume attempts while the deployment has not provided its secret manager.
         raise ServiceError(503, "webhook_signing_secret_unavailable")
+    settings = settings or Settings()  # type: ignore[call-arg]
     sender = transport or PinnedHTTPSWebhookTransport()
     engine = create_database_engine(settings)
     try:
@@ -79,6 +84,16 @@ def process_webhook(
             result = _service(session, settings, resolver, sender).finish(
                 organization_id, delivery_id, claimed, outcome, error_code
             )
+        logger.info(
+            "webhook.delivery.completed",
+            extra={
+                "organization_id": str(organization_id),
+                "delivery_id": str(delivery_id),
+                "attempt": claimed.attempts,
+                "outcome": result.status,
+                "error_code": result.error_code,
+            },
+        )
         return result
     except DBAPIError:
         # A committed lease is recovered as uncertain after expiry if the send may have
@@ -104,6 +119,11 @@ def register(
     transport: WebhookTransport | None = None,
 ) -> RedisBroker:
     settings = settings or Settings()  # type: ignore[call-arg]
+    resolver = secrets
+    if resolver is None and settings.webhook_secrets_directory:
+        resolver = MountedTenantSecretResolver(settings.webhook_secrets_directory)
+    if resolver is None:
+        resolver = UnconfiguredTenantSecretResolver()
     broker = RedisBroker(
         url=settings.redis_url.get_secret_value(),
         namespace=namespace,
@@ -117,6 +137,6 @@ def register(
             org_id, delivery_uuid = UUID(organization), UUID(delivery)
         except ValueError:
             raise ServiceError(422, "invalid_webhook_delivery_message") from None
-        process_webhook(org_id, delivery_uuid, settings, secrets, transport)
+        process_webhook(org_id, delivery_uuid, settings, resolver, transport)
 
     return broker

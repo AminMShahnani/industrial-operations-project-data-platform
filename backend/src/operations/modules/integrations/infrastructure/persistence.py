@@ -12,14 +12,17 @@ from sqlalchemy import (
     UniqueConstraint,
     func,
     select,
+    tuple_,
     update,
 )
 from sqlalchemy.orm import Mapped, Session, aliased, mapped_column
 
+from operations.contracts import ServiceError
 from operations.modules.integrations.application.contracts import EndpointVersion
 from operations.modules.integrations.application.delivery_contracts import (
     WebhookAttempt,
     WebhookDeliveryState,
+    WebhookDeliveryStatus,
     WebhookIntent,
 )
 from operations.platform.database import Base
@@ -40,7 +43,9 @@ class WebhookEndpointRow(Base):
         ForeignKeyConstraint(
             ["organization_id", "created_by_id"], ["users.organization_id", "users.id"]
         ),
-        ForeignKeyConstraint(["audit_id"], ["audit_events.id"]),
+        ForeignKeyConstraint(
+            ["organization_id", "audit_id"], ["audit_events.organization_id", "audit_events.id"]
+        ),
         UniqueConstraint(
             "organization_id", "endpoint_id", "version", name="uq_webhook_endpoint_version"
         ),
@@ -325,7 +330,7 @@ class WebhookDeliveryRepository:
         rows = self.session.scalars(
             select(WebhookDeliveryStateRow)
             .where(
-                WebhookDeliveryStateRow.status.in_(["pending", "retry"]),
+                WebhookDeliveryStateRow.status.in_(["pending", "retry", "sending"]),
                 WebhookDeliveryStateRow.next_at <= now,
             )
             .order_by(WebhookDeliveryStateRow.next_at, WebhookDeliveryStateRow.id)
@@ -336,6 +341,86 @@ class WebhookDeliveryRepository:
                 {key: getattr(row, key) for key in WebhookDeliveryState.model_fields}
             )
             for row in rows
+        ]
+
+    def page(
+        self,
+        organization_id: UUID,
+        workspace_id: UUID | None,
+        project_id: UUID | None,
+        state: WebhookDeliveryStatus | None,
+        cursor: UUID | None,
+        limit: int = 101,
+    ) -> list[tuple[WebhookIntent, WebhookDeliveryState]]:
+        query = (
+            select(WebhookIntentRow, WebhookDeliveryStateRow)
+            .join(
+                WebhookDeliveryStateRow,
+                (WebhookDeliveryStateRow.organization_id == WebhookIntentRow.organization_id)
+                & (WebhookDeliveryStateRow.id == WebhookIntentRow.id),
+            )
+            .where(WebhookIntentRow.organization_id == organization_id)
+        )
+        if workspace_id is not None:
+            query = query.where(WebhookIntentRow.workspace_id == workspace_id)
+        if project_id is not None:
+            query = query.where(WebhookIntentRow.project_id == project_id)
+        if state is not None:
+            query = query.where(WebhookDeliveryStateRow.status == state)
+        if cursor is not None:
+            boundary = self.session.scalar(
+                select(WebhookIntentRow).where(
+                    WebhookIntentRow.organization_id == organization_id,
+                    WebhookIntentRow.id == cursor,
+                )
+            )
+            if boundary is None or (
+                workspace_id is not None and boundary.workspace_id != workspace_id
+            ):
+                raise ServiceError(422, "webhook_delivery_cursor_invalid")
+            if project_id is not None and boundary.project_id != project_id:
+                raise ServiceError(422, "webhook_delivery_cursor_invalid")
+            if state is not None:
+                boundary_state = self.session.get(
+                    WebhookDeliveryStateRow, (boundary.id, organization_id)
+                )
+                if boundary_state is None or boundary_state.status != state:
+                    raise ServiceError(422, "webhook_delivery_cursor_invalid")
+            query = query.where(
+                tuple_(WebhookIntentRow.created_at, WebhookIntentRow.id)
+                > (boundary.created_at, boundary.id)
+            )
+        rows = self.session.execute(
+            query.order_by(WebhookIntentRow.created_at, WebhookIntentRow.id).limit(
+                min(max(limit, 1), 101)
+            )
+        )
+        return [
+            (
+                WebhookIntent.model_validate(
+                    {key: getattr(intent, key) for key in WebhookIntent.model_fields}
+                ),
+                WebhookDeliveryState.model_validate(
+                    {key: getattr(delivery, key) for key in WebhookDeliveryState.model_fields}
+                ),
+            )
+            for intent, delivery in rows
+        ]
+
+    def attempts(self, organization_id: UUID, identifier: UUID) -> list[WebhookAttempt]:
+        return [
+            WebhookAttempt.model_validate(
+                {key: getattr(row, key) for key in WebhookAttempt.model_fields}
+            )
+            for row in self.session.scalars(
+                select(WebhookAttemptRow)
+                .where(
+                    WebhookAttemptRow.organization_id == organization_id,
+                    WebhookAttemptRow.delivery_id == identifier,
+                )
+                .order_by(WebhookAttemptRow.number)
+                .limit(20)
+            )
         ]
 
     def save_state(self, row: WebhookDeliveryState) -> None:

@@ -21,8 +21,10 @@ from operations.modules.identity.application.contracts import Principal
 from operations.modules.identity.application.service import IdentityService
 from operations.modules.identity.infrastructure.persistence import IdentityRepository
 from operations.modules.integrations.application.automation import WebhookAutomationActions
+from operations.modules.integrations.application.delivery import WebhookDeliveryAdminService
 from operations.modules.integrations.application.service import WebhookEndpointService
 from operations.modules.integrations.infrastructure.persistence import (
+    WebhookDeliveryRepository,
     WebhookEndpointRepository,
     WebhookIntentRepository,
 )
@@ -62,6 +64,7 @@ from operations.platform.config import Settings
 @dataclass(frozen=True)
 class Services:
     webhook_endpoints: WebhookEndpointService
+    webhook_deliveries: WebhookDeliveryAdminService
     webhook_intents: WebhookAutomationActions
     email: EmailService
     notifications: NotificationService
@@ -146,6 +149,13 @@ def compose(
     email = EmailService(EmailRepository(session), notifications)
     notifications.email = email
     webhook_endpoints = WebhookEndpointService(WebhookEndpointRepository(session), forms, audit)
+    webhook_deliveries = WebhookDeliveryAdminService(
+        WebhookDeliveryRepository(session),
+        AutomationRepository(session),
+        forms,
+        webhook_endpoints,
+        AuditRepository(session),
+    )
     webhook_intents = WebhookAutomationActions(
         forms,
         WebhookEndpointRepository(session),
@@ -162,6 +172,7 @@ def compose(
     )
     return Services(
         webhook_endpoints,
+        webhook_deliveries,
         webhook_intents,
         email,
         notifications,

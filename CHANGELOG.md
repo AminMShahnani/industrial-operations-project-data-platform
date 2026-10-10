@@ -2,6 +2,21 @@
 
 ## Unreleased - Phase 6 in progress (2026-10-10)
 
+- Add tenant-scoped webhook delivery history and reviewed replay with state/attempt
+  hash previews, fresh operator and original-delegator authority, reasoned audit, and
+  explicit acknowledgement for uncertain duplicate risk. Expose bounded delivery
+  history without URLs, secret references, payloads or key bytes in API/UI. Dispatch
+  expired sending leases so they become uncertain rather than remaining stuck.
+- Add ADR-0027's mounted external secret-store adapter with strict tenant/reference/key
+  version binding, redacted missing/malformed errors, symlink/type/size checks and
+  fail-closed worker wiring. Add interval dispatcher mode and bounded structured
+  outcome logs. Reconcile webhook endpoint audit foreign keys to tenant-composite
+  linkage in migration `fc5310a0d279`; `ee31ac92bf10` remains the guarded delivery
+  ledger migration. Backend (312 tests), PKCE browser recovery, frontend (19 tests),
+  lint/types/build, local PostgreSQL upgrade/drift, migration round-trip, and API/client
+  generation pass. Secret mount and network egress policy remain deployment gates;
+  exact hosted-code verification and Phase 6 acceptance are pending.
+
 - Persist each webhook intent with an audited pending state, and add immutable
   attempt evidence guarded by exact audit linkage. A separate Dramatiq actor claims
   leases, sends only identifiers-only signed envelopes using the pinned HTTPS
@@ -9,9 +24,8 @@
   an ID-only due-intent publisher and an unconfigured secret resolver that fails
   before claiming, so no attempts are consumed before deployments inject their
   tenant-isolated secret manager. Migration ee31ac92bf10 refuses populated rollback.
-  Full backend regression passes (310 passed, 9 optional skips); Ruff, strict mypy,
-  Alembic upgrade/drift and focused webhook integration/security checks pass. Phase 6
-  remains unaccepted pending deployment provider wiring and reviewed replay.
+  The previous full backend regression passed (310 passed, 9 optional skips); this
+  follow-up's expanded checks are recorded in the Phase 6 log before acceptance.
 
 - Require webhook delivery attempts to check the current endpoint head: endpoint
   edits preserve a rule's pinned version, while a later revocation blocks that pin.

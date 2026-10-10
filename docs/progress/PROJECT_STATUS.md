@@ -67,11 +67,10 @@ canonical HMAC-SHA256 signing, DNS/IP policy checks, audited scoped immutable
 endpoint versions, and a pinned-address HTTPS transport foundation are implemented.
 Authenticated organization/workspace endpoint administration UI is also implemented
 and passes local gates; hosted run 38065351280 passes both jobs on exact code
-f0c13473762d5452179fab58c2a90ebc326e7652. The sender contract checks the current endpoint head
-on every attempt so revocation tombstones block older rule pins; the new delivery
-worker loads both the exact pin and latest endpoint head before any send.
-Delivery remains fail-closed pending a deployment secret-resolver provider and
-reviewed replay. Automation actions now persist immutable,
+f0c13473762d5452179fab58c2a90ebc326e7652. The sender checks the current endpoint
+head on every attempt, so revocation tombstones block older rule pins; the worker
+loads both the exact pin and latest endpoint head before any send. Automation actions
+persist immutable,
 identifiers-only webhook delivery intents in the same transaction as their exact
 delegated audit event; deterministic run/action IDs make capture idempotent, and
 latest endpoint revocation is checked before intent creation. Migration
@@ -80,19 +79,27 @@ Alembic drift, Ruff and strict mypy pass. Endpoint administration hosted run 380
 passes on 9ab5647; pinned transport hosted run 38063940999 passes both jobs on exact
 commit 0bc54de5fb009fe0f7cc3765fd8b9766c8bd7f74; latest-head revocation enforcement
 passes run 38066369565 on exact commit a9843addf6484edd0aebf10a098c9b7cb273e259.
-Full local backend regression for this increment passes 307 tests with 9 documented
-optional skips. The delivery-ledger/worker increment raises this to 310 passed/9
-skipped. Ruff check/format, strict mypy, Alembic upgrade/drift and webhook API,
-intent and security tests pass. Hosted run 38068210545 for commit 2c53eb4 was still
-in progress at last check; hosted verification for later commits is pending.
+Full local backend regression for the webhook delivery/recovery increment passes
+312 tests (9 e2e tests excluded from this non-browser run). The separate real PKCE
+browser test also passes and covers webhook recovery without external delivery.
+Ruff check/format (372 files), strict mypy (297 files), Alembic upgrade/drift,
+OpenAPI drift and frontend lint/type/test/build pass. The generated TypeScript client
+is updated for webhook delivery history/replay. Hosted verification for this exact
+code is pending.
 Migration `ee31ac92bf10` adds guarded mutable delivery state and immutable audited
-attempts, and refuses populated rollback.
-Telemetry and remaining coverage are current-phase work. 0/8
+attempts, and refuses populated rollback. Migration `fc5310a0d279` aligns endpoint
+audit FKs to the tenant-composite constraint. Reviewed webhook history/replay API/UI,
+ADR-0027 mounted secret resolution and a repeatable dispatcher are implemented.
+Local tests cover expired claims and duplicate-risk acknowledgement. Deployment
+mount, network egress policy, remaining coverage and exact-code hosted CI are open. 0/8
 accepted; Q-006 and Q-008 are resolved.
 Phase 5 remains accepted on d91dfce / hosted run 37454353238.
 
 ## Blocked
-None. Q-008 resolved: user accepted claimant acknowledgement under ADR-0024.
+Production webhook sending and Phase 6 acceptance remain blocked on deployment
+configuration: provision the read-only tenant-scoped secret mount and enforce the
+matching network egress policy. The application remains fail-closed until both pass.
+Q-008 resolved: user accepted claimant acknowledgement under ADR-0024.
 Generic tasks and tags/flags pass local/hosted gates under ADR-0024/0025.
 Phase 6 remains 0/8 accepted.
 Q-007 resolved on 2026-10-10: user delegated the choice with "do best".
@@ -107,13 +114,17 @@ Q-004 resolved by user: shared task claimed by one eligible member.
 Legacy export absent.
 
 ## Next 5 tasks
-1. Inject and verify the deployment's tenant-isolated external secret resolver.
-2. Add reviewed webhook replay and operator delivery/attempt visibility.
-3. Schedule the ID-only webhook dispatcher and verify production runtime wiring.
-4. Complete queue/run telemetry and operator failure visibility.
-5. Complete remaining Phase 6 acceptance and fault/recovery coverage; verify all gates.
+1. Configure an externally managed read-only secret mount and verify tenant/key-version isolation.
+2. Enforce and verify webhook CIDR egress policy at the deployment network boundary.
+3. Run full backend/API/browser/worker tests and migration round-trip/drift on a fresh database.
+4. Verify CI on the exact phase implementation and close remaining fault/recovery coverage.
+5. Mark P6-01 through P6-08 from recorded evidence; accept Phase 6 only if every gate passes.
 
 ## Test status
+Current Phase 6 webhook checkpoint: 312 backend tests and one real PKCE browser flow
+pass; 19 frontend tests pass. Migration round-trip/drift, OpenAPI/client generation,
+Ruff, strict mypy and frontend build pass. Webhook verification uses fake transports;
+the mounted provider and network egress policy remain deployment gates.
 141 backend tests pass locally without skips, including separate real Keycloak PKCE
 submitter/approver logins, concurrent approval retries, preserved corrections,
 live group/project revocation and 156-action paged history. PostgreSQL migration

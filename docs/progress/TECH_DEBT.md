@@ -6,24 +6,24 @@ scoped endpoint versions/API, and pinned HTTPS transport foundation are implemen
 The authenticated organization/workspace endpoint administration screen is now
 implemented and passes hosted run 38065351280 on exact code
 f0c13473762d5452179fab58c2a90ebc326e7652; backend authorization remains authoritative.
-Delivery remains fail-closed pending a deployment secret resolver and reviewed
-replay. The durable attempt/state ledger, bounded retries and ID-only worker are now
-implemented; deployment provider and scheduled dispatcher operation remain open.
-An explicit unconfigured secret-resolver default now fails closed with a redacted
-availability error; deployments must inject their tenant-isolated provider before
-any worker may send.
-Automation now records a deterministic identifiers-only intent atomically with
-exact delegated audit evidence (`d62a1f48c0e1`); bounded attempts and ID-only worker
-integration are now implemented. Migration `ee31ac92bf10` adds the audited state and
-attempt ledger with populated rollback protection; the Dramatiq worker now commits
-leases before outbound I/O and records uncertain expired claims. The actual
-tenant-isolated provider and reviewed operator replay remain unimplemented.
+Automation records an immutable IDs-only intent atomically with exact delegated audit
+evidence (`d62a1f48c0e1`). Migration `ee31ac92bf10` adds the guarded audited state
+and immutable attempt ledger; the Dramatiq worker commits leases before I/O, resolves
+expired claims as uncertain, and the periodic dispatcher can run continuously.
+Migration `fc5310a0d279` reconciles endpoint audit foreign keys to the tenant-composite
+constraint used in the local deployed schema. Operator history and reviewed replay
+are now available through scoped API/UI with current operator and original delegator
+authority checks. ADR-0027 adds an external secret-store mounted-volume adapter; the
+application fails closed while it is not configured. Still open: deployment must
+mount verified tenant-scoped key versions and enforce the approved egress policy at
+its network boundary. Phase 6 cannot be accepted on code-only checks without those
+deployment controls and complete exact-code CI verification.
 The sender now requires the latest endpoint head on each attempt so revocation cannot
 be bypassed by an older active rule pin.
 Endpoint version administration passes hosted run 38062270395 on exact code
 9ab5647c74e5103426b3f419934a9b1947634835; pinned transport foundation passes run
 38063940999 on exact code 0bc54de5fb009fe0f7cc3765fd8b9766c8bd7f74. The deployment
-resolver, durable attempts/retries, worker wiring and reviewed replay remain open.
+mount and network policy must be verified before external sends are enabled.
 Latest-head revocation enforcement passes both jobs on exact code
 a9843addf6484edd0aebf10a098c9b7cb273e259 / run 38066369565.
 

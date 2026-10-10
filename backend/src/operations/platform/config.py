@@ -28,6 +28,7 @@ class Settings(BaseSettings):
     oidc_max_token_lifetime: int = Field(default=3600, ge=30, le=3600)
     email_profiles_directory: str | None = None
     webhook_private_egress_cidrs: list[str] = Field(default_factory=list)
+    webhook_secrets_directory: str | None = None
 
     @model_validator(mode="after")
     def validate_trust(self) -> Settings:

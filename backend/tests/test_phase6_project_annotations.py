@@ -452,7 +452,13 @@ def test_empty_annotation_migration_roundtrip_preserves_existing_audits(api: Api
     )
     revision = ScriptDirectory.from_config(Config("alembic.ini")).get_revision("e49b7d83af20")
     assert revision
+    tenant_fk_revision = ScriptDirectory.from_config(Config("alembic.ini")).get_revision(
+        "fc5310a0d279"
+    )
+    assert tenant_fk_revision
     with Operations.context(MigrationContext.configure(api.session.connection())):
+        # Downgrade later dependants in order before removing the audit tenant identity key.
+        tenant_fk_revision.module.downgrade()
         revision.module.downgrade()
         assert api.session.scalar(text("SELECT to_regclass('project_annotations')")) is None
         assert (
@@ -462,4 +468,5 @@ def test_empty_annotation_migration_roundtrip_preserves_existing_audits(api: Api
             == before
         )
         revision.module.upgrade()
+        tenant_fk_revision.module.upgrade()
     assert api.session.scalar(text("SELECT to_regclass('project_annotations')"))

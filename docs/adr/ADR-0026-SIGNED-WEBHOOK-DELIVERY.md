@@ -52,7 +52,8 @@ Commit a durable immutable webhook intent inside the automation action savepoint
 Deliver outside that transaction with a separate bounded worker, immutable attempts,
 stable delivery UUID, exponential retry and at most eight automatic attempts. A
 timeout after sending may be uncertain; do not claim exactly-once. Retain outcome
-and permit reviewed, reasoned replay under current delegated authority, with a
+for inspection under current endpoint-scope authority, and permit reviewed, reasoned
+replay under current delegated authority, with a
 twenty-attempt lifetime cap. Keep payload/body/secret out of queue messages and
 operator evidence. Metrics use bounded outcome labels, never arbitrary URLs.
 Each attempt must load both its pinned endpoint version and the current endpoint
@@ -79,6 +80,6 @@ foundation verification: focused tests cover payload exclusion, HMAC signing, UR
 address policy, key-version resolution, secret failure redaction, and a mocked pinned
 socket preserving TLS hostname. A fake transport verifies redirects are rejected.
 Tests also verify that a later tombstone blocks an older active pin while a later
-active revision preserves that pin. Production secret-manager integration and durable
-action/worker delivery remain unimplemented; no network attempt can occur from an
-automation rule yet.
+active revision preserves that pin. The mounted-secret adapter and durable
+action/worker delivery are implemented under ADR-0027. Production must still mount
+tenant-scoped entries and enforce matching egress policy before enabling the actor.

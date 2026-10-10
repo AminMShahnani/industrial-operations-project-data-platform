@@ -1,19 +1,23 @@
 """Security contracts and bounded transport for signed webhook requests."""
 
+import base64
 import hashlib
 import hmac
 import http.client
 import ipaddress
 import json
+import os
 import socket
 import ssl
+import stat
 from contextlib import suppress
 from datetime import UTC, datetime
+from pathlib import Path
 from typing import Protocol
 from urllib.parse import urlsplit, urlunsplit
 from uuid import UUID
 
-from pydantic import Field
+from pydantic import BaseModel, Field, ValidationError
 
 from operations.contracts import Command, ServiceError
 from operations.modules.automation.application.events import OperationalEvent
@@ -160,6 +164,65 @@ class UnconfiguredTenantSecretResolver:
     def resolve(self, organization_id: UUID, reference: str, version: int) -> bytes:
         del organization_id, reference, version
         raise ServiceError(503, "webhook_signing_secret_unavailable")
+
+
+class _MountedWebhookSecret(BaseModel):
+    model_config = {"extra": "forbid"}
+
+    organization_id: UUID
+    reference: str = Field(min_length=1, max_length=512)
+    version: int = Field(ge=1)
+    key_base64: str = Field(min_length=44, max_length=4096)
+
+
+class MountedTenantSecretResolver:
+    """Read versioned keys from a platform-managed, read-only secret volume."""
+
+    def __init__(self, directory: str | Path) -> None:
+        root = Path(directory)
+        if root.is_symlink() or not root.is_dir():
+            raise ValueError("webhook secret mount must be an existing directory")
+        self.directory = root.resolve(strict=True)
+
+    def _path(self, organization_id: UUID, reference: str, version: int) -> Path:
+        digest = hashlib.sha256(reference.encode("utf-8")).hexdigest()
+        return self.directory / f"{organization_id}-{digest}-v{version}.json"
+
+    def resolve(self, organization_id: UUID, reference: str, version: int) -> bytes:
+        if version < 1 or not reference:
+            raise ServiceError(503, "webhook_signing_secret_unavailable")
+        descriptor: int | None = None
+        try:
+            path = self._path(organization_id, reference, version)
+            if path.is_symlink():
+                raise ValueError("secret entry cannot be a symlink")
+            descriptor = os.open(
+                path,
+                os.O_RDONLY | getattr(os, "O_NOFOLLOW", 0),
+            )
+            if not stat.S_ISREG(os.fstat(descriptor).st_mode):
+                raise ValueError("secret entry must be a regular file")
+            with os.fdopen(descriptor, "rb") as stream:
+                descriptor = None
+                raw = stream.read(65537)
+            if len(raw) > 65536:
+                raise ValueError("secret entry exceeds size limit")
+            entry = _MountedWebhookSecret.model_validate(json.loads(raw))
+            if (
+                entry.organization_id != organization_id
+                or entry.reference != reference
+                or entry.version != version
+            ):
+                raise ValueError("secret entry identity mismatch")
+            key = base64.b64decode(entry.key_base64, validate=True)
+            if len(key) < 32:
+                raise ValueError("secret key is too short")
+            return key
+        except OSError, ValueError, ValidationError, json.JSONDecodeError:
+            raise ServiceError(503, "webhook_signing_secret_unavailable") from None
+        finally:
+            if descriptor is not None:
+                os.close(descriptor)
 
 
 class WebhookTransport(Protocol):

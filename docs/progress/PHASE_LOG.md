@@ -1,5 +1,36 @@
 # Phase Log
 
+## Phase 6 webhook recovery, mounted secrets and runtime verification - 2026-10-10
+
+Requirements: ADR-0026 requires an external tenant-scoped key provider, bounded
+idempotent retries, uncertain outcomes, current delegation for reviewed replay, and
+minimal retained evidence. Added ADR-0027's provider-neutral read-only mounted-secret
+contract; the Dramatiq worker resolves files bound to organization/reference/version,
+rejects symlink/non-file/oversize/malformed inputs and emits only a generic error.
+Unset configuration still fails before claiming. The dispatcher can repeat on a
+bounded interval and selects expired sending leases, which become terminal uncertain.
+
+Added organization delivery history and reviewed replay API/UI. Reads require current
+endpoint-scope integration authority; replay additionally rechecks original
+organization.manage, automation.manage and integration.manage delegation. Review hash
+binds state and all retained attempts; a reason and explicit duplicate-risk
+acknowledgement are mandatory for uncertain outcomes. Tenant IDs and endpoint pins
+are visible; URLs, request body, reference and key are excluded. Audit evidence remains
+append-only. Added exact code paths to OpenAPI/TypeScript contracts.
+
+Migration `ee31ac92bf10` adds guarded delivery states and immutable attempts;
+`fc5310a0d279` reconciles endpoint audit-FK tenant linkage. The migration round-trip
+test now unwinds dependent constraints in revision order. Local PostgreSQL upgrade,
+full migration round-trip and `alembic check` pass. Backend: 312 passed; the separate
+real PKCE browser flow passes and covers expired webhook outcome, UI history, replay
+review and duplicate acknowledgement without external delivery. Ruff check/format
+(372 files), strict mypy (297 files), OpenAPI drift, frontend lint/types/tests (19),
+API type generation and production build pass.
+
+No Phase 6 acceptance criterion is claimed. P6-01 through P6-08 remain pending exact
+hosted-code evidence and deployment verification of externally provisioned tenant
+key mounts plus network egress enforcement. No customer endpoint was contacted.
+
 ## Phase 6 webhook security foundation - 2026-10-10
 
 User selected ADR-0026's recommendation, resolving Q-009: deployment-managed
@@ -718,12 +749,15 @@ Acceptance criteria before implementation:
   industry-neutral action services; no governance bypass or arbitrary code.
 - P6-04: Durable runs/attempts/action receipts, retries/backoff, dead letters and
   audited scoped replay; crash/concurrent duplicate processing is idempotent.
-- P6-05: Scoped in-app notifications and email adapter, existing task/workflow
-  intents, authorized invitation delivery and explicit uncertain SMTP outcomes.
-- P6-06: Accessible scoped rule/run/notification UI, current authority enforcement
-  and safe bounded history; private operational data is not leaked through notices.
-- P6-07: Reproducible worker/periodic execution, queue/run telemetry, TD-005 orphan
-  reconciliation and guarded migrations/rollback/replay operations runbook.
+- P6-05: Scoped in-app notifications, email adapter and signed webhook adapter;
+  existing task/workflow intents, authorized invitation delivery and explicit
+  uncertain SMTP/webhook outcomes (ADR-0026).
+- P6-06: Accessible scoped rule/run/notification and integration recovery UI, current
+  operator/delegator authority and safe bounded history; private operational data,
+  webhook payloads, URLs and secrets are not exposed.
+- P6-07: Reproducible worker/periodic execution, queue/run/integration telemetry,
+  TD-005 orphan reconciliation, secret-provider and egress deployment contracts, and
+  guarded migrations/rollback/replay operations runbook.
 - P6-08: Full unit/integration/API/browser/worker tests, migrations, lint/type/build
   and contracts pass locally/hosted; ADR/progress/changelog and phase commits.
 0/8 accepted; no Phase 7 implementation. ADR-0011 selects Dramatiq/Redis with a
