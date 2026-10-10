@@ -132,8 +132,8 @@ services, not unrelated table access. Cross-user overdue aggregate scope remains
 unresolved (Q-010), so this endpoint is personal-only.
 
 ## Next 5 tasks
-1. Verify all hosted gates on the corrective commit after the prior fixture-identity
-   failure was reproduced and corrected locally.
+1. Implement the next governed reporting slice without crossing Q-010's unresolved
+   cross-user reporting boundary.
 2. Resolve Q-010 before implementing any report that aggregates activity across users.
 3. Add controlled saved report definitions and governed dataset/column contracts.
 4. Add dashboard widget definitions bound to governed datasets.
@@ -146,11 +146,11 @@ Ruff and strict whole-repository mypy pass (301 files); frontend build passes. E
 jobs; deployment controls are verified per the project owner's report. Phase 7
 checkpoint: DB-backed backend suite 314 passed/9 e2e deselected; dedicated PKCE browser
 test passed. Frontend 19 tests, lint, typecheck and production build pass. Ruff check/
-format, strict mypy (301 files), Alembic upgrade/drift and OpenAPI drift pass. Hosted
-run 38081888097 failed at backend pytest because a test used a non-member fixture
-identity; corrected locally and all equivalent backend/browser tests pass. Hosted
-verification on the corrective commit remains pending. Owner accepted and verified
-the delivered personal overdue-task slice; P7-01 through P7-08 remain 0/8 accepted.
+format, strict mypy (301 files), Alembic upgrade/drift and OpenAPI drift pass. Exact
+hosted run 38083622954 passes backend and frontend jobs on `9e1db8cceff99ba3f43c35752f37f306bedf46c2`,
+including e2e, migrations and OpenAPI drift. Owner accepted and verified the delivered
+personal overdue-task slice; P7-01 through P7-08 remain 0/8 accepted because the broader
+Phase 7 features and guarantees are incomplete.
 141 backend tests pass locally without skips, including separate real Keycloak PKCE
 submitter/approver logins, concurrent approval retries, preserved corrections,
 live group/project revocation and 156-action paged history. PostgreSQL migration

@@ -12,7 +12,8 @@
   browser test checks successful report loading and the empty state. Hosted backend
   run 38081888097 exposed a test fixture using the wrong principal; corrected to use
   the workspace admin, with the full DB-backed suite and browser test passing locally.
-  Hosted gates on the corrective commit remain pending; no Phase 7 criteria are accepted.
+  Exact-code hosted run 38083622954 passes backend/frontend gates. Owner accepts and
+  verifies this slice; no Phase 7 criteria are accepted yet.
 - Accept Phase 6 P6-01 through P6-08 after local quality gates, exact hosted run
   38079026238 on `b97822eb136c47946b6a1252149abc64fbf09f4b`, and project-owner
   verification of deployment secret-mount isolation and network egress controls.

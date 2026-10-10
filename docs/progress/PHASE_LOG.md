@@ -98,8 +98,12 @@ workspace membership, so the endpoint correctly returned 403. The test now uses 
 workspace admin identity. The focused DB integration test passes; the full CI-equivalent
 backend suite passes 314 tests with 9 e2e deselected. The separate PKCE browser test
 passes and verifies the report request and empty state. Local migration upgrade/drift,
-OpenAPI drift, Ruff, format and strict mypy pass. The correction still needs exact-code
-hosted CI before any Phase 7 acceptance.
+OpenAPI drift, Ruff, format and strict mypy pass. Hosted run
+[38083622954](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/38083622954)
+passes both backend and frontend jobs on exact commit
+`9e1db8cceff99ba3f43c35752f37f306bedf46c2`; hosted e2e, migrations and OpenAPI drift
+also pass. Phase 7 remains open because the broader report builder, dashboards,
+exports/import wizard and operational guarantees are not yet implemented or accepted.
 
 The browser UI increment introduces no migration or new domain rule. Its frontend
 lint, strict typecheck, 19 tests and production build pass locally. It uses the
