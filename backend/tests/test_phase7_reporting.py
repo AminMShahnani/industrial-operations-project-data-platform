@@ -18,7 +18,7 @@ def test_overdue_dataset_is_bounded_and_personal_scope_is_preserved(api: Api) ->
     activate(api, route, schedule)
     assert generate(api, route, schedule)["created"] == 1
 
-    response = api.client.get(route + "/reports/overdue-tasks", headers=api.headers())
+    response = api.client.get(route + "/reports/overdue-tasks", headers=api.headers("admin"))
     assert response.status_code == 200, response.text
     page = response.json()
     assert len(page["items"]) == 1

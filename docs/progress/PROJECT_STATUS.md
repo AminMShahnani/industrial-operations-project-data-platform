@@ -132,8 +132,8 @@ services, not unrelated table access. Cross-user overdue aggregate scope remains
 unresolved (Q-010), so this endpoint is personal-only.
 
 ## Next 5 tasks
-1. Diagnose/re-run hosted backend pytest run 38080915275; local database-backed API
-   test still needs configured `IOP_TEST_DATABASE_URL`.
+1. Verify all hosted gates on the corrective commit after the prior fixture-identity
+   failure was reproduced and corrected locally.
 2. Resolve Q-010 before implementing any report that aggregates activity across users.
 3. Add controlled saved report definitions and governed dataset/column contracts.
 4. Add dashboard widget definitions bound to governed datasets.
@@ -144,11 +144,13 @@ Phase 6 final checkpoint: 312 backend tests and one real PKCE browser flow
 pass; 19 frontend tests pass. Migration round-trip/drift, OpenAPI/client generation,
 Ruff and strict whole-repository mypy pass (301 files); frontend build passes. Exact hosted run 38079026238 passes both
 jobs; deployment controls are verified per the project owner's report. Phase 7
-checkpoint: backend 101 passed/213 skipped/9 deselected, frontend 19 passed; frontend
-lint/typecheck/build pass. Database-backed report integration test awaits configured
-test PostgreSQL. Hosted run 38080630869 identified and fixed mypy test typing; latest
-run 38080915275 failed at backend pytest, detailed log unavailable from this checkout.
-Phase 7 hosted acceptance is pending.
+checkpoint: DB-backed backend suite 314 passed/9 e2e deselected; dedicated PKCE browser
+test passed. Frontend 19 tests, lint, typecheck and production build pass. Ruff check/
+format, strict mypy (301 files), Alembic upgrade/drift and OpenAPI drift pass. Hosted
+run 38081888097 failed at backend pytest because a test used a non-member fixture
+identity; corrected locally and all equivalent backend/browser tests pass. Hosted
+verification on the corrective commit remains pending. Owner accepted and verified
+the delivered personal overdue-task slice; P7-01 through P7-08 remain 0/8 accepted.
 141 backend tests pass locally without skips, including separate real Keycloak PKCE
 submitter/approver logins, concurrent approval retries, preserved corrections,
 live group/project revocation and 156-action paged history. PostgreSQL migration

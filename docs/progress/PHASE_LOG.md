@@ -88,15 +88,26 @@ local mypy invocation: the unit fixture used a dictionary instead of the typed
 `Assignment` contract. The fixture now constructs `Assignment`; whole-repository
 `uv run mypy` passes on 301 files, and the focused unit test passes. Hosted run
 [38080915275](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/38080915275)
-for the corrective commit passed frontend but failed at backend pytest. Public run
-details show only the failing step; action logs require authenticated GitHub access,
-and `gh` is not installed in this checkout. Local database-backed API tests skip
-without `IOP_TEST_DATABASE_URL`, so backend hosted status remains unresolved and no
-Phase 7 criteria are accepted.
+for the corrective commit and exact-code run
+[38081888097](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/38081888097)
+on `9f760b5beda3cc148cda5c7ea0466c05ad9deb15` passed frontend but failed during
+backend pytest. Public run metadata identified the failing step; its test traceback
+was behind GitHub sign-in. Reproducing the CI command against local PostgreSQL found
+the cause: the integration test used the platform fixture identity, which has no
+workspace membership, so the endpoint correctly returned 403. The test now uses the
+workspace admin identity. The focused DB integration test passes; the full CI-equivalent
+backend suite passes 314 tests with 9 e2e deselected. The separate PKCE browser test
+passes and verifies the report request and empty state. Local migration upgrade/drift,
+OpenAPI drift, Ruff, format and strict mypy pass. The correction still needs exact-code
+hosted CI before any Phase 7 acceptance.
 
 The browser UI increment introduces no migration or new domain rule. Its frontend
 lint, strict typecheck, 19 tests and production build pass locally. It uses the
 existing typed API contract and does not broaden personal task visibility.
+
+The project owner accepted and confirmed verification of the delivered personal
+overdue-task slice. This acknowledgment is recorded as feature-level verification;
+it does not mark any of the eight Phase 7 completion criteria accepted.
 
 ## Phase 6 webhook recovery, mounted secrets and runtime verification - 2026-10-10
 

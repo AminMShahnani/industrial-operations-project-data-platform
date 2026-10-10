@@ -9,8 +9,10 @@
   workspace with accessible table semantics and cursor pagination. Frontend lint,
   typecheck, 19 tests and build pass. Cross-user aggregates, saved reports, dashboards
   and export/import jobs remain unimplemented pending their contracts. The opt-in PKCE
-  browser test checks successful report loading and the empty state. Latest hosted
-  backend run failed at pytest; see Phase 7 progress log, and no criteria are accepted.
+  browser test checks successful report loading and the empty state. Hosted backend
+  run 38081888097 exposed a test fixture using the wrong principal; corrected to use
+  the workspace admin, with the full DB-backed suite and browser test passing locally.
+  Hosted gates on the corrective commit remain pending; no Phase 7 criteria are accepted.
 - Accept Phase 6 P6-01 through P6-08 after local quality gates, exact hosted run
   38079026238 on `b97822eb136c47946b6a1252149abc64fbf09f4b`, and project-owner
   verification of deployment secret-mount isolation and network egress controls.
