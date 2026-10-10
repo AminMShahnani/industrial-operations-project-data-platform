@@ -2,6 +2,15 @@
 
 ## Unreleased - Phase 6 in progress (2026-10-10)
 
+- Add scoped automation rule/version administration and immutable run evidence
+  API/UI under ADR-0022. Review exact saved content before activation; preserve
+  pinned versions, fresh delegation, twenty-attempt limits and audit history.
+  Public replay reviews run plus queue state and rejects stale/duplicate applies.
+  No migration or retained-data rewrite. All local gates pass (261 backend/16
+  frontend tests, real PKCE browser and committed concurrent replay, lint/types,
+  migrations and generated contracts/build); exact-code hosted CI is pending.
+  Phase 6 remains unaccepted.
+
 - Add explicit transactional email capture for verified-email invitations and
   activated notify action channels under ADR-0021. Expose invitation opt-in/reason
   in the typed API/browser form. Email-only rule notices retain minimal immutable

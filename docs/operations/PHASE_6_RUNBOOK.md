@@ -446,3 +446,31 @@ email-only notice exists; the old SQL channel guard and schema are restored. Wit
 retained email channel evidence, rollback refuses before changes. Stop producers,
 dispatch and workers, then use a forward fix or verified full restore with a write
 replay plan. Never edit immutable versions, notices or attempts to force downgrade.
+
+## Scoped automation administration
+
+Managers open Automation under the selected workspace/project. Create a draft
+with the metadata starter (project scope) or a supported declarative definition.
+Save changes before previewing activation. Organization administrators review the
+saved content/hash and apply activation; editing invalidates the preview. Active
+and retired definitions are immutable: clone to an unused positive version number.
+Retire with a reason and current rule revision. Captured runs retain their version.
+
+All routes use `/api/v1/organizations/{organization_id}/workspaces/{workspace_id}`
+plus `/automation-rules`. Rules and versions page with opaque UUID cursors; runs
+are listed at `/{rule_id}/versions/{number}/runs`. Read minimal attempt/receipt
+history at `/{rule_id}/runs/{run_id}`; target IDs confer no target access. Every
+administration route freshly checks exact scoped automation.manage. Activation
+also requires organization.manage. Source form/event payloads are never returned.
+
+For retry/dead-letter recovery, inspect evidence, repair the cause, preview replay
+at `/{rule_id}/runs/{run_id}/replay`, then apply with dry_run=false, the exact
+review_sha256 and a nonblank reason. Preview changes no evidence. Apply rechecks
+original administrator/scope and the exact run plus queue state; stale/duplicate
+reviews conflict. Attempts/receipts remain intact and twenty attempts is final.
+Replay requeues durable IDs; the existing dispatcher/worker performs the effects.
+
+Rollback: disable the administration UI/routes and deploy the preceding code;
+there is no migration or data removal. Retain all newly created rules, immutable
+versions, run history and audits. Previously captured runs still need the worker;
+retirement stops new matches. ADR-0022 records the boundary.

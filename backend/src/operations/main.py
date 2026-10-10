@@ -16,6 +16,7 @@ from sqlalchemy.orm import sessionmaker
 from starlette.exceptions import HTTPException
 
 from operations.api import router
+from operations.automation_api import router as automation_router
 from operations.contracts import ServiceError
 from operations.modules.identity.application.contracts import TokenVerifier
 from operations.modules.identity.infrastructure.oidc import OidcVerifier
@@ -196,6 +197,7 @@ def create_app(
     app.include_router(phase4_router)
     app.include_router(phase5_router)
     app.include_router(phase6_router)
+    app.include_router(automation_router)
     return app
 
 

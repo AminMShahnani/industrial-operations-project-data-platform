@@ -178,3 +178,10 @@ data rewrite or acceptance deferral. Scoped
 rule/run management API/UI, remaining handlers and telemetry remain current Phase 6
 requirements. All local gates pass (250 backend/14 frontend tests); hosted run
 38044650329 passes both jobs on exact code 6fd5082. No acceptance gate is waived.
+
+## Automation administration - 2026-10-10
+
+Rule/run API/UI implementation is in verification under ADR-0022. Email delivery
+operator UI, generic task/tag/flag/webhook handlers and telemetry remain current
+Phase 6 work, not deferred acceptance. No schema or data rewrite; current scoped
+indexes remain in use. All local gates pass (261 backend/16 frontend tests); exact-code hosted CI is pending.

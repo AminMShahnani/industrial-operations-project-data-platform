@@ -16,6 +16,8 @@ from operations.modules.automation.application.contracts import (
     RuleVersion,
     Run,
     RunAttempt,
+    RunHistory,
+    RunReplayReview,
 )
 from operations.modules.automation.application.event_bus import AuditedEventBus
 from operations.modules.automation.application.events import (
@@ -486,6 +488,82 @@ class AutomationService:
         )
         return changed
 
+    def history(
+        self, actor: RequestContext, org: UUID, workspace: UUID, rule_id: UUID, identifier: UUID
+    ) -> RunHistory:
+        self.inspect_rule(actor, org, workspace, rule_id)
+        run = self.store.run(org, identifier)
+        if run is None or run.workspace_id != workspace:
+            raise ServiceError(404, "not_found")
+        version = self.store.version_by_id(org, run.rule_version_id)
+        if version is None or version.rule_id != rule_id:
+            raise ServiceError(404, "not_found")
+        return RunHistory(
+            run=run,
+            attempts=self.store.attempts(org, identifier),
+            receipts=self.store.receipts(org, identifier),
+        )
+
+    def inspect_rule(
+        self, actor: RequestContext, org: UUID, workspace: UUID, identifier: UUID
+    ) -> Rule:
+        row = self.store.rule(org, workspace, identifier)
+        if row is None:
+            raise ServiceError(404, "not_found")
+        self.forms.require(actor, org, workspace, row.project_id, "automation.manage")
+        return row
+
+    def inspect_version(
+        self, actor: RequestContext, org: UUID, workspace: UUID, identifier: UUID, number: int
+    ) -> RuleVersion:
+        self.inspect_rule(actor, org, workspace, identifier)
+        row = self.store.version(org, workspace, identifier, number)
+        if row is None:
+            raise ServiceError(404, "not_found")
+        return row
+
+    def review_replay(
+        self,
+        actor: RequestContext,
+        org: UUID,
+        workspace: UUID,
+        rule_id: UUID,
+        identifier: UUID,
+        *,
+        dry_run: bool = True,
+        review_sha256: str | None = None,
+        reason: str | None = None,
+    ) -> RunReplayReview:
+        self.lock_tenant(org)
+        rule = self.get(actor, org, workspace, rule_id, True)
+        self.history(actor, org, workspace, rule_id, identifier)
+        run = self.store.run(org, identifier, True)
+        if run is None:
+            raise ServiceError(404, "not_found")
+        delegated = self.delegated_context(run)
+        self.require(delegated, org, workspace, rule.project_id, True)
+        if run.state not in {"retry", "dead_letter"}:
+            raise ServiceError(409, "automation_run_not_replayable")
+        if run.attempts >= 20:
+            raise ServiceError(409, "automation_attempt_limit")
+        delivery = self.store.delivery(org, delivery_id(run.event_id, "automation"), True)
+        if delivery is None:
+            raise ServiceError(409, "automation_run_integrity")
+        digest = hashlib.sha256(
+            json.dumps(
+                {"run": run.model_dump(mode="json"), "delivery": delivery.model_dump(mode="json")},
+                sort_keys=True,
+                separators=(",", ":"),
+            ).encode()
+        ).hexdigest()
+        if not dry_run:
+            if review_sha256 != digest:
+                raise ServiceError(409, "automation_replay_review_required")
+            if reason is None or not reason.strip() or len(reason) > 500:
+                raise ServiceError(422, "automation_replay_reason_required")
+            run = self.replay(actor, org, workspace, identifier, reason.strip())
+        return RunReplayReview(run=run, review_sha256=digest, applied=not dry_run)
+
     def replay(
         self, actor: RequestContext, org: UUID, workspace: UUID, identifier: UUID, reason: str
     ) -> Run:
@@ -500,7 +578,8 @@ class AutomationService:
         if locked is None:
             raise ServiceError(404, "not_found")
         run = locked
-        self.delegated_context(run)
+        delegated = self.delegated_context(run)
+        self.require(delegated, org, workspace, rule.project_id, True)
         if run.state not in {"retry", "dead_letter"}:
             raise ServiceError(409, "automation_run_not_replayable")
         if run.attempts >= 20:
@@ -510,7 +589,7 @@ class AutomationService:
         )
         self.store.save_run(changed)
         self.audit_event(
-            actor, org, workspace, identifier, "automation.run.replayed", reason, rule.active_number
+            actor, org, workspace, identifier, "automation.run.replayed", reason, version.number
         )
         delivery = self.store.delivery(org, delivery_id(run.event_id, "automation"), True)
         if delivery:

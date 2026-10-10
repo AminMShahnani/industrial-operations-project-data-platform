@@ -7,6 +7,7 @@ import { MasterDataAdmin } from './MasterDataAdmin';
 import { MemberLookup } from './MemberLookup';
 import { Scheduling } from './Scheduling';
 import { Workflows } from './Workflows';
+import { Automation } from './Automation';
 
 type Project = MethodResponse<ReturnType<typeof apiClient>, 'get', '/api/v1/organizations/{organization_id}/workspaces/{workspace_id}/projects/{project_id}'>;
 type Group = components['schemas']['Group'];
@@ -279,6 +280,7 @@ export function ProjectAdministration({ api, organization, workspace }: { api: C
       canManage={selected?projectPermissions.includes('workflow.manage'):permissions.includes('workflow.manage')} submission={workflowSubmission} onOpenRevision={row=>setTaskForm({id:row.id,form:row.form_id,draft:row.id})}/>
     <FormStudio key={'forms' + organization + workspace + selected + (taskForm?.id??'')} api={api} organization={organization} workspace={workspace} project={selected}
       canManage={selected ? projectPermissions.includes('form.manage') : permissions.includes('form.manage')} canManageLibrary={permissions.includes('form.manage')} taskForm={taskForm?.form} taskDraft={taskForm?.draft} onSubmitted={setWorkflowSubmission}/>
+    {(selected ? projectPermissions : permissions).includes('automation.manage') && <Automation key={'automation'+organization+workspace+selected} api={api} organization={organization} workspace={workspace} project={selected}/>}
     <MasterDataAdmin key={organization + workspace + selected} api={api} organization={organization} workspace={workspace} project={selected}
       canManage={selected ? projectPermissions.includes('master_data.manage') : permissions.includes('master_data.manage')} />
   </section>;

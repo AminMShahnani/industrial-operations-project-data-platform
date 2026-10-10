@@ -907,3 +907,26 @@ explicit notify
 rules; fixed automatic in-app projections remain unchanged.
 Phase 6 remains 0/8 accepted. Rule/run UI,
 other handlers and telemetry remain current-phase requirements; no Phase 7 deferral.
+
+## Phase 6 automation administration - 2026-10-10
+
+Requirements: docs/12 immutable rule versions, safe declarative actions, scoped
+management, correlated run outputs, bounded retries and audited replay; docs/20
+fresh authorization and docs/21 review before governed changes. ADR-0022 records
+management-only draft/evidence visibility and exact reviewed public replay under
+existing ADR-0011 authority. Add typed rule/version APIs, exact scope/version-bound
+100-item cursor pages, minimal immutable run evidence and a project/workspace UI
+for create/save/clone/activation/retirement and run review/replay. Replay reviews
+both run and delivery, preserves evidence, checks original delegation and refuses
+stale state or twenty attempts. No schema or retained-data changes.
+All local gates pass: 261 backend tests without skips in 242.55s, 16 frontend
+tests, Ruff check/format (338 files), strict mypy (268 files), frontend lint/types/
+build, migration round-trip/drift and generated OpenAPI/client checks. Real PKCE
+browser author/save/activate/replay/clone/retire and eight committed concurrent
+replays producing one requeue/audit pass. Ten new API/integration tests cover
+scope isolation, manager/elevated authority, immutable versions, exact 104-row
+rule/version/run pages, reasons/stale reviews, attempt cap, archived inspection
+and revoked original delegation. No migration or retained-data rewrite. Exact-code
+hosted verification is pending; Phase 6 stays 0/8 accepted.
+Email operator UI, remaining handlers and telemetry remain current-phase work;
+no acceptance item is deferred to Phase 7.

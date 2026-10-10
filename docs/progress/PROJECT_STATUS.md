@@ -51,8 +51,10 @@ All local gates pass (250 backend/14 frontend tests); hosted run 38044650329 pas
 both jobs on exact code 6fd5082. Task/workflow email uses explicit activated notify
 rules; fixed
 automatic in-app projections remain unchanged.
-Generic tasks, tags/flags, webhooks,
-rule/run UI and telemetry remain current-phase
+Scoped rule/run management and reviewed replay API/UI are implemented under
+ADR-0022; all local gates pass (261 backend/16 frontend tests). Exact-code hosted
+verification is pending.
+Generic tasks, tags/flags, webhooks, email operator UI and telemetry remain current-phase
 work. 0/8 accepted; Q-006 is resolved.
 Phase 5 remains accepted on d91dfce / hosted run 37454353238.
 
@@ -69,7 +71,7 @@ Q-004 resolved by user: shared task claimed by one eligible member.
 Legacy export absent.
 
 ## Next 5 tasks
-1. Expose scoped rule/run management and audited replay through typed API/UI.
+1. Verify the exact automation administration commit in hosted CI.
 2. Expose scoped email delivery/recovery status through operator UI.
 3. Implement generic task, tag/flag and webhook handlers.
 4. Complete queue/run telemetry and operator failure visibility.
@@ -233,6 +235,18 @@ generated OpenAPI/client checks pass. Hosted
 [38044650329](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/38044650329)
 passes both jobs on exact code `6fd5082ea167d0b6ad97836afe3a075ad055dd14`.
 Phase 6 remains 0/8 accepted; no external mail was sent.
+
+## Automation administration validation
+
+All local gates pass: 261 backend tests without skips in 242.55s, 16 frontend
+tests, Ruff check/format (338 files), strict mypy (268 files), frontend lint/types/
+build, migration round-trip/drift and generated OpenAPI/client checks. Real PKCE
+browser author/save/activate/replay/clone/retire and eight committed concurrent
+replays producing one requeue/audit pass. Ten new API/integration tests cover
+scope isolation, manager/elevated authority, immutable versions, exact 104-row
+rule/version/run pages, reasons/stale reviews, attempt cap, archived inspection
+and revoked original delegation. No migration or retained-data rewrite. Exact-code
+hosted verification is pending; Phase 6 stays 0/8 accepted.
 
 ## Migration status
 

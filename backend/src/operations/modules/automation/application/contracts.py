@@ -173,6 +173,18 @@ class Receipt(Command):
     created_at: datetime
 
 
+class RunHistory(Command):
+    run: Run
+    attempts: list[RunAttempt]
+    receipts: list[Receipt]
+
+
+class RunReplayReview(Command):
+    run: Run
+    review_sha256: str
+    applied: bool
+
+
 class AutomationStore(Protocol):
     def handoff_events(self, handoff: NotificationHandoff) -> list[OperationalEvent]: ...
     def append(self, event: OperationalEvent) -> None: ...

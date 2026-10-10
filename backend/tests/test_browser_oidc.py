@@ -169,30 +169,47 @@ def test_real_oidc_pkce_login_and_workspace_creation(monkeypatch: pytest.MonkeyP
                 with Session(engine) as session, session.begin():
                     services = compose(session, principal)
                     user = services.authorization.user(actor, organization.id)
-                    rule = services.automation.create(
-                        actor,
-                        organization.id,
-                        notice_workspace,
-                        notice_project,
-                        "Browser notice",
-                        RuleDefinition(
-                            trigger="project.phase.changed",
-                            actions=[NotifyAction(kind="notify", recipients=[user.id])],
-                        ),
+                    automation_definition = RuleDefinition(
+                        trigger="project.phase.changed",
+                        actions=[NotifyAction(kind="notify", recipients=[user.id])],
+                    ).model_dump(mode="json")
+                automation = page.get_by_role("region", name="Automation administration")
+                automation.get_by_label("Automation name", exact=True).fill("Browser notice")
+                automation.get_by_label("Automation definition", exact=True).fill(
+                    json.dumps(automation_definition)
+                )
+                with page.expect_response(
+                    lambda response: (
+                        response.request.method == "POST"
+                        and response.url.endswith("/automation-rules")
                     )
-                    preview = services.automation.activate(
-                        actor, organization.id, notice_workspace, rule.id, 1, 1, True, None
-                    )
-                    services.automation.activate(
-                        actor,
-                        organization.id,
-                        notice_workspace,
-                        rule.id,
-                        1,
-                        1,
-                        False,
-                        preview.content_sha256,
-                    )
+                ) as rule_response:
+                    automation.get_by_role(
+                        "button", name="Create automation draft", exact=True
+                    ).click()
+                rule_id = UUID(rule_response.value.json()["id"])
+                expect(
+                    automation.get_by_text("Automation draft created.", exact=True)
+                ).to_be_visible()
+                automation.get_by_label("Automation version", exact=True).select_option(
+                    label="v1 — draft"
+                )
+                automation.get_by_role("button", name="Save automation draft", exact=True).click()
+                expect(
+                    automation.get_by_text("Automation draft saved.", exact=True)
+                ).to_be_visible()
+                automation.get_by_role(
+                    "button", name="Preview automation activation", exact=True
+                ).click()
+                expect(
+                    automation.get_by_role("button", name="Apply automation activation", exact=True)
+                ).to_be_visible()
+                automation.get_by_role(
+                    "button", name="Apply automation activation", exact=True
+                ).click()
+                expect(
+                    automation.get_by_text("Automation version activated.", exact=True)
+                ).to_be_visible()
                 expect(
                     page.get_by_role("status").filter(has_text="Project created.")
                 ).to_be_visible()
@@ -218,8 +235,58 @@ def test_real_oidc_pkce_login_and_workspace_creation(monkeypatch: pytest.MonkeyP
                         organization_id=organization.id,
                         delivery_id=delivery_id(source.id, "automation"),
                     )
+                    services = compose(session, principal)
+                    runs = services.automation.store.event_runs(organization.id, source.id)
+                    assert len(runs) == 1
+                    services.automation.failed(
+                        organization.id, runs[0].id, "browser_fixture_failure", False
+                    )
+                automation.get_by_role("button", name="Refresh automation runs", exact=True).click()
+                automation.get_by_role("button").filter(has_text="dead_letter —").click()
+                expect(automation.get_by_text("Run evidence", exact=True)).to_be_visible()
+                automation.get_by_role(
+                    "button", name="Preview automation replay", exact=True
+                ).click()
+                expect(
+                    automation.get_by_role("button", name="Apply automation replay", exact=True)
+                ).to_be_visible()
+                automation.get_by_label("Automation change reason", exact=True).fill(
+                    "Browser adapter repair reviewed"
+                )
+                automation.get_by_role("button", name="Apply automation replay", exact=True).click()
+                expect(
+                    automation.get_by_text(
+                        "Run queued for replay. Previous attempts are preserved.", exact=True
+                    )
+                ).to_be_visible()
+                with Session(engine) as session, session.begin():
                     assert process_automation(session, notice_message).state == "completed"
                     assert process_automation(session, notice_message).state == "completed"
+                automation.get_by_role(
+                    "button", name="Refresh automation run evidence", exact=True
+                ).click()
+                expect(automation.get_by_text("Attempt 2: completed", exact=False)).to_be_visible()
+                automation.get_by_label("New automation version number", exact=True).fill("2")
+                automation.get_by_role(
+                    "button", name="Clone automation version", exact=True
+                ).click()
+                expect(
+                    automation.get_by_text("New automation draft cloned.", exact=True)
+                ).to_be_visible()
+                automation.get_by_label("Automation change reason", exact=True).fill(
+                    "Browser rule retirement"
+                )
+                automation.get_by_role("button", name="Retire automation rule", exact=True).click()
+                expect(
+                    automation.get_by_text(
+                        "Rule retired. Captured runs retain their pinned versions.", exact=True
+                    )
+                ).to_be_visible()
+                with Session(engine) as session:
+                    retired = compose(session).automation.store.rule(
+                        organization.id, notice_workspace, rule_id
+                    )
+                    assert retired and retired.active_number is None
                 notifications = page.get_by_role("region", name="Notifications")
                 notifications.get_by_role("button", name="Refresh notifications").click()
                 expect(notifications.get_by_text("Operational notice", exact=True)).to_be_visible()
