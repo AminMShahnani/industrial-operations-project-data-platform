@@ -58,7 +58,7 @@ Email delivery/recovery API/UI is implemented under ADR-0023; all local gates pa
 (272 backend/18 frontend tests). Hosted run 38049979000 passes both jobs on exact code b0b9d05.
 Generic task creation, claim/completion API and My Work are implemented under
 accepted ADR-0024; all local gates pass (285 backend/18 frontend tests), with
-exact-code hosted CI pending. Tags/flags, webhooks and
+hosted run 38052949486 passing both jobs on exact code d25ad7a. Tags/flags, webhooks and
 telemetry remain current-phase work. 0/8 accepted; Q-006 and Q-008 are resolved.
 Phase 5 remains accepted on d91dfce / hosted run 37454353238.
 
@@ -273,7 +273,7 @@ passes backend/frontend jobs on exact code
 real PKCE email recovery, committed concurrent replay/worker delivery, migrations
 and generated contracts. Phase 6 remains 0/8 accepted; no Phase 7 work.
 
-## Migration status
+## Generic task validation
 
 Latest generic-task validation: all 285 backend tests pass without skips in
 259.33s, including real PKCE browser claim/completion and committed concurrent
@@ -281,14 +281,20 @@ Redis delivery, claims and completion retries. All 18 frontend tests pass.
 Ruff lint/format (345 files), strict mypy (273 files), frontend lint/types/build,
 OpenAPI/generated client checks and migration roundtrip/drift pass. Thirteen new
 integration cases cover scope/authority, immutable snapshots/evidence, atomic
-failure recovery and preserved form/guarded generic rollback. Exact-code hosted
-CI is pending; Phase 6 remains 0/8 accepted.
+failure recovery and preserved form/guarded generic rollback. Hosted
+[38052949486](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/38052949486)
+passes backend/frontend jobs on exact code
+`d25ad7a5e672b2e5d3240b36db8964623a6c7d1d`, including Linux strict types,
+real PKCE execution, committed Redis/claim/completion concurrency, migrations and
+generated contracts. Phase 6 remains 0/8 accepted.
+
+## Migration status
 
 Development, isolated test and retained browser databases are at d318af6c902e.
 Generic task migration preserves form pins/history and adds kind/origin/completion
 constraints and guards. Form-only roundtrip and drift pass; populated generic
 rollback locks writes and refuses before DDL. No retained history is deleted.
-Generic-task hosted verification remains pending; previous email console proof
+Generic-task hosted verification passes on d25ad7a / run 38052949486; previous email console proof
 below remains the accepted baseline for that increment.
 Email console lookup indexes add chronological organization/state cursor access.
 Populated index downgrade preserves all delivery/attempt/audit evidence; no data

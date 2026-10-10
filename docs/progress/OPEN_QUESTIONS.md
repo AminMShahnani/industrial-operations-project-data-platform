@@ -12,7 +12,7 @@
   proceeds without reopening independent record approval.
   Implementation passes all local gates (285 backend/18 frontend tests), including
   real PKCE execution, committed worker/claim/completion concurrency and guarded
-  migration rollback. Exact-code hosted verification remains pending; no new
+  migration rollback. Hosted run 38052949486 passes both jobs on exact code d25ad7a; no new
   unresolved authority decision is introduced.
 
 ## Phase 6 invitation email decision (resolved)

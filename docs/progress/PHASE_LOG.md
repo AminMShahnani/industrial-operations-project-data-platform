@@ -21,7 +21,11 @@ acknowledges completion without any submission. Migration d318af6c902e retains
 form pins and guards; rollback locks writes before checking retained generic work.
 Initial full-run failures were test fixtures attempting forbidden self-assignment/
 self-revocation; corrected fixtures retain the existing authorization rules.
-Exact-code hosted CI remains pending. This increment completes the generic action
+Hosted [38052949486](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/38052949486)
+passes backend/frontend jobs on exact code
+`d25ad7a5e672b2e5d3240b36db8964623a6c7d1d`, including Linux strict types,
+real PKCE claim/completion, committed Redis/claim/completion concurrency, migrations
+and generated contracts. This increment completes the generic action
 and execution API/UI; no full phase criterion is newly accepted. Tags/flags,
 webhooks, telemetry and remaining acceptance coverage remain current Phase 6 work,
 not Phase 7 deferrals. Phase 6 stays 0/8 accepted.
