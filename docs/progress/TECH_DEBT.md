@@ -8,6 +8,9 @@ implemented and passes hosted run 38065351280 on exact code
 f0c13473762d5452179fab58c2a90ebc326e7652; backend authorization remains authoritative.
 Delivery remains fail-closed; deployment secret resolver, durable attempts/retries,
 worker wiring and reviewed replay are still current Phase 6 implementation work.
+An explicit unconfigured secret-resolver default now fails closed with a redacted
+availability error; deployments must inject their tenant-isolated provider before
+any worker may send.
 Automation now records a deterministic identifiers-only intent atomically with
 exact delegated audit evidence (`d62a1f48c0e1`); bounded attempts, resolver and
 worker integration remain open.

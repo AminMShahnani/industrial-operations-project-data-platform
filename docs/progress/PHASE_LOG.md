@@ -53,6 +53,16 @@ Alembic upgrade/drift, Ruff and strict mypy pass locally. The durable intent is 
 captured, but the deployment secret resolver, attempt ledger, worker, retries and
 reviewed replay remain required; no network send occurs from this action. Phase 6
 remains 0/8 accepted.
+
+## Phase 6 webhook secret resolver boundary - 2026-10-10
+
+Add an explicit fail-closed default for the ADR-0026 `TenantSecretResolver` port.
+Until a deployment injects a tenant-isolated provider, resolution returns only the
+generic `webhook_signing_secret_unavailable` error; it never returns secret bytes or
+includes the opaque reference in an error. The pinned HTTPS sender remains behind
+the resolver call. Fourteen focused webhook security tests, Ruff, formatting and
+strict mypy pass. No provider vendor is selected and no network delivery is enabled.
+Durable attempts, worker injection and reviewed replay remain current Phase 6 work.
 passes both jobs on exact commit 9ab5647c74e5103426b3f419934a9b1947634835. No
 Phase 6 acceptance criterion is claimed; 0/8 remain accepted.
 

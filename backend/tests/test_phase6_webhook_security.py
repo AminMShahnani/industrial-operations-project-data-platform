@@ -12,6 +12,7 @@ from operations.modules.automation.application.events import EventContext, Opera
 from operations.modules.integrations.application.contracts import EndpointVersion
 from operations.modules.integrations.application.webhooks import (
     PinnedHTTPSWebhookTransport,
+    UnconfiguredTenantSecretResolver,
     _PinnedHTTPSConnection,
     canonical_body,
     deliver_webhook,
@@ -208,6 +209,13 @@ def test_missing_tenant_secret_fails_closed_without_transport(
         target = endpoint(source)
         deliver_webhook(source, uuid7(), target, target, MissingSecrets(), transport)
     assert transport.request is None
+
+
+def test_unconfigured_secret_resolver_fails_closed_and_redacts_reference() -> None:
+    reference = "private/tenant-specific/path"
+    with pytest.raises(ServiceError, match="webhook_signing_secret_unavailable") as error:
+        UnconfiguredTenantSecretResolver().resolve(uuid7(), reference, 9)
+    assert reference not in str(error.value)
 
 
 def test_https_connection_pins_ip_but_keeps_original_tls_server_name(

@@ -154,6 +154,14 @@ class TenantSecretResolver(Protocol):
     def resolve(self, organization_id: UUID, reference: str, version: int) -> bytes: ...
 
 
+class UnconfiguredTenantSecretResolver:
+    """Fail-closed default for deployments that have not injected a secret manager."""
+
+    def resolve(self, organization_id: UUID, reference: str, version: int) -> bytes:
+        del organization_id, reference, version
+        raise ServiceError(503, "webhook_signing_secret_unavailable")
+
+
 class WebhookTransport(Protocol):
     def post(self, url: str, address: str, body: bytes, headers: dict[str, str]) -> int: ...
 
