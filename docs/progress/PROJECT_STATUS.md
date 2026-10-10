@@ -118,26 +118,31 @@ Legacy export absent.
 ## In progress: Phase 7
 P7-01 through P7-08 are defined in the Phase Log from docs/15, docs/16 and
 cross-cutting security, data, API, testing and operations requirements. No Phase 7
-feature code has started. Existing Phase 2 synchronous, bounded master-data transfer
-behavior remains unchanged. Initial inspection confirms the reporting module contains
-only empty architectural boundaries; there are no report datasets, saved definitions,
-dashboard widgets or background export/import job contracts yet. Existing master-data
-transfer directly exercises its owning service and emits audits, but remains limited
-to CSV/XLSX synchronous imports and 100-row export pages. Reporting projections must
-consume explicit read ports/application contracts rather than unrelated tables.
+first slice is implemented: personal overdue-task dataset API calls the owning Tasks
+service and returns a bounded minimal projection, with no schema changes. It is
+covered by a service unit test; the API scope integration test is included but needs
+the configured PostgreSQL test DB. P7-01 remains incomplete and P7-01 through P7-08
+are 0/8 accepted. Saved report definitions, dashboard widgets, background export/import
+jobs and wizard UI are not implemented. Existing Phase 2 synchronous, bounded
+master-data transfer behavior remains unchanged: CSV/XLSX imports are limited to 1000
+rows and exports to 100-row pages. Reporting projections use explicit application
+services, not unrelated table access. Cross-user overdue aggregate scope remains
+unresolved (Q-010), so this endpoint is personal-only.
 
 ## Next 5 tasks
-1. Inspect reporting, export and import application contracts and persistence boundaries.
-2. Specify governed datasets, scope filters and historical-correctness behavior.
-3. Define saved report and dashboard schemas before migrations or API implementation.
-4. Design bounded export/import jobs with generation/download access checks.
-5. Implement a tested vertical slice after material domain/security questions are resolved.
+1. Configure `IOP_TEST_DATABASE_URL` and run the overdue dataset tenant/assignment API test.
+2. Resolve Q-010 before implementing any report that aggregates activity across users.
+3. Add controlled saved report definitions and governed dataset/column contracts.
+4. Add dashboard widget definitions bound to governed datasets.
+5. Design bounded export/import jobs and import preview/apply UI with access checks.
 
 ## Test status
 Phase 6 final checkpoint: 312 backend tests and one real PKCE browser flow
 pass; 19 frontend tests pass. Migration round-trip/drift, OpenAPI/client generation,
 Ruff, strict mypy and frontend build pass. Exact hosted run 38079026238 passes both
-jobs; deployment controls are verified per the project owner's report.
+jobs; deployment controls are verified per the project owner's report. Phase 7
+checkpoint: backend 101 passed/222 skipped, frontend 19 passed; database-backed
+report integration test awaits configured test PostgreSQL and hosted run.
 141 backend tests pass locally without skips, including separate real Keycloak PKCE
 submitter/approver logins, concurrent approval retries, preserved corrections,
 live group/project revocation and 156-action paged history. PostgreSQL migration

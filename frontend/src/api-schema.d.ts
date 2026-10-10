@@ -1261,6 +1261,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/organizations/{organization_id}/workspaces/{workspace_id}/reports/overdue-tasks": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Overdue Tasks */
+        get: operations["overdue_tasks_api_v1_organizations__organization_id__workspaces__workspace_id__reports_overdue_tasks_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/organizations/{organization_id}/workspaces/{workspace_id}/schedule-triggers": {
         parameters: {
             query?: never;
@@ -3357,6 +3374,40 @@ export interface components {
             /** Name */
             name: string;
             settings: components["schemas"]["OrganizationSettings"];
+        };
+        /** OverdueTaskPage */
+        OverdueTaskPage: {
+            /** Items */
+            items: components["schemas"]["OverdueTaskRow"][];
+            /** Next Cursor */
+            next_cursor: string | null;
+        };
+        /** OverdueTaskRow */
+        OverdueTaskRow: {
+            /**
+             * Due At
+             * Format: date-time
+             */
+            due_at: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Kind
+             * @enum {string}
+             */
+            kind: "form" | "generic";
+            /** Name */
+            name: string;
+            /** Project Id */
+            project_id: string | null;
+            /**
+             * State
+             * @enum {string}
+             */
+            state: "open" | "in_progress" | "submitted" | "awaiting_review" | "returned" | "approved" | "cancelled" | "superseded" | "completed";
         };
         /** PermissionHints */
         PermissionHints: {
@@ -15472,6 +15523,122 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Project"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+        };
+    };
+    overdue_tasks_api_v1_organizations__organization_id__workspaces__workspace_id__reports_overdue_tasks_get: {
+        parameters: {
+            query?: {
+                project_id?: string | null;
+                cursor?: string | null;
+            };
+            header?: never;
+            path: {
+                organization_id: string;
+                workspace_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["OverdueTaskPage"];
                 };
             };
             /** @description Unauthorized */

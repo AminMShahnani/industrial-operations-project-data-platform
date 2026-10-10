@@ -2,6 +2,11 @@
 
 ## Unreleased - Phase 7 in progress (2026-10-10)
 
+- Add the first Phase 7 governed dataset endpoint for a caller's overdue tasks,
+  delegated to the task service's existing scoped personal query and returning a
+  100-row-capped minimal projection. Add a PostgreSQL integration test for assignment
+  privacy and a service projection unit test. Cross-user aggregates, saved reports,
+  dashboards and export/import jobs remain unimplemented pending their contracts.
 - Accept Phase 6 P6-01 through P6-08 after local quality gates, exact hosted run
   38079026238 on `b97822eb136c47946b6a1252149abc64fbf09f4b`, and project-owner
   verification of deployment secret-mount isolation and network egress controls.

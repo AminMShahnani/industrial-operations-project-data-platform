@@ -57,6 +57,29 @@ Acceptance criteria before implementation:
 0/8 accepted; no Phase 8 implementation. Existing synchronous CSV master-data
 imports and paged exports remain their Phase 2 feature and are not silently replaced.
 
+## Phase 7 initial governed reporting dataset - 2026-10-10
+
+Added `GET .../reports/overdue-tasks` as a read-only personal operational dataset.
+The reporting application calls the owning Tasks application service and reuses its
+live `task.read`, tenant/workspace/project, assignment and overdue-state rules. The
+response is typed, cursor-paged at 100, and projects only task ID, optional project,
+kind, name, state and due timestamp; recipient and submission details are excluded.
+There is no schema change, cross-user aggregation, cached metric, or domain-specific
+behavior. The runbook documents scope and rollback.
+
+The integration test creates an overdue item and checks admin visibility and a
+second workspace member's absence of that row; it skips locally because
+`IOP_TEST_DATABASE_URL` is not configured, and must run in hosted CI. The service
+projection unit test passes. Backend suite: 101 passed / 222 optional or
+infrastructure-dependent skips with a workspace-local temp directory. Ruff and
+format pass; strict mypy passes on 210 source files. Frontend lint/type/tests/build
+pass (19 tests), and OpenAPI/TypeScript contracts regenerate. P7-01 has an initial
+vertical slice but remains incomplete; P7-01 through P7-08 remain 0/8 accepted.
+
+No migration or ADR is required for this personal query projection. Cross-user
+overdue aggregation is explicitly excluded until its reporting permission and
+privacy boundary are decided; see Q-010. No Phase 8 implementation.
+
 ## Phase 6 webhook recovery, mounted secrets and runtime verification - 2026-10-10
 
 Requirements: ADR-0026 requires an external tenant-scoped key provider, bounded

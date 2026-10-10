@@ -42,6 +42,7 @@ from operations.modules.organizations.application.service import OrganizationSer
 from operations.modules.organizations.infrastructure.persistence import OrganizationRepository
 from operations.modules.projects.application.service import ProjectService
 from operations.modules.projects.infrastructure.persistence import ProjectRepository
+from operations.modules.reporting.application.datasets import ReportingService
 from operations.modules.scheduling.application.service import SchedulingDefaults, SchedulingService
 from operations.modules.scheduling.infrastructure.persistence import ScheduleRepository
 from operations.modules.submissions.application.service import SubmissionService
@@ -86,6 +87,7 @@ class Services:
     projects: ProjectService
     master_data: MasterDataService
     master_transfer: MasterDataTransfer
+    reporting: ReportingService
 
 
 def compose(
@@ -196,4 +198,5 @@ def compose(
         projects,
         master_data,
         MasterDataTransfer(master_data, TabularFiles()),
+        ReportingService(tasks),
     )

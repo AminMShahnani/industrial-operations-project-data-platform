@@ -34,6 +34,7 @@ from operations.platform.health import HealthResponse, InfrastructureProbe, Read
 from operations.platform.logging import configure_logging
 from operations.platform.rate_limit import RequestLimiter
 from operations.platform.telemetry import HttpTelemetry
+from operations.reporting_api import router as reporting_router
 from operations.webhook_delivery_api import router as webhook_delivery_router
 
 
@@ -200,6 +201,7 @@ def create_app(
     app.include_router(phase4_router)
     app.include_router(phase5_router)
     app.include_router(phase6_router)
+    app.include_router(reporting_router)
     app.include_router(automation_router)
     app.include_router(integrations_router)
     app.include_router(webhook_delivery_router)

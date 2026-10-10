@@ -1,5 +1,19 @@
 # Open Questions
 
+## Phase 7 cross-user reporting authority (open)
+
+- Q-010 (2026-10-10): Which current permission should authorize reports that
+  aggregate operational rows across users in a workspace/project? `task.read` is
+  currently sufficient to read a user's own inbox, while `schedule.manage` permits
+  managers to inspect project-wide task queues. The initial overdue dataset is
+  personal-only and therefore reuses existing inbox authorization. Before adding
+  cross-user overdue reports or saved report sharing, choose whether to require
+  `schedule.manage` at the selected scope or define a new `report.read` permission;
+  define its role grants and subject/claimant privacy together. Recommended safe
+  default: reuse existing scoped `schedule.manage` for aggregate task reporting and
+  omit recipient/claimant identity unless separately authorized. No cross-user
+  reporting implementation may proceed until resolved.
+
 ## Phase 7 reporting/export/import foundation
 
 No unresolved domain or security decision blocks Phase 7 preparation. The reporting
