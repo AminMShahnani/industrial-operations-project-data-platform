@@ -1,5 +1,15 @@
 # Phase Log
 
+## Phase 6 webhook boundary preparation - 2026-10-10
+
+Read docs/07,12,16,19,20,23 and ADR-0004/0011/0020 against the empty integrations
+module and the existing call_webhook action contract. URL/egress trust and exact
+payload disclosure remain unspecified and security-sensitive. Proposed ADR-0026
+records immutable scope-bound endpoints, external tenant secrets, DNS/SSRF controls,
+IDs-only signing, durable off-transaction delivery, bounded retries and reviewed
+replay. Recorded Q-009. No webhook implementation or phase acceptance criteria
+change before the boundary is accepted; independent tag/flag verification continues.
+
 ## Phase 6 controlled tags and flags - 2026-10-10
 
 Implement docs/12 append tag/flag actions as project-owned inert annotations under

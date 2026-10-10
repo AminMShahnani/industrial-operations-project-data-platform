@@ -62,7 +62,10 @@ hosted run 38052949486 passing both jobs on exact code d25ad7a. Controlled proje
 tags/flags are implemented under ADR-0025, with scoped read/filter/page UI and
 immutable audited first-append evidence. All local gates pass (298 backend/18
 frontend tests); exact-code hosted verification is pending.
-Webhooks and telemetry remain current-phase work. 0/8 accepted; Q-006 and Q-008 are resolved.
+Webhook implementation awaits Q-009 / proposed ADR-0026, which documents the
+network-egress and payload-disclosure boundary; the existing action remains
+fail-closed. Tag/flag exact-code hosted verification is in progress. Telemetry and
+remaining coverage are current-phase work. 0/8 accepted; Q-006 and Q-008 are resolved.
 Phase 5 remains accepted on d91dfce / hosted run 37454353238.
 
 ## Blocked
@@ -82,8 +85,8 @@ Q-004 resolved by user: shared task claimed by one eligible member.
 Legacy export absent.
 
 ## Next 5 tasks
-1. Finish controlled tag/flag local and exact-code hosted verification.
-2. Implement authorized durable webhook delivery and recovery.
+1. Finish controlled tag/flag exact-code hosted verification.
+2. Resolve webhook egress and payload policy (Q-009); implement the accepted design.
 3. Complete queue/run telemetry and operator failure visibility.
 4. Complete remaining Phase 6 acceptance and fault/recovery coverage.
 5. Verify all Phase 6 local/hosted criteria before any Phase 7 work.
