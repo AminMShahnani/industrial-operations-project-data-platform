@@ -13,6 +13,7 @@ from operations.modules.automation.application.contracts import (
     Run,
     TagAction,
     TaskAction,
+    WebhookAction,
     WorkflowAction,
 )
 from operations.modules.automation.application.events import OperationalEvent
@@ -67,9 +68,10 @@ class ApplicationActions:
         tasks: TaskService,
         workflows: WorkflowRuntime,
         additional: AdditionalActions,
+        webhooks: AdditionalActions,
     ) -> None:
         self.forms, self.submissions, self.tasks = forms, submissions, tasks
-        self.workflows, self.additional = workflows, additional
+        self.workflows, self.additional, self.webhooks = workflows, additional, webhooks
 
     def generic(self, action: TaskAction, origin: UUID, at: datetime) -> GenericTaskDefinition:
         if action.form_id is not None or action.form_number is not None:
@@ -149,6 +151,8 @@ class ApplicationActions:
                 or workflow.active_number != version.number
             ):
                 raise ServiceError(422, "automation_workflow_scope_or_state")
+        elif isinstance(action, WebhookAction):
+            self.webhooks.validate(actor, rule, action)
         else:
             self.additional.validate(actor, rule, action)
 
@@ -295,4 +299,6 @@ class ApplicationActions:
                 project,
             )
             return instance.id
+        if isinstance(action, WebhookAction):
+            return self.webhooks.execute(actor, rule, event, run, position, action)
         return self.additional.execute(actor, rule, event, run, position, action)

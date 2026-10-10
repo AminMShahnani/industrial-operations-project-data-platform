@@ -71,10 +71,18 @@ f0c13473762d5452179fab58c2a90ebc326e7652. The sender contract checks the current
 on every attempt so revocation tombstones block older rule pins; the durable worker
 must supply that fresh head when delivery is integrated.
 Delivery remains fail-closed pending a deployment secret-resolver adapter and
-durable delivery ledger/retries/replay. Endpoint administration hosted run 38062270395
+durable delivery ledger/retries/replay. Automation actions now persist immutable,
+identifiers-only webhook delivery intents in the same transaction as their exact
+delegated audit event; deterministic run/action IDs make capture idempotent, and
+latest endpoint revocation is checked before intent creation. Migration
+`d62a1f48c0e1` applies cleanly and refuses populated rollback. Focused local tests,
+Alembic drift, Ruff and strict mypy pass. Endpoint administration hosted run 38062270395
 passes on 9ab5647; pinned transport hosted run 38063940999 passes both jobs on exact
 commit 0bc54de5fb009fe0f7cc3765fd8b9766c8bd7f74; latest-head revocation enforcement
 passes run 38066369565 on exact commit a9843addf6484edd0aebf10a098c9b7cb273e259.
+Full local backend regression for this increment passes 307 tests with 9 documented
+optional skips; Ruff check/format, strict mypy (250 files), Alembic drift and focused
+webhook API/intent tests pass. No hosted result is claimed for this unpushed increment.
 Telemetry and remaining coverage are current-phase work. 0/8
 accepted; Q-006 and Q-008 are resolved.
 Phase 5 remains accepted on d91dfce / hosted run 37454353238.
@@ -96,7 +104,7 @@ Legacy export absent.
 
 ## Next 5 tasks
 1. Integrate a deployment-provided tenant-isolated external secret resolver.
-2. Add durable webhook delivery intents, bounded attempts/retries and reviewed replay.
+2. Add bounded webhook attempts/retries and reviewed replay around persisted intents.
 3. Complete queue/run telemetry and operator failure visibility.
 4. Complete remaining Phase 6 acceptance and fault/recovery coverage; verify all gates.
 

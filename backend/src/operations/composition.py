@@ -20,8 +20,12 @@ from operations.modules.iam.infrastructure.persistence import GrantRepository
 from operations.modules.identity.application.contracts import Principal
 from operations.modules.identity.application.service import IdentityService
 from operations.modules.identity.infrastructure.persistence import IdentityRepository
+from operations.modules.integrations.application.automation import WebhookAutomationActions
 from operations.modules.integrations.application.service import WebhookEndpointService
-from operations.modules.integrations.infrastructure.persistence import WebhookEndpointRepository
+from operations.modules.integrations.infrastructure.persistence import (
+    WebhookEndpointRepository,
+    WebhookIntentRepository,
+)
 from operations.modules.master_data.application.import_export import MasterDataTransfer
 from operations.modules.master_data.application.references import DataReferences
 from operations.modules.master_data.application.service import MasterDataService
@@ -58,6 +62,7 @@ from operations.platform.config import Settings
 @dataclass(frozen=True)
 class Services:
     webhook_endpoints: WebhookEndpointService
+    webhook_intents: WebhookAutomationActions
     email: EmailService
     notifications: NotificationService
     automation: AutomationService
@@ -141,14 +146,23 @@ def compose(
     email = EmailService(EmailRepository(session), notifications)
     notifications.email = email
     webhook_endpoints = WebhookEndpointService(WebhookEndpointRepository(session), forms, audit)
+    webhook_intents = WebhookAutomationActions(
+        forms,
+        WebhookEndpointRepository(session),
+        WebhookIntentRepository(session),
+        audit,
+    )
     automation = AutomationService(
         AutomationRepository(session),
         forms,
         audit,
-        ApplicationActions(forms, submissions, tasks, workflow_runtime, notifications),
+        ApplicationActions(
+            forms, submissions, tasks, workflow_runtime, notifications, webhook_intents
+        ),
     )
     return Services(
         webhook_endpoints,
+        webhook_intents,
         email,
         notifications,
         automation,

@@ -16,6 +16,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, Session, aliased, mapped_column
 
 from operations.modules.integrations.application.contracts import EndpointVersion
+from operations.modules.integrations.application.delivery_contracts import WebhookIntent
 from operations.platform.database import Base
 
 
@@ -141,3 +142,89 @@ class WebhookEndpointRepository:
             query = query.where(WebhookEndpointRow.endpoint_id > after)
         rows = self.session.scalars(query.order_by(WebhookEndpointRow.endpoint_id).limit(101))
         return [self.contract(row) for row in rows]
+
+
+class WebhookIntentRow(Base):
+    __tablename__ = "webhook_delivery_intents"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["organization_id", "workspace_id"],
+            ["workspaces.organization_id", "workspaces.id"],
+        ),
+        ForeignKeyConstraint(
+            ["organization_id", "workspace_id", "project_id"],
+            ["projects.organization_id", "projects.workspace_id", "projects.id"],
+        ),
+        ForeignKeyConstraint(
+            ["organization_id", "event_id"], ["outbox_events.organization_id", "outbox_events.id"]
+        ),
+        ForeignKeyConstraint(
+            ["organization_id", "run_id"], ["automation_runs.organization_id", "automation_runs.id"]
+        ),
+        ForeignKeyConstraint(
+            ["organization_id", "rule_version_id"],
+            ["automation_versions.organization_id", "automation_versions.id"],
+        ),
+        ForeignKeyConstraint(
+            ["organization_id", "endpoint_id", "endpoint_version"],
+            [
+                "webhook_endpoint_versions.organization_id",
+                "webhook_endpoint_versions.endpoint_id",
+                "webhook_endpoint_versions.version",
+            ],
+        ),
+        ForeignKeyConstraint(
+            ["organization_id", "requested_by_id"], ["users.organization_id", "users.id"]
+        ),
+        ForeignKeyConstraint(["audit_id"], ["audit_events.id"]),
+        UniqueConstraint("organization_id", "id"),
+        UniqueConstraint(
+            "organization_id", "run_id", "action_position", name="uq_webhook_intent_action"
+        ),
+        CheckConstraint(
+            "action_position BETWEEN 0 AND 19 AND endpoint_version > 0 "
+            "AND workspace_id IS NOT NULL",
+            name="webhook_intent_scope_position",
+        ),
+        Index(
+            "ix_webhook_intent_scope_created", "organization_id", "workspace_id", "created_at", "id"
+        ),
+    )
+    id: Mapped[UUID] = mapped_column(primary_key=True)
+    audit_id: Mapped[UUID] = mapped_column(unique=True)
+    organization_id: Mapped[UUID]
+    workspace_id: Mapped[UUID]
+    project_id: Mapped[UUID | None]
+    event_id: Mapped[UUID]
+    run_id: Mapped[UUID]
+    rule_version_id: Mapped[UUID]
+    action_position: Mapped[int]
+    endpoint_id: Mapped[UUID]
+    endpoint_version: Mapped[int]
+    requested_by_id: Mapped[UUID]
+    correlation_id: Mapped[UUID]
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class WebhookIntentRepository:
+    def __init__(self, session: Session) -> None:
+        self.session = session
+
+    @staticmethod
+    def contract(row: WebhookIntentRow) -> WebhookIntent:
+        return WebhookIntent.model_validate(
+            {key: getattr(row, key) for key in WebhookIntent.model_fields}
+        )
+
+    def get(self, organization_id: UUID, identifier: UUID) -> WebhookIntent | None:
+        row = self.session.scalar(
+            select(WebhookIntentRow).where(
+                WebhookIntentRow.organization_id == organization_id,
+                WebhookIntentRow.id == identifier,
+            )
+        )
+        return self.contract(row) if row else None
+
+    def add(self, row: WebhookIntent) -> None:
+        self.session.add(WebhookIntentRow(**row.model_dump()))
+        self.session.flush()

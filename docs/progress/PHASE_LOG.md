@@ -38,6 +38,21 @@ worker is implemented. Full local suite: 297 passed/9 optional skips; 18 fronten
 tests, Windows/Linux strict mypy (283 files), Ruff, migrations and OpenAPI checks
 pass. Endpoint administration hosted run
 [38062270395](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/38062270395)
+
+## Phase 6 audited webhook intent capture - 2026-10-10
+
+Automation `call_webhook` actions now persist a deterministic, immutable delivery
+intent in the action transaction, pinning the exact endpoint version and source
+event/run/rule/action position. The intent holds identifiers and scope only; no URL,
+payload content or secret reference enters the delivery table. Each row requires an
+exact delegated-automation audit event, with database triggers preventing update,
+delete and truncate. Fresh authorization and the current endpoint head are checked
+before capture, so revocation blocks old pins. Migration `d62a1f48c0e1` adds the
+guarded table and refuses populated rollback. Four focused endpoint/intent tests,
+Alembic upgrade/drift, Ruff and strict mypy pass locally. The durable intent is now
+captured, but the deployment secret resolver, attempt ledger, worker, retries and
+reviewed replay remain required; no network send occurs from this action. Phase 6
+remains 0/8 accepted.
 passes both jobs on exact commit 9ab5647c74e5103426b3f419934a9b1947634835. No
 Phase 6 acceptance criterion is claimed; 0/8 remain accepted.
 
