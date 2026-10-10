@@ -25,6 +25,7 @@ def test_endpoint_versions_are_scoped_immutable_audited_and_hide_secret_refs(api
             "name": "Operations receiver",
             "url": "https://hooks.example.test/v1/events",
             "secret_reference": "tenant/webhooks/ops/key-v1",
+            "signing_key_version": 1,
         },
     )
     assert created.status_code == 201, created.text
@@ -41,10 +42,12 @@ def test_endpoint_versions_are_scoped_immutable_audited_and_hide_secret_refs(api
             "name": "Operations receiver",
             "url": "https://hooks2.example.test/v1/events",
             "secret_reference": "tenant/webhooks/ops/key-v2",
+            "signing_key_version": 2,
         },
     )
     assert changed.status_code == 201, changed.text
     assert changed.json()["version"] == 2
+    assert changed.json()["signing_key_version"] == 2
     assert changed.json()["url"] == "https://hooks2.example.test/v1/events"
     stale = api.client.post(
         f"{base}/{endpoint_id}/versions",
@@ -54,6 +57,7 @@ def test_endpoint_versions_are_scoped_immutable_audited_and_hide_secret_refs(api
             "name": "stale update",
             "url": "https://hooks3.example.test/events",
             "secret_reference": "tenant/webhooks/ops/key-v3",
+            "signing_key_version": 3,
         },
     )
     assert stale.status_code == 409
@@ -73,6 +77,7 @@ def test_endpoint_versions_are_scoped_immutable_audited_and_hide_secret_refs(api
             "name": "cannot reopen",
             "url": "https://hooks.example.test/events",
             "secret_reference": "tenant/webhooks/ops/key-v4",
+            "signing_key_version": 4,
         },
     )
     assert blocked.status_code == 409
@@ -99,6 +104,7 @@ def test_endpoint_versions_are_scoped_immutable_audited_and_hide_secret_refs(api
         assert audit.actor_id == row.created_by_id
         assert audit.payload["target_id"] == str(endpoint_id)
         assert audit.payload["version"] == row.version
+        assert audit.payload["signing_key_version"] == row.signing_key_version
         assert row.secret_reference not in str(audit.payload)
     with pytest.raises(DBAPIError, match="immutable"), api.session.begin_nested():
         api.session.execute(
@@ -123,6 +129,7 @@ def test_endpoint_scope_authority_and_url_policy_are_server_enforced(api: Api) -
                 "name": "Denied",
                 "url": "https://hooks.example.test/events",
                 "secret_reference": "tenant/webhooks/key-1",
+                "signing_key_version": 1,
             },
         ).status_code
         == 403
@@ -141,6 +148,7 @@ def test_endpoint_scope_authority_and_url_policy_are_server_enforced(api: Api) -
                 "name": "Invalid URL",
                 "url": url,
                 "secret_reference": "tenant/webhooks/key-1",
+                "signing_key_version": 1,
             },
         )
         assert response.status_code == 422

@@ -1,3 +1,4 @@
+import ipaddress
 from typing import Literal
 from urllib.parse import urlparse
 
@@ -26,6 +27,7 @@ class Settings(BaseSettings):
     api_rate_limit: int = Field(default=600, ge=1, le=100000)
     oidc_max_token_lifetime: int = Field(default=3600, ge=30, le=3600)
     email_profiles_directory: str | None = None
+    webhook_private_egress_cidrs: list[str] = Field(default_factory=list)
 
     @model_validator(mode="after")
     def validate_trust(self) -> Settings:
@@ -36,4 +38,20 @@ class Settings(BaseSettings):
             for endpoint in (self.oidc_issuer, self.oidc_jwks_url):
                 if endpoint and urlparse(endpoint).scheme != "https":
                     raise ValueError("Production OIDC trust endpoints require HTTPS")
+        try:
+            networks = [
+                ipaddress.ip_network(value, strict=False)
+                for value in self.webhook_private_egress_cidrs
+            ]
+        except ValueError:
+            raise ValueError("Webhook egress entries must be valid CIDRs") from None
+        if any(
+            not network.is_private
+            or network.is_loopback
+            or network.is_link_local
+            or network.is_multicast
+            or network.is_reserved
+            for network in networks
+        ):
+            raise ValueError("Webhook egress CIDRs must name private deployment networks")
         return self

@@ -16,6 +16,7 @@ class EndpointVersion(Command):
     workspace_id: UUID | None
     project_id: UUID | None
     version: int = Field(ge=1)
+    signing_key_version: int = Field(ge=1)
     name: str = Field(min_length=1, max_length=120)
     url: str = Field(min_length=9, max_length=2048)
     secret_reference: str = Field(min_length=1, max_length=512, pattern=r"^[A-Za-z0-9_/:.-]+$")
@@ -36,6 +37,7 @@ class EndpointCreate(Command):
     name: str = Field(min_length=1, max_length=120)
     url: str = Field(min_length=9, max_length=2048)
     secret_reference: str = Field(min_length=1, max_length=512, pattern=r"^[A-Za-z0-9_/:.-]+$")
+    signing_key_version: int = Field(ge=1)
 
     @model_validator(mode="after")
     def nonempty_name(self) -> EndpointCreate:
@@ -59,6 +61,7 @@ class EndpointView(Command):
     workspace_id: UUID | None
     project_id: UUID | None
     version: int = Field(ge=1)
+    signing_key_version: int = Field(ge=1)
     name: str
     url: str
     state: Literal["active", "revoked"]
@@ -73,6 +76,7 @@ class EndpointView(Command):
             workspace_id=row.workspace_id,
             project_id=row.project_id,
             version=row.version,
+            signing_key_version=row.signing_key_version,
             name=row.name,
             url=row.url,
             state=row.state,

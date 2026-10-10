@@ -17,7 +17,8 @@ boundaries; do not infer them from the action identifier.
 ## Decision
 
 Register immutable organization/workspace/project-scoped endpoint versions under
-integration.manage. Bind each activated action to an exact endpoint version and
+integration.manage. Each endpoint version pins an explicit external signing-key
+version. Bind each activated action to an exact endpoint version and
 require the endpoint scope to equal the rule scope. Changing URL, secret reference,
 or allowed payload creates a new version; active rule versions are never retargeted.
 Endpoint writes require an audited command; no URL or secret changes through rule
@@ -58,9 +59,10 @@ operator evidence. Metrics use bounded outcome labels, never arbitrary URLs.
 ## Resolved choices
 
 Q-009 accepts controlled egress, including only deployment-allowlisted private
-CIDRs, and the fixed identifiers-only event envelope. Keep outbound delivery
-fail-closed until a runtime provides an external secret resolver and pinned-address
-transport. This does not change the tag/flag decision.
+CIDRs, and the fixed identifiers-only event envelope. A safe pinned-address HTTPS
+transport foundation exists, but outbound delivery stays fail-closed until a runtime
+provides a tenant-isolated external secret resolver and durable intent/attempt worker.
+This does not change the tag/flag decision.
 
 ## Verification after resolution
 
@@ -69,6 +71,8 @@ redaction, DNS rebinding, private/metadata/redirect blocks, stable retries,
 uncertain outcomes, duplicate dispatch, reviewed replay/caps, atomic intent
 rollback, tenant isolation and populated rollback guards. Use fake transports or a
 loopback sink only; never post test payloads to a customer endpoint. Current
-foundation verification: five focused tests cover payload exclusion, HMAC signing,
-URL checks and address policy. They do not verify a pinned HTTPS transport; outbound
-delivery remains unavailable until that requirement is implemented.
+foundation verification: focused tests cover payload exclusion, HMAC signing, URL and
+address policy, key-version resolution, secret failure redaction, and a mocked pinned
+socket preserving TLS hostname. A fake transport verifies redirects are rejected.
+Production secret-manager integration and durable action/worker delivery remain
+unimplemented; no network attempt can occur from an automation rule yet.

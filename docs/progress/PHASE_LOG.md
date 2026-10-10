@@ -36,7 +36,28 @@ secret redaction and DB immutability pass in two integration tests. Endpoint act
 contracts now pin a version; webhook actions remain unavailable until the delivery
 worker is implemented. Full local suite: 297 passed/9 optional skips; 18 frontend
 tests, Windows/Linux strict mypy (283 files), Ruff, migrations and OpenAPI checks
-pass. No Phase 6 acceptance criterion is claimed; 0/8 remain accepted.
+pass. Endpoint administration hosted run
+[38062270395](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/38062270395)
+passes both jobs on exact commit 9ab5647c74e5103426b3f419934a9b1947634835. No
+Phase 6 acceptance criterion is claimed; 0/8 remain accepted.
+
+## Phase 6 pinned webhook transport foundation - 2026-10-10
+
+Added deployment-configured private CIDR validation, tenant/version secret resolver
+and injectable transport contracts, and bounded HTTPS POST transport. DNS results
+are validated then a single IP is used for TCP; TLS SNI/certificate checks and HTTP
+Host retain the registered hostname. Redirects are rejected, bodies/responses and
+timeouts are bounded, outcomes are sanitized, and provider errors never expose
+secret-store detail. Tests use a fake transport and mocked sockets only; no external
+endpoint was contacted. Current focused gates pass (15 endpoint/security/policy
+tests), including pin/SNI, tenant key version, revocation/scope, missing-secret,
+redirect, HMAC, SSRF and private CIDRs. Sender is not connected to automation or a
+worker; no retries/attempts are claimed. Full local gates pass: 303 backend tests,
+9 optional environment skips, 18 frontend tests, Ruff check/format, strict Windows/
+Linux mypy (284 files), frontend lint/types/build, Alembic migration roundtrip/drift
+and generated OpenAPI/client checks. Migration a84f1c9d62e0 adds positive,
+immutable signing-key-version binding and refuses rollback if endpoint history is
+retained. Exact-code hosted verification is pending. Phase 6 remains 0/8 accepted.
 
 ## Phase 6 controlled tags and flags - 2026-10-10
 

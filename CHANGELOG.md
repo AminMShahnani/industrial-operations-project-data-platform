@@ -2,6 +2,13 @@
 
 ## Unreleased - Phase 6 in progress (2026-10-10)
 
+- Add a bounded direct HTTPS webhook transport foundation: validate all resolved
+  addresses, pin TCP to a vetted IP while preserving TLS hostname checks, reject
+  redirects, cap response bodies/timeouts and sanitize provider errors. Add deployment
+  CIDR validation and a tenant/version secret-resolver contract. Fake transport and
+  socket tests pass; outbound action/worker delivery remains fail-closed pending a
+  deployment resolver and durable attempt ledger.
+
 - Add audited organization/workspace/project scoped webhook endpoint version API
   under ADR-0026. Restrict `integration.manage` to existing administrator and
   project-manager roles at their granted scope. URL/secret-reference changes append

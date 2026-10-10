@@ -2000,6 +2000,11 @@
             "title": "Secret Reference",
             "type": "string"
           },
+          "signing_key_version": {
+            "minimum": 1.0,
+            "title": "Signing Key Version",
+            "type": "integer"
+          },
           "url": {
             "maxLength": 2048,
             "minLength": 9,
@@ -2010,7 +2015,8 @@
         "required": [
           "name",
           "url",
-          "secret_reference"
+          "secret_reference",
+          "signing_key_version"
         ],
         "title": "EndpointCreate",
         "type": "object"
@@ -2065,6 +2071,11 @@
             "title": "Secret Reference",
             "type": "string"
           },
+          "signing_key_version": {
+            "minimum": 1.0,
+            "title": "Signing Key Version",
+            "type": "integer"
+          },
           "url": {
             "maxLength": 2048,
             "minLength": 9,
@@ -2076,6 +2087,7 @@
           "name",
           "url",
           "secret_reference",
+          "signing_key_version",
           "expected_version"
         ],
         "title": "EndpointRevise",
@@ -2144,6 +2156,11 @@
             "title": "Secret Reference Present",
             "type": "boolean"
           },
+          "signing_key_version": {
+            "minimum": 1.0,
+            "title": "Signing Key Version",
+            "type": "integer"
+          },
           "state": {
             "enum": [
               "active",
@@ -2180,6 +2197,7 @@
           "workspace_id",
           "project_id",
           "version",
+          "signing_key_version",
           "name",
           "url",
           "state",

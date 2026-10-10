@@ -63,12 +63,12 @@ tags/flags are implemented under ADR-0025, with scoped read/filter/page UI and
 immutable audited first-append evidence. All local gates pass (298 backend/18
 frontend tests); hosted run 38057404691 passes both jobs on exact code b5e4581a80586b95960cdb192e83a6fadbf53d2d.
 Q-009 is resolved and ADR-0026 accepted. Typed identifiers-only payload projection,
-canonical HMAC-SHA256 signing, DNS/IP policy checks and audited scoped immutable
-endpoint version API are implemented. Delivery remains fail-closed pending external
-secret resolution, pinned HTTPS transport, durable delivery ledger and reviewed
-replay. Endpoint administration passes full local gates; webhook foundation hosted
-run 38059383470 passed on commit 0f7e066. This endpoint slice awaits its exact-code
-hosted run. Telemetry and remaining coverage are current-phase work. 0/8
+canonical HMAC-SHA256 signing, DNS/IP policy checks, audited scoped immutable
+endpoint versions, and a pinned-address HTTPS transport foundation are implemented.
+Delivery remains fail-closed pending a deployment secret-resolver adapter and
+durable delivery ledger/retries/replay. Endpoint administration hosted run 38062270395
+passes on 9ab5647; the transport follow-up awaits exact-code hosted checks. Telemetry
+and remaining coverage are current-phase work. 0/8
 accepted; Q-006 and Q-008 are resolved.
 Phase 5 remains accepted on d91dfce / hosted run 37454353238.
 
@@ -88,8 +88,8 @@ Q-004 resolved by user: shared task claimed by one eligible member.
 Legacy export absent.
 
 ## Next 5 tasks
-1. Verify endpoint administration slice in exact-code hosted CI.
-2. Implement externally managed secret resolution and pinned-address HTTPS transport.
+1. Verify pinned transport follow-up in exact-code hosted CI.
+2. Integrate a deployment-provided tenant-isolated external secret resolver.
 3. Add durable webhook delivery intents, bounded attempts/retries and reviewed replay.
 4. Complete queue/run telemetry and operator failure visibility.
 5. Complete remaining Phase 6 acceptance and fault/recovery coverage; verify all gates.

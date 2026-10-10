@@ -1,18 +1,26 @@
 import hmac
 import socket
+import ssl
 from datetime import UTC, datetime
 from hashlib import sha256
-from uuid import uuid7
+from typing import cast
+from uuid import UUID, uuid7
 
 import pytest
 from operations.contracts import ServiceError
 from operations.modules.automation.application.events import EventContext, OperationalEvent
+from operations.modules.integrations.application.contracts import EndpointVersion
 from operations.modules.integrations.application.webhooks import (
+    PinnedHTTPSWebhookTransport,
+    _PinnedHTTPSConnection,
     canonical_body,
+    deliver_webhook,
     envelope_for,
     resolve_destination,
     signature_headers,
 )
+from operations.platform.config import Settings
+from pydantic import SecretStr, ValidationError
 
 
 def event() -> OperationalEvent:
@@ -83,3 +91,180 @@ def test_destination_requires_private_network_allowlist(monkeypatch: pytest.Monk
         "10.2.3.4",
         443,
     )
+
+
+class FixedSecrets:
+    def __init__(self) -> None:
+        self.requests: list[tuple[object, ...]] = []
+
+    def resolve(self, organization_id: UUID, reference: str, version: int) -> bytes:
+        self.requests.append((organization_id, reference, version))
+        return b"k" * 32
+
+
+class CaptureTransport:
+    def __init__(self) -> None:
+        self.request: tuple[str, str, bytes, dict[str, str]] | None = None
+
+    def post(self, url: str, address: str, body: bytes, headers: dict[str, str]) -> int:
+        self.request = (url, address, body, headers)
+        return 202
+
+
+def endpoint(source: OperationalEvent) -> EndpointVersion:
+    return EndpointVersion(
+        audit_id=uuid7(),
+        endpoint_id=uuid7(),
+        organization_id=source.organization_id,
+        workspace_id=source.workspace_id,
+        project_id=source.project_id,
+        version=3,
+        signing_key_version=9,
+        name="Test receiver",
+        url="https://hooks.example.test:8443/v1/events",
+        secret_reference="tenant/webhooks/key-v9",
+        created_by_id=uuid7(),
+        created_at=datetime.now(UTC),
+    )
+
+
+def test_delivery_resolves_tenant_key_version_and_sends_pinned_identifiers_only(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        socket,
+        "getaddrinfo",
+        lambda *_args, **_kwargs: [(socket.AF_INET, socket.SOCK_STREAM, 6, "", ("8.8.8.8", 8443))],
+    )
+    source, delivery = event(), uuid7()
+    target, secrets, transport = endpoint(source), FixedSecrets(), CaptureTransport()
+    assert deliver_webhook(source, delivery, target, secrets, transport) == 202
+    assert secrets.requests == [(source.organization_id, target.secret_reference, 9)]
+    assert transport.request is not None
+    url, address, body, headers = transport.request
+    assert address == "8.8.8.8" and url == target.url
+    assert b"secret-project-phase" not in body
+    assert headers["X-IOP-Delivery"] == str(delivery)
+    assert headers["X-IOP-Key-Version"] == "9"
+
+
+def test_delivery_blocks_revoked_or_cross_scope_endpoint_before_secret_resolution() -> None:
+    source, secrets, transport = event(), FixedSecrets(), CaptureTransport()
+    target = endpoint(source).model_copy(update={"state": "revoked"})
+    with pytest.raises(ServiceError, match="webhook_endpoint_revoked"):
+        deliver_webhook(source, uuid7(), target, secrets, transport)
+    target = endpoint(source).model_copy(update={"workspace_id": uuid7()})
+    with pytest.raises(ServiceError, match="webhook_endpoint_scope_mismatch"):
+        deliver_webhook(source, uuid7(), target, secrets, transport)
+    assert secrets.requests == [] and transport.request is None
+
+
+def test_missing_tenant_secret_fails_closed_without_transport(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        socket,
+        "getaddrinfo",
+        lambda *_args, **_kwargs: [(socket.AF_INET, socket.SOCK_STREAM, 6, "", ("8.8.8.8", 443))],
+    )
+
+    class MissingSecrets:
+        def resolve(self, _organization_id: UUID, _reference: str, _version: int) -> bytes:
+            raise RuntimeError("provider detail must not escape")
+
+    source, transport = event(), CaptureTransport()
+    with pytest.raises(ServiceError, match="webhook_signing_secret_unavailable"):
+        deliver_webhook(source, uuid7(), endpoint(source), MissingSecrets(), transport)
+    assert transport.request is None
+
+
+def test_https_connection_pins_ip_but_keeps_original_tls_server_name(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    observed: dict[str, object] = {}
+    raw_socket = object()
+    tls_socket = object()
+
+    def connect(address: tuple[str, int], timeout: float) -> object:
+        observed["address"] = address
+        observed["timeout"] = timeout
+        return raw_socket
+
+    class Context:
+        def wrap_socket(self, sock: object, *, server_hostname: str) -> object:
+            observed["raw_socket"] = sock
+            observed["server_hostname"] = server_hostname
+            return tls_socket
+
+    monkeypatch.setattr(socket, "create_connection", connect)
+    connection = _PinnedHTTPSConnection(
+        "https://hooks.example.test:8443/events", "8.8.8.8", cast(ssl.SSLContext, Context())
+    )
+    connection.connect()
+    assert observed["address"] == ("8.8.8.8", 8443)
+    assert observed["server_hostname"] == "hooks.example.test"
+    assert connection.sock is tls_socket
+
+
+def test_pinned_transport_refuses_redirects_without_following_them(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    class Response:
+        status = 302
+
+        def read(self, _size: int) -> bytes:
+            return b"redirect"
+
+    class Connection:
+        requested_path: str | None = None
+        closed = False
+
+        def __init__(self, *_args: object, **_kwargs: object) -> None:
+            pass
+
+        def request(self, method: str, path: str, **_kwargs: object) -> None:
+            assert method == "POST"
+            self.requested_path = path
+
+        def getresponse(self) -> Response:
+            return Response()
+
+        def close(self) -> None:
+            self.closed = True
+
+    created: list[Connection] = []
+
+    def factory(*args: object, **kwargs: object) -> Connection:
+        connection = Connection(*args, **kwargs)
+        created.append(connection)
+        return connection
+
+    monkeypatch.setattr(
+        "operations.modules.integrations.application.webhooks._PinnedHTTPSConnection", factory
+    )
+    transport = PinnedHTTPSWebhookTransport()
+    with pytest.raises(ServiceError, match="webhook_redirect_rejected"):
+        transport.post("https://hooks.example.test/events", "8.8.8.8", b"{}", {})
+    assert created[0].requested_path == "/events"
+    assert created[0].closed
+
+
+def test_settings_accept_only_private_deployment_egress_cidrs() -> None:
+    def configured(cidrs: list[str]) -> Settings:
+        return Settings(
+            _env_file=None,  # type: ignore[call-arg]
+            environment="test",
+            database_url=SecretStr("postgresql+psycopg://unused:unused@localhost/unused"),
+            redis_url=SecretStr("redis://localhost:6379/0"),
+            s3_endpoint="http://localhost:9000",
+            s3_access_key=SecretStr("unused"),
+            s3_secret_key=SecretStr("unused"),
+            webhook_private_egress_cidrs=cidrs,
+        )
+
+    trusted = configured(["10.20.0.0/16"])
+    assert trusted.webhook_private_egress_cidrs == ["10.20.0.0/16"]
+    with pytest.raises(ValidationError):
+        configured(["8.8.8.8/32"])
+    with pytest.raises(ValidationError):
+        configured(["not-a-cidr"])

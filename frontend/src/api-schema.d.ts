@@ -2408,6 +2408,8 @@ export interface components {
             name: string;
             /** Secret Reference */
             secret_reference: string;
+            /** Signing Key Version */
+            signing_key_version: number;
             /** Url */
             url: string;
         };
@@ -2426,6 +2428,8 @@ export interface components {
             name: string;
             /** Secret Reference */
             secret_reference: string;
+            /** Signing Key Version */
+            signing_key_version: number;
             /** Url */
             url: string;
         };
@@ -2463,6 +2467,8 @@ export interface components {
              * @constant
              */
             secret_reference_present: true;
+            /** Signing Key Version */
+            signing_key_version: number;
             /**
              * State
              * @enum {string}

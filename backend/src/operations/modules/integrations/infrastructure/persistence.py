@@ -40,6 +40,9 @@ class WebhookEndpointRow(Base):
         ),
         CheckConstraint("version > 0", name="webhook_endpoint_version_positive"),
         CheckConstraint(
+            "signing_key_version > 0", name="webhook_endpoint_signing_key_version_positive"
+        ),
+        CheckConstraint(
             "state IN ('active','revoked') AND ((project_id IS NULL AND workspace_id IS NULL) "
             "OR workspace_id IS NOT NULL)",
             name="webhook_endpoint_scope_state",
@@ -64,6 +67,7 @@ class WebhookEndpointRow(Base):
     workspace_id: Mapped[UUID | None]
     project_id: Mapped[UUID | None]
     version: Mapped[int]
+    signing_key_version: Mapped[int]
     name: Mapped[str] = mapped_column(String(120))
     url: Mapped[str] = mapped_column(String(2048))
     secret_reference: Mapped[str] = mapped_column(String(512))

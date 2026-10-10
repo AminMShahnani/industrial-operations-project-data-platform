@@ -6,19 +6,26 @@ retaining the original hostname for TLS SNI and certificate verification.
 
 import hashlib
 import hmac
+import http.client
 import ipaddress
 import json
 import socket
+import ssl
+from contextlib import suppress
 from datetime import UTC, datetime
-from urllib.parse import urlsplit
+from typing import Protocol
+from urllib.parse import urlsplit, urlunsplit
 from uuid import UUID
 
 from pydantic import Field
 
 from operations.contracts import Command, ServiceError
 from operations.modules.automation.application.events import OperationalEvent
+from operations.modules.integrations.application.contracts import EndpointVersion
 
 MAX_WEBHOOK_BODY_BYTES = 4096
+MAX_WEBHOOK_RESPONSE_BYTES = 8192
+WEBHOOK_TIMEOUT_SECONDS = 5.0
 
 
 def validate_endpoint_url(url: str) -> None:
@@ -143,3 +150,95 @@ def resolve_destination(url: str, allowed_private_cidrs: tuple[str, ...] = ()) -
     if len(addresses) != 1:
         raise ServiceError(422, "webhook_endpoint_multiple_addresses_unsupported")
     return str(next(iter(addresses))), port
+
+
+class TenantSecretResolver(Protocol):
+    """Deployment adapter for tenant-isolated, externally stored key versions."""
+
+    def resolve(self, organization_id: UUID, reference: str, version: int) -> bytes: ...
+
+
+class WebhookTransport(Protocol):
+    def post(self, url: str, address: str, body: bytes, headers: dict[str, str]) -> int: ...
+
+
+class _PinnedHTTPSConnection(http.client.HTTPSConnection):
+    def __init__(self, url: str, address: str, context: ssl.SSLContext) -> None:
+        parsed = urlsplit(url)
+        assert parsed.hostname is not None
+        super().__init__(
+            parsed.hostname,
+            parsed.port or 443,
+            timeout=WEBHOOK_TIMEOUT_SECONDS,
+            context=context,
+        )
+        self._pinned_address = address
+        self._ssl_context = context
+
+    def connect(self) -> None:
+        raw_socket = socket.create_connection(
+            (self._pinned_address, self.port), timeout=WEBHOOK_TIMEOUT_SECONDS
+        )
+        self.sock = self._ssl_context.wrap_socket(raw_socket, server_hostname=self.host)
+
+
+class PinnedHTTPSWebhookTransport:
+    """Direct HTTPS with DNS-pinned TCP and the original TLS/HTTP hostname."""
+
+    def __init__(self, context: ssl.SSLContext | None = None) -> None:
+        self.context = context or ssl.create_default_context()
+
+    def post(self, url: str, address: str, body: bytes, headers: dict[str, str]) -> int:
+        parsed = urlsplit(url)
+        path = urlunsplit(("", "", parsed.path or "/", "", ""))
+        connection = _PinnedHTTPSConnection(url, address, self.context)
+        try:
+            connection.request("POST", path, body=body, headers=headers)
+            response = connection.getresponse()
+            if 300 <= response.status < 400:
+                raise ServiceError(502, "webhook_redirect_rejected")
+            response_body = response.read(MAX_WEBHOOK_RESPONSE_BYTES + 1)
+            if len(response_body) > MAX_WEBHOOK_RESPONSE_BYTES:
+                raise ServiceError(502, "webhook_response_too_large")
+            if not 200 <= response.status < 300:
+                raise ServiceError(502, "webhook_receiver_rejected")
+            return response.status
+        except ServiceError:
+            raise
+        except TimeoutError, OSError, ssl.SSLError, http.client.HTTPException:
+            # A timeout after request bytes were written has an uncertain outcome.
+            raise ServiceError(503, "webhook_delivery_uncertain") from None
+        finally:
+            with suppress(OSError):
+                connection.close()
+
+
+def deliver_webhook(
+    event: OperationalEvent,
+    delivery_identifier: UUID,
+    endpoint: EndpointVersion,
+    secrets: TenantSecretResolver,
+    transport: WebhookTransport,
+    allowed_private_cidrs: tuple[str, ...] = (),
+) -> int:
+    """Send one bounded attempt. Durable scheduling/retries belong to the worker."""
+    if endpoint.state != "active":
+        raise ServiceError(409, "webhook_endpoint_revoked")
+    if endpoint.organization_id != event.organization_id or (
+        endpoint.workspace_id,
+        endpoint.project_id,
+    ) != (event.workspace_id, event.project_id):
+        raise ServiceError(409, "webhook_endpoint_scope_mismatch")
+    validate_endpoint_url(endpoint.url)
+    body = canonical_body(envelope_for(event, delivery_identifier))
+    address, _port = resolve_destination(endpoint.url, allowed_private_cidrs)
+    try:
+        secret = secrets.resolve(
+            endpoint.organization_id, endpoint.secret_reference, endpoint.signing_key_version
+        )
+    except Exception:
+        raise ServiceError(503, "webhook_signing_secret_unavailable") from None
+    if len(secret) < 32:
+        raise ServiceError(503, "webhook_signing_secret_unavailable")
+    headers = signature_headers(body, secret, delivery_identifier, endpoint.signing_key_version)
+    return transport.post(endpoint.url, address, body, headers)

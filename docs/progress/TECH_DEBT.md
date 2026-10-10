@@ -2,10 +2,11 @@
 
 Webhook delivery (2026-10-10): Q-009 is resolved under accepted ADR-0026. Typed
 identifiers-only envelope, HMAC signing, destination policy checks and audited
-scoped endpoint versions/API are implemented. Delivery remains fail-closed; external
-secret resolver, pinned-address HTTPS transport, durable attempts/retries, and
-reviewed replay are still current Phase 6 implementation work. Endpoint version
-administration awaits exact-code hosted verification.
+scoped endpoint versions/API, and pinned HTTPS transport foundation are implemented.
+Delivery remains fail-closed; deployment secret resolver, durable attempts/retries,
+worker wiring and reviewed replay are still current Phase 6 implementation work.
+Endpoint version administration passes hosted run 38062270395 on exact code
+9ab5647c74e5103426b3f419934a9b1947634835; transport follow-up awaits hosted CI.
 
 Controlled tags/flags (2026-10-10): implementation passes all local gates (298
 backend/18 frontend tests) under ADR-0025. Hosted run

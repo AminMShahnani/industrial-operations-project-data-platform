@@ -15,6 +15,7 @@ class AuditDetails(Command):
     scope_type: str | None = None
     scope_id: UUID | None = None
     version: int | None = None
+    signing_key_version: int | None = Field(default=None, ge=1)
     workspace_id: UUID | None = None
     project_id: UUID | None = None
     form_id: UUID | None = None
