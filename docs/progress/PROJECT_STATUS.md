@@ -65,6 +65,8 @@ frontend tests); hosted run 38057404691 passes both jobs on exact code b5e4581a8
 Q-009 is resolved and ADR-0026 accepted. Typed identifiers-only payload projection,
 canonical HMAC-SHA256 signing, DNS/IP policy checks, audited scoped immutable
 endpoint versions, and a pinned-address HTTPS transport foundation are implemented.
+Authenticated organization/workspace endpoint administration UI is also implemented
+and passes frontend local gates.
 Delivery remains fail-closed pending a deployment secret-resolver adapter and
 durable delivery ledger/retries/replay. Endpoint administration hosted run 38062270395
 passes on 9ab5647; pinned transport hosted run 38063940999 passes both jobs on exact

@@ -3,6 +3,8 @@
 Webhook delivery (2026-10-10): Q-009 is resolved under accepted ADR-0026. Typed
 identifiers-only envelope, HMAC signing, destination policy checks and audited
 scoped endpoint versions/API, and pinned HTTPS transport foundation are implemented.
+The authenticated organization/workspace endpoint administration screen is now
+implemented; backend authorization remains authoritative.
 Delivery remains fail-closed; deployment secret resolver, durable attempts/retries,
 worker wiring and reviewed replay are still current Phase 6 implementation work.
 Endpoint version administration passes hosted run 38062270395 on exact code

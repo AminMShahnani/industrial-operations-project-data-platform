@@ -5,6 +5,7 @@ import type { components } from './api-schema';
 import { ProjectAdministration } from './ProjectAdmin';
 import { Notifications } from './Notifications';
 import { EmailRecovery } from './EmailRecovery';
+import { WebhookEndpoints } from './WebhookEndpoints';
 import { InvitationAcceptance } from './InvitationAcceptance';
 import { invitationPath, invitationRequestId, invitationTargetFromState, readInvitationTarget } from './invitation-link';
 
@@ -184,6 +185,7 @@ export function Administration() {
         <label>Sign-in invitation link<textarea aria-label="Sign-in invitation link" readOnly value={invitationLink} /></label></div>}
     </section>}
     {organization && permissions.includes('organization.manage') && <EmailRecovery key={'email' + organization} api={api} organization={organization}/>}
+    {organization && (permissions.includes('integration.manage') || permissions.includes('organization.manage') || (workspace && permissions.includes('workspace.manage'))) && <WebhookEndpoints key={'webhook' + organization + workspace} api={api} organization={organization} workspace={workspace || undefined}/>}
     {organization && workspace && <Notifications key={'notifications' + organization + workspace} api={api} organization={organization} workspace={workspace} />}
     {organization && workspace && <ProjectAdministration key={organization + workspace} api={api} organization={organization} workspace={workspace} userId={me?.memberships.find(item=>item.organization_id===organization)?.user_id??''} />}
     <section><h2>Accept an invitation</h2><form onSubmit={event => void acceptInvitation(event)}>

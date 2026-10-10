@@ -2,6 +2,11 @@
 
 ## Unreleased - Phase 6 in progress (2026-10-10)
 
+- Add authenticated organization/workspace webhook endpoint administration UI for
+  registration, immutable versioning and revocation. Secret references are write-only
+  from the UI and remain stored externally. Frontend checks pass; delivery remains
+  fail-closed pending the deployment resolver and durable worker.
+
 - Add a bounded direct HTTPS webhook transport foundation: validate all resolved
   addresses, pin TCP to a vetted IP while preserving TLS hostname checks, reject
   redirects, cap response bodies/timeouts and sanitize provider errors. Add deployment

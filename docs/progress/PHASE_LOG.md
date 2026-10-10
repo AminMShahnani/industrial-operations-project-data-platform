@@ -62,6 +62,17 @@ passes both jobs on exact commit `0bc54de5fb009fe0f7cc3765fd8b9766c8bd7f74`,
 including Linux strict types, backend/browser tests, migrations and generated API
 checks. Phase 6 remains 0/8 accepted.
 
+## Phase 6 webhook endpoint administration UI - 2026-10-10
+
+Added authenticated organization/workspace endpoint management over the scoped
+integration API. Operators can register, version and revoke endpoints; the UI only
+submits opaque external secret references and never receives or displays them from
+API responses. Existing server authorization remains authoritative. Endpoint
+versions remain immutable and outbound delivery stays disabled until the
+tenant-isolated resolver and durable delivery worker are implemented. Frontend lint,
+strict TypeScript, 18 unit tests and production build pass. Exact-code hosted checks
+are pending; no Phase 6 acceptance criterion is claimed (0/8).
+
 ## Phase 6 controlled tags and flags - 2026-10-10
 
 Implement docs/12 append tag/flag actions as project-owned inert annotations under
