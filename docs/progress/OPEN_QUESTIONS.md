@@ -9,7 +9,8 @@
   token storage with explicit key, retention and replay policy. ADR-0019 is
   accepted: user delegated with "do best" on 2026-10-10. Select the recommended
   token-free verified-email mode; existing token invitations stay unchanged.
-  Lifecycle/API/browser implementation is being verified. SMTP delivery remains
+  Lifecycle/API/browser implementation passes local gates (227 backend/14 frontend)
+  and hosted run 38036138271 on exact final code 82cf4e5. SMTP delivery remains
   current-phase work under ADR-0011, with no new unresolved security decision.
 
 ## Phase 0 blockers

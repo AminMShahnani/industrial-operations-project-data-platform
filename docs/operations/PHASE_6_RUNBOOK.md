@@ -36,7 +36,9 @@ requires a forward fix or verified full backup restore with a write-replay plan.
 Never fabricate digests, reset acceptance, extend expiry or remove evidence to
 force rollback. SMTP attempts/recovery will follow ADR-0011 in the next slice.
 
-Status: authorized action/consumer increment; no Phase 6 acceptance or production rollout.
+Status: Phase 6 in progress. Verified-email lifecycle passes local and hosted gates
+on 82cf4e5 / run 38036138271. SMTP delivery remains pending; no phase acceptance
+or production rollout.
 
 ## Current setup
 `uv sync --frozen` installs the ADR-0011 Dramatiq/Redis transport. Broker messages

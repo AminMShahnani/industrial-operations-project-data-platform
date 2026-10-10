@@ -9,6 +9,12 @@
   invitations. Guard immutable invitation binding and history, with token-only
   reversible migration and populated new-mode rollback refusal. SMTP delivery
   and recovery remain required Phase 6 work; links are currently shared manually.
+  All local gates pass (227 backend/14 frontend), including real PKCE acceptance,
+  concurrent retries, immutable binding and guarded rollback. Fix an unordered
+  administrator test fixture exposed by Linux CI; 46 affected tests pass locally.
+  Hosted [38036138271](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/38036138271)
+  passes both jobs on final code 82cf4e5, including Linux tests/types, browser and
+  committed concurrency, migrations and generated contracts.
 
 - Add bounded preview/apply reconciliation for historical workflow notify and task
   reminder handoffs (ADR-0018). Preserve original source/audit/read history; create

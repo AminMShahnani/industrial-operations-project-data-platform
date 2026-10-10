@@ -40,9 +40,9 @@ reconciliation is implemented with exact intent provenance and notification-only
 delivery. All local and exact-code hosted gates pass.
 Verified-email invitation lifecycle/API/browser acceptance is implemented under
 accepted ADR-0019, preserving old tokens and requiring verified recipient email
-and current inviter authority. All local gates pass; hosted verification for this
-latest slice is pending. Links are manually shared until SMTP is implemented.
-Generic tasks, tags/flags, webhooks, email/invitations,
+and current inviter authority. All local and hosted gates pass on final code
+82cf4e5 / run 38036138271. Links are manually shared until SMTP is implemented.
+Generic tasks, tags/flags, webhooks, SMTP/email delivery,
 rule/run UI and telemetry remain current-phase
 work. 0/8 accepted; Q-006 is resolved.
 Phase 5 remains accepted on d91dfce / hosted run 37454353238.
@@ -50,7 +50,7 @@ Phase 5 remains accepted on d91dfce / hosted run 37454353238.
 ## Blocked
 None. Q-007 resolved on 2026-10-10: user delegated the choice with "do best".
 ADR-0019 accepts token-free verified-email acceptance for new invitations,
-preserving existing bearer-token invitations. Lifecycle passes local verification;
+preserving existing bearer-token invitations. Lifecycle passes local/hosted verification;
 SMTP delivery remains current Phase 6 work.
 Q-006 resolved: activating administrator delegates bounded scoped authority,
 rechecked for every run/retry. ADR-0011 accepted. Q-005 resolved: independent
@@ -210,7 +210,11 @@ Latest lifecycle validation: 227 backend tests pass without skips in 399.71s;
 frontend lint/types/build, empty migration roundtrip/drift and OpenAPI/generated
 client drift pass. Real browser PKCE preserves the link and accepts exactly once;
 committed concurrency produces one invitation/grant/audit across eight retries.
-Exact-code hosted verification is pending. Phase 6 remains 0/8 accepted.
+Hosted [38036138271](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/38036138271)
+passes both jobs on exact final code `82cf4e5ff8b17088bef9784681d270ef3eceba07`,
+including Linux tests/types, browser PKCE, committed concurrency, migrations and
+generated contracts. The deterministic fixture repair also passes 46 affected tests
+locally in 101.42s. Phase 6 remains 0/8 accepted.
 
 ## Migration status
 Development, isolated test and retained browser databases are at e18c49c4be63.

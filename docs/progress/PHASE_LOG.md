@@ -842,7 +842,12 @@ All 227 backend tests pass without skips in 399.71s; 14 frontend tests pass.
 Ruff lint/format (318 files), strict mypy (251 files), frontend lint/types/build,
 empty migration roundtrip, Alembic/OpenAPI/generated client drift pass. Development,
 isolated test and retained browser databases are at e18c49c4be63. No retained
-browser history is deleted. Hosted exact-code verification is pending commit/push.
+browser history is deleted. Hosted
+[38036138271](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/38036138271)
+passes both jobs on exact final code `82cf4e5ff8b17088bef9784681d270ef3eceba07`,
+including Linux tests/types, real PKCE link acceptance, committed retries,
+empty migrations/drift and generated contracts. Initial feature commit 718f4d5
+also passed both jobs in run 38035786515; final verification includes the fixture fix.
 Completed increment: manually shared token-free invitation lifecycle/API/browser.
 SMTP delivery, attempts, uncertain outcomes/replay, minimal email notices, remaining
 handlers, rule/run management and telemetry stay in Phase 6. Nothing is deferred;

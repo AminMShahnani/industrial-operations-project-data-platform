@@ -44,6 +44,14 @@ delivery is a Phase 6 adapter. Tokens are returned once to the authorized caller
 and never logged. Authorization is rechecked on acceptance so a revoked inviter
 cannot leave a privileged invitation usable.
 
+Phase 6 amendment: accepted ADR-0019 adds a distinct `verified_email` invitation
+mode after the user delegated its policy choice on 2026-10-10. New-mode invitations
+generate/store no bearer secret and require a trusted matching OIDC-verified email
+plus fresh inviter authority for one-time acceptance. Existing `token` invitations
+retain the random token, digest-only storage, expiry and possession requirement
+above; they cannot be accepted through the new mode. Delivery remains a Phase 6
+adapter. See ADR-0019 for migration, immutable binding and rollback requirements.
+
 Business writes and immutable audit appends share one PostgreSQL transaction.
 Audit UPDATE/DELETE/TRUNCATE are prohibited by database triggers. Schema rollback
 is permitted only on empty Phase 1 tables; a populated database requires backup
