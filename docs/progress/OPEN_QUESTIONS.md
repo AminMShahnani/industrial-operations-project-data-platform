@@ -199,4 +199,5 @@ No new unresolved security/domain question. All local gates pass (250 backend/
 ADR-0022 exposes existing scoped management/delegation, management-only drafts and
 minimal run evidence. Public replay adds exact state review and a reason without
 changing the approved authority or attempt limits. No unresolved domain/security
-question or industry coupling is introduced. All local gates pass (261 backend/16 frontend tests); exact-code hosted CI is pending.
+question or industry coupling is introduced. All local gates pass (261 backend/16 frontend tests); hosted run 38047837127
+passes both jobs on exact code fe4ebc8. No phase acceptance gate is waived.

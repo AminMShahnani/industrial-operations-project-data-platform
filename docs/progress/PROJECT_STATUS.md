@@ -52,8 +52,8 @@ both jobs on exact code 6fd5082. Task/workflow email uses explicit activated not
 rules; fixed
 automatic in-app projections remain unchanged.
 Scoped rule/run management and reviewed replay API/UI are implemented under
-ADR-0022; all local gates pass (261 backend/16 frontend tests). Exact-code hosted
-verification is pending.
+ADR-0022; all local gates pass (261 backend/16 frontend tests). Hosted run 38047837127 passes both jobs on exact
+code fe4ebc8.
 Generic tasks, tags/flags, webhooks, email operator UI and telemetry remain current-phase
 work. 0/8 accepted; Q-006 is resolved.
 Phase 5 remains accepted on d91dfce / hosted run 37454353238.
@@ -71,10 +71,10 @@ Q-004 resolved by user: shared task claimed by one eligible member.
 Legacy export absent.
 
 ## Next 5 tasks
-1. Verify the exact automation administration commit in hosted CI.
-2. Expose scoped email delivery/recovery status through operator UI.
-3. Implement generic task, tag/flag and webhook handlers.
-4. Complete queue/run telemetry and operator failure visibility.
+1. Expose scoped email delivery/recovery status through operator UI.
+2. Implement generic task, tag/flag and webhook handlers.
+3. Complete queue/run telemetry and operator failure visibility.
+4. Complete remaining Phase 6 acceptance and fault/recovery coverage.
 5. Verify all Phase 6 local/hosted criteria before any Phase 7 work.
 
 ## Test status
@@ -245,8 +245,11 @@ browser author/save/activate/replay/clone/retire and eight committed concurrent
 replays producing one requeue/audit pass. Ten new API/integration tests cover
 scope isolation, manager/elevated authority, immutable versions, exact 104-row
 rule/version/run pages, reasons/stale reviews, attempt cap, archived inspection
-and revoked original delegation. No migration or retained-data rewrite. Exact-code
-hosted verification is pending; Phase 6 stays 0/8 accepted.
+and revoked original delegation. No migration or retained-data rewrite. Hosted [38047837127](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/38047837127)
+passes backend and frontend jobs on exact code
+`fe4ebc867b2cd01d62a394db048e696125e7844c`, including Linux strict types,
+real PKCE administration/replay, committed concurrent applies, migrations and
+generated contracts. Phase 6 remains 0/8 accepted; no Phase 7 work.
 
 ## Migration status
 

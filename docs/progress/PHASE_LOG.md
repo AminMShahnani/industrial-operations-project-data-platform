@@ -926,7 +926,10 @@ browser author/save/activate/replay/clone/retire and eight committed concurrent
 replays producing one requeue/audit pass. Ten new API/integration tests cover
 scope isolation, manager/elevated authority, immutable versions, exact 104-row
 rule/version/run pages, reasons/stale reviews, attempt cap, archived inspection
-and revoked original delegation. No migration or retained-data rewrite. Exact-code
-hosted verification is pending; Phase 6 stays 0/8 accepted.
+and revoked original delegation. No migration or retained-data rewrite. Hosted [38047837127](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/38047837127)
+passes backend and frontend jobs on exact code
+`fe4ebc867b2cd01d62a394db048e696125e7844c`, including Linux strict types,
+real PKCE administration/replay, committed concurrent applies, migrations and
+generated contracts. Phase 6 remains 0/8 accepted; no Phase 7 work.
 Email operator UI, remaining handlers and telemetry remain current-phase work;
 no acceptance item is deferred to Phase 7.

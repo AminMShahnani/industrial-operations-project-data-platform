@@ -8,7 +8,9 @@
   Public replay reviews run plus queue state and rejects stale/duplicate applies.
   No migration or retained-data rewrite. All local gates pass (261 backend/16
   frontend tests, real PKCE browser and committed concurrent replay, lint/types,
-  migrations and generated contracts/build); exact-code hosted CI is pending.
+  migrations and generated contracts/build). Hosted
+  [38047837127](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/38047837127)
+  passes both jobs on exact code fe4ebc8.
   Phase 6 remains unaccepted.
 
 - Add explicit transactional email capture for verified-email invitations and
