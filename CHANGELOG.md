@@ -5,6 +5,7 @@
 - Require webhook delivery attempts to check the current endpoint head: endpoint
   edits preserve a rule's pinned version, while a later revocation blocks that pin.
   Focused security tests verify both behaviors before secret lookup/network access.
+  Hosted run 38066369565 passes both jobs on exact code a9843addf6484edd0aebf10a098c9b7cb273e259.
 
 - Add authenticated organization/workspace webhook endpoint administration UI for
   registration, immutable versioning and revocation. Secret references are write-only

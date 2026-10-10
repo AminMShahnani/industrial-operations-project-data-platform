@@ -72,8 +72,9 @@ must supply that fresh head when delivery is integrated.
 Delivery remains fail-closed pending a deployment secret-resolver adapter and
 durable delivery ledger/retries/replay. Endpoint administration hosted run 38062270395
 passes on 9ab5647; pinned transport hosted run 38063940999 passes both jobs on exact
-commit 0bc54de5fb009fe0f7cc3765fd8b9766c8bd7f74. Telemetry and remaining coverage
-are current-phase work. 0/8
+commit 0bc54de5fb009fe0f7cc3765fd8b9766c8bd7f74; latest-head revocation enforcement
+passes run 38066369565 on exact commit a9843addf6484edd0aebf10a098c9b7cb273e259.
+Telemetry and remaining coverage are current-phase work. 0/8
 accepted; Q-006 and Q-008 are resolved.
 Phase 5 remains accepted on d91dfce / hosted run 37454353238.
 

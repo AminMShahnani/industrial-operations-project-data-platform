@@ -13,6 +13,8 @@ Endpoint version administration passes hosted run 38062270395 on exact code
 9ab5647c74e5103426b3f419934a9b1947634835; pinned transport foundation passes run
 38063940999 on exact code 0bc54de5fb009fe0f7cc3765fd8b9766c8bd7f74. The deployment
 resolver, durable attempts/retries, worker wiring and reviewed replay remain open.
+Latest-head revocation enforcement passes both jobs on exact code
+a9843addf6484edd0aebf10a098c9b7cb273e259 / run 38066369565.
 
 Controlled tags/flags (2026-10-10): implementation passes all local gates (298
 backend/18 frontend tests) under ADR-0025. Hosted run

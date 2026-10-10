@@ -83,7 +83,9 @@ consistency are checked. Thirteen webhook security tests pass, including old-pin
 revocation and immutable-destination behavior; Ruff, formatting and strict mypy
 (284 files) pass. No migration is required. The contract remains a tested foundation
 without a production caller until durable webhook intents and worker integration are
-implemented. Phase 6 remains 0/8 accepted.
+implemented. Hosted [38066369565](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/38066369565)
+passes both jobs on exact commit `a9843addf6484edd0aebf10a098c9b7cb273e259`.
+Phase 6 remains 0/8 accepted.
 
 ## Phase 6 controlled tags and flags - 2026-10-10
 
