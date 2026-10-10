@@ -1,15 +1,14 @@
 # Open Questions
 
-## Phase 6 webhook security boundary (unresolved)
+## Phase 6 webhook security boundary (resolved)
 
-- Q-009 (2026-10-10): Which outbound destinations may tenant webhooks call, and
-  which event data may leave the tenant? docs/16 requires scoped signed webhooks;
-  docs/20 requires external secrets and replay/breakout protection, but neither
-  defines egress or payload policy. Recommended: immutable scope-bound endpoint
-  versions, HTTPS, externally stored tenant secrets, no redirects, DNS/address
-  validation and operator-allowlisted egress, plus a fixed identifiers-only signed
-  event envelope. ADR-0026 is proposed, not accepted. Keep delivery fail-closed
-  pending this security-sensitive decision; tag/flag verification is independent.
+- Q-009 (2026-10-10): Resolved when the user selected the documented
+  recommendation with “do”. ADR-0026 is accepted: immutable scope-bound endpoint
+  versions; HTTPS; external tenant secrets; no redirects; validated and pinned
+  destination addresses; deployment-managed CIDR exceptions for private industrial
+  endpoints; and a fixed identifiers-only signed envelope. Scalar event fields are
+  excluded. Runtime delivery remains fail-closed until its external secret resolver
+  and safe transport are implemented.
 
 Controlled project annotations (2026-10-10): ADR-0025 uses existing project.read/
 manage and accepted automation delegation for inert append-only labels. Labels do

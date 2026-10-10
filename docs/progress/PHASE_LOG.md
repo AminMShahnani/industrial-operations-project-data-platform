@@ -1,14 +1,22 @@
 # Phase Log
 
-## Phase 6 webhook boundary preparation - 2026-10-10
+## Phase 6 webhook security foundation - 2026-10-10
 
-Read docs/07,12,16,19,20,23 and ADR-0004/0011/0020 against the empty integrations
-module and the existing call_webhook action contract. URL/egress trust and exact
-payload disclosure remain unspecified and security-sensitive. Proposed ADR-0026
-records immutable scope-bound endpoints, external tenant secrets, DNS/SSRF controls,
-IDs-only signing, durable off-transaction delivery, bounded retries and reviewed
-replay. Recorded Q-009. No webhook implementation or phase acceptance criteria
-change before the boundary is accepted; independent tag/flag verification continues.
+User selected ADR-0026's recommendation, resolving Q-009: deployment-managed
+egress allowlists (including explicitly allowed private industrial CIDRs) and a
+fixed identifiers-only payload. Implemented typed envelope projection, canonical
+bounded serialization, HMAC-SHA256 headers and HTTPS/DNS address policy validation.
+Five focused tests cover payload exclusion, signing, URL rejection, mixed DNS
+answers and private address allowlisting. Ruff, format, strict mypy on the new
+contracts/tests and focused pytest pass. Full local verification passes Ruff,
+format, strict Windows/Linux mypy (277 files), backend pytest (294 passed, 9
+skipped), Alembic drift, generated OpenAPI drift and frontend lint/types/build/tests
+(18 passed). The nine skips are documented optional browser/provider tests, not
+reported as passes. No outbound transport is enabled: safe
+delivery still needs immutable scoped endpoint versions, external secret resolver,
+pinned-address HTTPS transport, durable attempt ledger/retries, audited endpoint
+administration and reviewed replay. Phase 6 remains 0/8 accepted; no criteria are
+deferred or relaxed.
 
 ## Phase 6 controlled tags and flags - 2026-10-10
 

@@ -2,6 +2,12 @@
 
 ## Unreleased - Phase 6 in progress (2026-10-10)
 
+- Resolve webhook security boundary Q-009 under accepted ADR-0026. Add a typed
+  identifiers-only event envelope, bounded canonical JSON, HMAC-SHA256 signature
+  headers and HTTPS/DNS/address allowlist policy primitives. Five focused security
+  tests pass. No network delivery is enabled pending scoped endpoint management,
+  external secrets and a verified pinned-address HTTPS transport.
+
 - Add controlled project append_tag/append_flag actions through the owning service
   under ADR-0025. Preserve first-append authorship/audit, exact kind/case distinctions
   and per-action receipts. Add fresh project authority, bounded scoped read/filter/

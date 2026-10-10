@@ -62,9 +62,11 @@ hosted run 38052949486 passing both jobs on exact code d25ad7a. Controlled proje
 tags/flags are implemented under ADR-0025, with scoped read/filter/page UI and
 immutable audited first-append evidence. All local gates pass (298 backend/18
 frontend tests); hosted run 38057404691 passes both jobs on exact code b5e4581a80586b95960cdb192e83a6fadbf53d2d.
-Webhook implementation awaits Q-009 / proposed ADR-0026, which documents the
-network-egress and payload-disclosure boundary; the existing action remains
-fail-closed. Telemetry and remaining coverage are current-phase work. 0/8
+Q-009 is resolved and ADR-0026 accepted. Typed identifiers-only payload projection,
+canonical HMAC-SHA256 signing and DNS/IP policy validation are implemented with
+five focused tests. Delivery remains fail-closed pending endpoint registry,
+external secret resolution, pinned HTTPS transport, durable delivery ledger and
+reviewed replay. Telemetry and remaining coverage are current-phase work. 0/8
 accepted; Q-006 and Q-008 are resolved.
 Phase 5 remains accepted on d91dfce / hosted run 37454353238.
 
@@ -84,10 +86,11 @@ Q-004 resolved by user: shared task claimed by one eligible member.
 Legacy export absent.
 
 ## Next 5 tasks
-1. Resolve webhook egress and payload policy (Q-009); implement the accepted design.
-2. Complete queue/run telemetry and operator failure visibility.
-3. Complete remaining Phase 6 acceptance and fault/recovery coverage.
-4. Verify all Phase 6 local/hosted criteria before any Phase 7 work.
+1. Implement scoped endpoint version management and audited secret-reference lifecycle.
+2. Implement pinned-address HTTPS transport, durable webhook attempts and reviewed replay.
+3. Complete queue/run telemetry and operator failure visibility.
+4. Complete remaining Phase 6 acceptance and fault/recovery coverage.
+5. Verify all Phase 6 local/hosted criteria before any Phase 7 work.
 
 ## Test status
 141 backend tests pass locally without skips, including separate real Keycloak PKCE
