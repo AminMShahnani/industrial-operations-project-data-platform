@@ -7,6 +7,8 @@ The authenticated organization/workspace endpoint administration screen is now
 implemented; backend authorization remains authoritative.
 Delivery remains fail-closed; deployment secret resolver, durable attempts/retries,
 worker wiring and reviewed replay are still current Phase 6 implementation work.
+The sender now requires the latest endpoint head on each attempt so revocation cannot
+be bypassed by an older active rule pin.
 Endpoint version administration passes hosted run 38062270395 on exact code
 9ab5647c74e5103426b3f419934a9b1947634835; pinned transport foundation passes run
 38063940999 on exact code 0bc54de5fb009fe0f7cc3765fd8b9766c8bd7f74. The deployment

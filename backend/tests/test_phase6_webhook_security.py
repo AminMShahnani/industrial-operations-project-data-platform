@@ -138,7 +138,7 @@ def test_delivery_resolves_tenant_key_version_and_sends_pinned_identifiers_only(
     )
     source, delivery = event(), uuid7()
     target, secrets, transport = endpoint(source), FixedSecrets(), CaptureTransport()
-    assert deliver_webhook(source, delivery, target, secrets, transport) == 202
+    assert deliver_webhook(source, delivery, target, target, secrets, transport) == 202
     assert secrets.requests == [(source.organization_id, target.secret_reference, 9)]
     assert transport.request is not None
     url, address, body, headers = transport.request
@@ -152,11 +152,42 @@ def test_delivery_blocks_revoked_or_cross_scope_endpoint_before_secret_resolutio
     source, secrets, transport = event(), FixedSecrets(), CaptureTransport()
     target = endpoint(source).model_copy(update={"state": "revoked"})
     with pytest.raises(ServiceError, match="webhook_endpoint_revoked"):
-        deliver_webhook(source, uuid7(), target, secrets, transport)
+        deliver_webhook(source, uuid7(), target, target, secrets, transport)
     target = endpoint(source).model_copy(update={"workspace_id": uuid7()})
     with pytest.raises(ServiceError, match="webhook_endpoint_scope_mismatch"):
-        deliver_webhook(source, uuid7(), target, secrets, transport)
+        deliver_webhook(source, uuid7(), target, target, secrets, transport)
     assert secrets.requests == [] and transport.request is None
+
+
+def test_later_revocation_blocks_old_active_pin_before_resolving_secret() -> None:
+    source, secrets, transport = event(), FixedSecrets(), CaptureTransport()
+    pinned = endpoint(source)
+    latest = pinned.model_copy(update={"version": pinned.version + 1, "state": "revoked"})
+    with pytest.raises(ServiceError, match="webhook_endpoint_revoked"):
+        deliver_webhook(source, uuid7(), pinned, latest, secrets, transport)
+    assert secrets.requests == [] and transport.request is None
+
+
+def test_later_active_revision_keeps_old_rule_pin_but_rejects_invalid_latest_binding(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr(
+        socket,
+        "getaddrinfo",
+        lambda *_args, **_kwargs: [(socket.AF_INET, socket.SOCK_STREAM, 6, "", ("8.8.8.8", 8443))],
+    )
+    source, delivery = event(), uuid7()
+    pinned = endpoint(source)
+    latest = pinned.model_copy(
+        update={"version": pinned.version + 1, "url": "https://new.example.test/events"}
+    )
+    secrets, transport = FixedSecrets(), CaptureTransport()
+    assert deliver_webhook(source, delivery, pinned, latest, secrets, transport) == 202
+    assert secrets.requests == [(source.organization_id, pinned.secret_reference, 9)]
+    assert transport.request is not None and transport.request[0] == pinned.url
+    mismatched = latest.model_copy(update={"endpoint_id": uuid7()})
+    with pytest.raises(ServiceError, match="webhook_endpoint_version_integrity"):
+        deliver_webhook(source, delivery, pinned, mismatched, secrets, transport)
 
 
 def test_missing_tenant_secret_fails_closed_without_transport(
@@ -174,7 +205,8 @@ def test_missing_tenant_secret_fails_closed_without_transport(
 
     source, transport = event(), CaptureTransport()
     with pytest.raises(ServiceError, match="webhook_signing_secret_unavailable"):
-        deliver_webhook(source, uuid7(), endpoint(source), MissingSecrets(), transport)
+        target = endpoint(source)
+        deliver_webhook(source, uuid7(), target, target, MissingSecrets(), transport)
     assert transport.request is None
 
 

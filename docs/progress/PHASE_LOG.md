@@ -73,6 +73,18 @@ tenant-isolated resolver and durable delivery worker are implemented. Frontend l
 strict TypeScript, 18 unit tests and production build pass. Exact-code hosted checks
 are pending; no Phase 6 acceptance criterion is claimed (0/8).
 
+## Phase 6 webhook revocation at delivery - 2026-10-10
+
+The pinned sender contract now requires both the immutable action-pinned endpoint
+version and the current endpoint head. A subsequent active edit preserves the old
+rule pin; a newer revocation tombstone blocks delivery before secret resolution or
+transport, including retries of old intents. Identity, organization and scope
+consistency are checked. Thirteen webhook security tests pass, including old-pin
+revocation and immutable-destination behavior; Ruff, formatting and strict mypy
+(284 files) pass. No migration is required. The contract remains a tested foundation
+without a production caller until durable webhook intents and worker integration are
+implemented. Phase 6 remains 0/8 accepted.
+
 ## Phase 6 controlled tags and flags - 2026-10-10
 
 Implement docs/12 append tag/flag actions as project-owned inert annotations under

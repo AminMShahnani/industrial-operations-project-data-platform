@@ -1,8 +1,4 @@
-"""Pure security contracts for signed, identifiers-only webhook requests.
-
-No network adapter lives here. Callers must connect to a validated IP while
-retaining the original hostname for TLS SNI and certificate verification.
-"""
+"""Security contracts and bounded transport for signed webhook requests."""
 
 import hashlib
 import hmac
@@ -217,6 +213,7 @@ def deliver_webhook(
     event: OperationalEvent,
     delivery_identifier: UUID,
     endpoint: EndpointVersion,
+    current_endpoint: EndpointVersion,
     secrets: TenantSecretResolver,
     transport: WebhookTransport,
     allowed_private_cidrs: tuple[str, ...] = (),
@@ -224,6 +221,24 @@ def deliver_webhook(
     """Send one bounded attempt. Durable scheduling/retries belong to the worker."""
     if endpoint.state != "active":
         raise ServiceError(409, "webhook_endpoint_revoked")
+    # Endpoint versions are immutable and actions pin their original destination/key.
+    # The latest row is checked independently so a later tombstone revokes every pin.
+    if (
+        current_endpoint.organization_id != endpoint.organization_id
+        or current_endpoint.endpoint_id != endpoint.endpoint_id
+        or current_endpoint.version < endpoint.version
+        or current_endpoint.workspace_id != endpoint.workspace_id
+        or current_endpoint.project_id != endpoint.project_id
+    ):
+        raise ServiceError(409, "webhook_endpoint_version_integrity")
+    if current_endpoint.state != "active":
+        raise ServiceError(409, "webhook_endpoint_revoked")
+    if current_endpoint.version == endpoint.version and (
+        current_endpoint.url != endpoint.url
+        or current_endpoint.secret_reference != endpoint.secret_reference
+        or current_endpoint.signing_key_version != endpoint.signing_key_version
+    ):
+        raise ServiceError(409, "webhook_endpoint_version_integrity")
     if endpoint.organization_id != event.organization_id or (
         endpoint.workspace_id,
         endpoint.project_id,

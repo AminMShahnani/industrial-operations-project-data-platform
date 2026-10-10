@@ -55,6 +55,10 @@ timeout after sending may be uncertain; do not claim exactly-once. Retain outcom
 and permit reviewed, reasoned replay under current delegated authority, with a
 twenty-attempt lifetime cap. Keep payload/body/secret out of queue messages and
 operator evidence. Metrics use bounded outcome labels, never arbitrary URLs.
+Each attempt must load both its pinned endpoint version and the current endpoint
+head. A later active revision does not retarget an existing rule pin, but a current
+revocation tombstone blocks every pinned version before secret resolution or network
+access.
 
 ## Resolved choices
 
@@ -74,5 +78,7 @@ loopback sink only; never post test payloads to a customer endpoint. Current
 foundation verification: focused tests cover payload exclusion, HMAC signing, URL and
 address policy, key-version resolution, secret failure redaction, and a mocked pinned
 socket preserving TLS hostname. A fake transport verifies redirects are rejected.
-Production secret-manager integration and durable action/worker delivery remain
-unimplemented; no network attempt can occur from an automation rule yet.
+Tests also verify that a later tombstone blocks an older active pin while a later
+active revision preserves that pin. Production secret-manager integration and durable
+action/worker delivery remain unimplemented; no network attempt can occur from an
+automation rule yet.
