@@ -2,7 +2,7 @@
 
 Status: PHASE 6 IN PROGRESS
 Current phase: Phase 6 - automation and notifications
-Last updated: 2026-10-06
+Last updated: 2026-10-10
 Overall completion: 6/11 phases accepted. Phase 0 through Phase 5 each
 satisfy 8/8 criteria. Phase 5: P5-01 through P5-08 PASS.
 No unsupported project-wide percentage is reported.
@@ -44,7 +44,11 @@ work. 0/8 accepted; Q-006 is resolved.
 Phase 5 remains accepted on d91dfce / hosted run 37454353238.
 
 ## Blocked
-None. Q-006 resolved: activating administrator delegates bounded scoped authority,
+Q-007: invitation email acceptance awaits user selection. Proposed ADR-0019 offers
+token-free verified-email acceptance for new email invitations or explicitly
+authorized temporary encrypted token storage. Dependent implementation pauses
+at this security boundary. Previous verified increments remain intact.
+Q-006 resolved: activating administrator delegates bounded scoped authority,
 rechecked for every run/retry. ADR-0011 accepted. Q-005 resolved: independent
 approval is mandatory, including administrators.
 ADR-0010 accepted on 2026-10-06.

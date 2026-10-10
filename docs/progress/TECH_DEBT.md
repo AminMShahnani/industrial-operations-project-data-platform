@@ -1,5 +1,10 @@
 # Technical Debt Register
 
+Phase 6 preparation (2026-10-10): Q-007 and proposed ADR-0019 record the pending
+invitation email security decision. This remains current-phase work, not deferred
+debt. Existing invitations/history are unchanged; no new implementation debt or
+phase acceptance is introduced.
+
 Empty at project start. Every intentional compromise must include owner/context, impact, target phase and remediation plan.
 
 | ID | Owner/context | Impact | Target/remediation |

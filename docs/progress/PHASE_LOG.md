@@ -1,5 +1,19 @@
 # Phase Log
 
+## Phase 6 email/invitation preparation - 2026-10-10
+
+Read AGENTS.md and numbered source documents; reviewed progress and invitation
+implementation. Existing invitations store only digests and require matching
+verified OIDC email plus fresh inviter authority. ADR-0011 already establishes
+minimal disclosure, stable Message-ID and controlled uncertain SMTP replay.
+Durable invitation acceptance remains unspecified: token-free acceptance changes
+the possession requirement; encrypted token retention changes ADR-0006's storage
+boundary. Proposed ADR-0019 documents both choices and existing invitation
+preservation. Q-007 submitted under the explicit security stop condition.
+No feature/schema change or new test/acceptance evidence is claimed. Last verified
+code remains 079b8c8 / hosted 37519811189 (215 backend/11 frontend tests).
+Phase 6 stays 0/8 accepted; nothing is deferred to Phase 7.
+
 Codex must append a dated section for every implementation phase with acceptance criteria, completed work, test commands/results, migrations and deferred items.
 
 ## 2026-10-05 — Phase 0: Repository foundation (started)
