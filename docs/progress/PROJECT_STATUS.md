@@ -82,7 +82,8 @@ commit 0bc54de5fb009fe0f7cc3765fd8b9766c8bd7f74; latest-head revocation enforcem
 passes run 38066369565 on exact commit a9843addf6484edd0aebf10a098c9b7cb273e259.
 Full local backend regression for this increment passes 307 tests with 9 documented
 optional skips; Ruff check/format, strict mypy (250 files), Alembic drift and focused
-webhook API/intent tests pass. No hosted result is claimed for this unpushed increment.
+webhook API/intent tests pass. Hosted run 38068210545 for commit 2c53eb4 was still
+in progress at this status update; its result is pending verification.
 Telemetry and remaining coverage are current-phase work. 0/8
 accepted; Q-006 and Q-008 are resolved.
 Phase 5 remains accepted on d91dfce / hosted run 37454353238.
