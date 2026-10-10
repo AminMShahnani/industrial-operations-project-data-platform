@@ -67,6 +67,7 @@ class RecordAction(Command):
 class WebhookAction(Command):
     kind: Literal["call_webhook"]
     endpoint_id: UUID
+    endpoint_version: int = Field(ge=1)
 
 
 class TagAction(Command):

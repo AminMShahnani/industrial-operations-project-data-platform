@@ -3,12 +3,13 @@
 ## Phase 6 webhook security boundary (resolved)
 
 - Q-009 (2026-10-10): Resolved when the user selected the documented
-  recommendation with “do”. ADR-0026 is accepted: immutable scope-bound endpoint
+  recommendation with "do". ADR-0026 is accepted: immutable scope-bound endpoint
   versions; HTTPS; external tenant secrets; no redirects; validated and pinned
   destination addresses; deployment-managed CIDR exceptions for private industrial
   endpoints; and a fixed identifiers-only signed envelope. Scalar event fields are
-  excluded. Runtime delivery remains fail-closed until its external secret resolver
-  and safe transport are implemented.
+  excluded. Scoped endpoint version administration is implemented; runtime delivery
+  remains fail-closed until external secret resolution and safe pinned transport are
+  implemented.
 
 Controlled project annotations (2026-10-10): ADR-0025 uses existing project.read/
 manage and accepted automation delegation for inert append-only labels. Labels do

@@ -2,6 +2,13 @@
 
 ## Unreleased - Phase 6 in progress (2026-10-10)
 
+- Add audited organization/workspace/project scoped webhook endpoint version API
+  under ADR-0026. Restrict `integration.manage` to existing administrator and
+  project-manager roles at their granted scope. URL/secret-reference changes append
+  versions; revoke appends a tombstone. Responses and audits omit secret references.
+  Guarded migration, scope, stale-write, revoke and immutability integration checks
+  pass. Webhook actions remain unavailable until the safe delivery worker is ready.
+
 - Resolve webhook security boundary Q-009 under accepted ADR-0026. Add a typed
   identifiers-only event envelope, bounded canonical JSON, HMAC-SHA256 signature
   headers and HTTPS/DNS/address allowlist policy primitives. Five focused security

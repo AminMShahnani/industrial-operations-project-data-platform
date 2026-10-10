@@ -21,6 +21,26 @@ from operations.modules.automation.application.events import OperationalEvent
 MAX_WEBHOOK_BODY_BYTES = 4096
 
 
+def validate_endpoint_url(url: str) -> None:
+    parsed = urlsplit(url)
+    if (
+        url != url.strip()
+        or parsed.scheme != "https"
+        or not parsed.hostname
+        or parsed.username is not None
+        or parsed.password is not None
+        or parsed.query
+        or parsed.fragment
+    ):
+        raise ServiceError(422, "webhook_endpoint_url_invalid")
+    try:
+        _ = parsed.port
+    except ValueError:
+        raise ServiceError(422, "webhook_endpoint_port_invalid") from None
+    if len(url) > 2048:
+        raise ServiceError(422, "webhook_endpoint_url_invalid")
+
+
 class WebhookEnvelope(Command):
     delivery_id: UUID
     organization_id: UUID

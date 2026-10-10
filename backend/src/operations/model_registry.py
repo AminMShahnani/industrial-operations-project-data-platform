@@ -21,6 +21,9 @@ from operations.modules.identity.infrastructure.persistence import (
     PlatformAdminRow as PlatformAdminRow,
 )
 from operations.modules.identity.infrastructure.persistence import UserRow as UserRow
+from operations.modules.integrations.infrastructure.persistence import (
+    WebhookEndpointRow as WebhookEndpointRow,
+)
 from operations.modules.master_data.infrastructure.persistence import (
     DataRecordRow as DataRecordRow,
 )

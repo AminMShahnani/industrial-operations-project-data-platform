@@ -104,7 +104,11 @@ for workflow_reader in (Role.VIEWER, Role.CONTRIBUTOR):
     PERMISSIONS[workflow_reader] |= {"workflow.read"}
 
 for automation_admin in (Role.ORGANIZATION_ADMIN, Role.WORKSPACE_OWNER, Role.WORKSPACE_ADMIN):
-    PERMISSIONS[automation_admin] |= {"automation.read", "automation.manage"}
+    PERMISSIONS[automation_admin] |= {
+        "automation.read",
+        "automation.manage",
+        "integration.manage",
+    }
 
 
 def role_permissions(role: Role, scope_type: ScopeType) -> frozenset[str]:

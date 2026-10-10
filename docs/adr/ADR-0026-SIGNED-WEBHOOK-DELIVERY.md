@@ -29,7 +29,10 @@ payloads. Sign the exact bounded canonical body using HMAC-SHA256; include the s
 delivery UUID, signing key version and timestamp in headers. Receiver retries use
 that same delivery UUID so consumers can deduplicate. Key bytes live in an external
 tenant-scoped secret manager, never PostgreSQL, Redis, audit records or logs. The
-database holds only an opaque secret reference.
+database holds only an opaque secret reference. Endpoint administration currently
+stores that operator-provided reference without checking it against the external
+manager; pre-provision the secret there. Delivery stays disabled until deployment
+provides a tenant-scoped resolver that rejects unknown references.
 
 Allow HTTPS only; disable redirects; cap body, connection and response time. Resolve
 and validate addresses on every delivery, block loopback/link-local/metadata and
@@ -38,6 +41,11 @@ Private industrial endpoints require a deployment administrator's explicit egres
 CIDR allowlist. Never trust a tenant-provided hostname or redirect as the egress
 policy. The deployment network must enforce the same outbound policy. V1 sends the
 fixed identifiers-only envelope; selected scalar fields are excluded.
+
+Endpoint lifecycle authority is the existing `integration.manage` permission.
+V1 grants it to OrganizationAdmin, WorkspaceOwner, WorkspaceAdmin and ProjectManager
+at their existing scopes. This preserves least privilege: endpoint administration
+does not grant arbitrary rule administration or expand contributor roles.
 
 Commit a durable immutable webhook intent inside the automation action savepoint.
 Deliver outside that transaction with a separate bounded worker, immutable attempts,

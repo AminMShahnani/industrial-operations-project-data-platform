@@ -21,6 +21,23 @@ deferred or relaxed. Hosted
 passes both jobs on exact code 0f7e066f001196ee1d9851d42941ab513e688e95, including
 Linux type checks, backend/browser suites, migrations and generated API drift.
 
+## Phase 6 webhook endpoint administration - 2026-10-10
+
+Implemented organization/workspace/project scoped endpoint administration under
+accepted ADR-0026. `integration.manage` is granted only to organization/workspace
+administrators and project managers at their existing scopes. Endpoint URL and
+opaque external secret-reference changes append immutable versions; revoke appends
+a terminal version. API responses never expose the secret reference. Audits exclude
+URL and secret values, bind every version to scope/actor/version, and database
+triggers reject history rewrites or inserts without matching audit evidence. The
+guarded additive migration refuses populated rollback. Exact workspace scope,
+viewer denial, URL syntax, version conflict, revoke behavior, history visibility,
+secret redaction and DB immutability pass in two integration tests. Endpoint action
+contracts now pin a version; webhook actions remain unavailable until the delivery
+worker is implemented. Full local suite: 297 passed/9 optional skips; 18 frontend
+tests, Windows/Linux strict mypy (283 files), Ruff, migrations and OpenAPI checks
+pass. No Phase 6 acceptance criterion is claimed; 0/8 remain accepted.
+
 ## Phase 6 controlled tags and flags - 2026-10-10
 
 Implement docs/12 append tag/flag actions as project-owned inert annotations under

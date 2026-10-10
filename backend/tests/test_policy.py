@@ -46,3 +46,34 @@ def test_isolation_inheritance_and_validity_matrix() -> None:
     assert "workspace.read" in permissions([viewer], user, scope, now)
     assert "workspace.manage" not in permissions([viewer], user, scope, now)
     assert not permissions([viewer], user, Scope(organization, ScopeType.WORKSPACE, uuid7()), now)
+
+
+def test_webhook_endpoint_management_is_restricted_to_scoped_administrators() -> None:
+    organization, workspace, project, user = [uuid7() for _ in range(4)]
+    now = datetime.now(UTC)
+    workspace_scope = Scope(organization, ScopeType.WORKSPACE, workspace)
+    org_admin = Grant(
+        uuid7(),
+        organization,
+        user,
+        Role.ORGANIZATION_ADMIN,
+        ScopeType.ORGANIZATION,
+        organization,
+        True,
+    )
+    workspace_admin = Grant(
+        uuid7(),
+        organization,
+        user,
+        Role.WORKSPACE_ADMIN,
+        ScopeType.WORKSPACE,
+        workspace,
+        False,
+    )
+    viewer = Grant(uuid7(), organization, user, Role.VIEWER, ScopeType.WORKSPACE, workspace, False)
+    assert "integration.manage" in permissions([org_admin], user, workspace_scope, now)
+    assert "integration.manage" in permissions([workspace_admin], user, workspace_scope, now)
+    assert "integration.manage" not in permissions([viewer], user, workspace_scope, now)
+    assert "integration.manage" not in permissions(
+        [workspace_admin], user, Scope(organization, ScopeType.WORKSPACE, project), now
+    )

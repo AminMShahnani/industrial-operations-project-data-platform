@@ -64,6 +64,7 @@ PROJECT_PERMISSIONS[ProjectRole.APPROVER] = PROJECT_PERMISSIONS[ProjectRole.REVI
 PROJECT_PERMISSIONS[ProjectRole.MANAGER] |= {
     "automation.read",
     "automation.manage",
+    "integration.manage",
     "workflow.read",
     "workflow.manage",
     "workflow.act",
