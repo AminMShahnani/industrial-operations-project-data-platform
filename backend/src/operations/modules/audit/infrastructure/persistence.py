@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import UUID
 
-from sqlalchemy import DateTime, Index, String, select
+from sqlalchemy import DateTime, Index, String, UniqueConstraint, select
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, Session, mapped_column
 
@@ -12,7 +12,10 @@ from operations.platform.database import Base
 
 class AuditRow(Base):
     __tablename__ = "audit_events"
-    __table_args__ = (Index("ix_audit_tenant_time", "organization_id", "occurred_at", "id"),)
+    __table_args__ = (
+        Index("ix_audit_tenant_time", "organization_id", "occurred_at", "id"),
+        UniqueConstraint("organization_id", "id", name="uq_audit_tenant_identity"),
+    )
     id: Mapped[UUID] = mapped_column(primary_key=True)
     type: Mapped[str] = mapped_column(String(100))
     occurred_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))

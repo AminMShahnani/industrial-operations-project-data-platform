@@ -22,6 +22,7 @@ from operations.modules.master_data.application.contracts import (
     RegistryKind,
 )
 from operations.modules.projects.application.contracts import (
+    AnnotationPage,
     DepartmentProjectGrant,
     LifecycleDefinition,
     Project,
@@ -155,6 +156,21 @@ def update_project(
         body.name,
         body.context,
         body.expected_version,
+    )
+
+
+@router.get(PROJECT + "/annotations", response_model=AnnotationPage)
+def project_annotations(
+    organization_id: UUID,
+    workspace_id: UUID,
+    project_id: UUID,
+    actor: Context,
+    service: ServiceDependency,
+    kind: Literal["tag", "flag"] | None = None,
+    cursor: UUID | None = None,
+) -> AnnotationPage:
+    return service.projects.annotations(
+        actor, organization_id, workspace_id, project_id, kind, cursor
     )
 
 

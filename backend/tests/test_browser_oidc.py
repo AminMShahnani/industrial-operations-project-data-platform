@@ -18,6 +18,7 @@ from operations.modules.audit.infrastructure.persistence import AuditRow
 from operations.modules.automation.application.contracts import (
     NotifyAction,
     RuleDefinition,
+    TagAction,
     TaskAction,
 )
 from operations.modules.automation.application.events import DeliveryMessage
@@ -31,7 +32,7 @@ from operations.modules.scheduling.application.contracts import Assignment
 from operations.platform.config import Settings
 from operations.platform.database import create_database_engine
 from operations.worker import process_automation
-from playwright.sync_api import expect, sync_playwright
+from playwright.sync_api import Route, expect, sync_playwright
 from pydantic import SecretStr
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
@@ -186,6 +187,8 @@ def test_real_oidc_pkce_login_and_workspace_creation(monkeypatch: pytest.MonkeyP
                                 assignments=[Assignment(kind="user", target_id=user.id)],
                                 due_seconds=60,
                             ),
+                            TagAction(kind="append_tag", value="browser_ready"),
+                            TagAction(kind="append_flag", value="browser_ready"),
                         ],
                     ).model_dump(mode="json")
                 automation = page.get_by_role("region", name="Automation administration")
@@ -306,6 +309,28 @@ def test_real_oidc_pkce_login_and_workspace_creation(monkeypatch: pytest.MonkeyP
                 notifications.get_by_role("button", name="Refresh notifications").click()
                 expect(notifications.get_by_text("Operational notice", exact=True)).to_be_visible()
                 notifications.get_by_role("button", name="Mark as read", exact=True).click()
+                labels = page.get_by_role("region", name="Project tags and flags", exact=True)
+                expect(labels).to_have_count(1)
+                labels.get_by_role("button", name="Refresh project labels", exact=True).click()
+                expect(labels.get_by_text("tag: browser_ready", exact=True)).to_be_visible()
+                expect(labels.get_by_text("flag: browser_ready", exact=True)).to_be_visible()
+                held: list[Route] = []
+
+                def hold_flag_request(request: Route) -> None:
+                    held.append(request)
+
+                page.route("**/annotations?kind=flag", hold_flag_request)
+                with page.expect_request("**/annotations?kind=flag"):
+                    labels.get_by_label("Project label kind", exact=True).select_option("flag")
+                labels.get_by_label("Project label kind", exact=True).select_option("tag")
+                expect(labels.get_by_text("tag: browser_ready", exact=True)).to_be_visible()
+                assert len(held) == 1
+                held[0].fulfill(response=held[0].fetch())
+                expect(labels.get_by_text("flag: browser_ready", exact=True)).to_have_count(0)
+                expect(labels.get_by_text("tag: browser_ready", exact=True)).to_be_visible()
+                page.unroute("**/annotations?kind=flag", hold_flag_request)
+                labels.get_by_label("Project label kind", exact=True).select_option("all")
+                expect(labels.get_by_text("flag: browser_ready", exact=True)).to_be_visible()
                 page.get_by_role("button", name="Refresh My Work", exact=True).click()
                 generic_work = page.get_by_role("listitem").filter(
                     has_text="Browser work acknowledgement"

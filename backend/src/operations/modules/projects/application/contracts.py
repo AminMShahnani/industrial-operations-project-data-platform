@@ -1,6 +1,6 @@
 from datetime import date, datetime
 from enum import StrEnum
-from typing import Protocol
+from typing import Literal, Protocol
 from uuid import UUID
 
 from pydantic import Field, model_validator
@@ -54,6 +54,25 @@ class Project(Command):
     version: int
 
 
+class AnnotationValue(Command):
+    kind: Literal["tag", "flag"]
+    value: str = Field(min_length=1, max_length=60, pattern=r"^[a-zA-Z0-9_.:-]+$")
+
+
+class ProjectAnnotation(AnnotationValue):
+    id: UUID
+    organization_id: UUID
+    workspace_id: UUID
+    project_id: UUID
+    created_by_id: UUID
+    created_at: datetime
+
+
+class AnnotationPage(Command):
+    items: list[ProjectAnnotation]
+    next_cursor: UUID | None
+
+
 class ProjectRole(StrEnum):
     MANAGER = "ProjectManager"
     VIEWER = "Viewer"
@@ -87,6 +106,23 @@ class DepartmentProjectGrant(Command):
 
 
 class ProjectStore(Protocol):
+    def annotation(
+        self,
+        org: UUID,
+        workspace: UUID,
+        project: UUID,
+        value: AnnotationValue,
+    ) -> ProjectAnnotation | None: ...
+    def annotation_count(self, org: UUID, workspace: UUID, project: UUID) -> int: ...
+    def add_annotation(self, row: ProjectAnnotation) -> None: ...
+    def annotations(
+        self,
+        org: UUID,
+        workspace: UUID,
+        project: UUID,
+        kind: Literal["tag", "flag"] | None,
+        after: UUID | None,
+    ) -> list[ProjectAnnotation]: ...
     def add_milestone(self, row: Milestone) -> None: ...
     def milestone(
         self, org: UUID, workspace: UUID, project: UUID, identifier: UUID

@@ -2,6 +2,15 @@
 
 ## Unreleased - Phase 6 in progress (2026-10-10)
 
+- Add controlled project append_tag/append_flag actions through the owning service
+  under ADR-0025. Preserve first-append authorship/audit, exact kind/case distinctions
+  and per-action receipts. Add fresh project authority, bounded scoped read/filter/
+  page UI, immutable database guards and populated rollback refusal in e49b7d83af20.
+  Labels are inert metadata; industry meanings belong in Domain Packs. All local
+  gates pass (298 backend/18 frontend tests), including real PKCE and committed
+  Redis/concurrent append coverage. Exact-code hosted verification is pending;
+  Phase 6 remains unaccepted.
+
 - Add distinct generic automation tasks through the owning task service under
   accepted ADR-0024. Preserve assignment snapshots and event-time due dates;
   support atomic claims and claimant-only audited completion in API/My Work.

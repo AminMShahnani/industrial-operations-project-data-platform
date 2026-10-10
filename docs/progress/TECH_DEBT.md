@@ -1,5 +1,10 @@
 # Technical Debt Register
 
+Controlled tags/flags (2026-10-10): implementation passes all local gates (298
+backend/18 frontend tests) under ADR-0025; exact-code hosted verification is pending.
+No acceptance shortcut, historical rewrite or Phase 7
+deferral; webhook delivery and telemetry remain separate required slices.
+
 Generic tasks (2026-10-10): Q-008 is resolved and ADR-0024 accepted. Creation,
 claim/completion API/UI and guarded migration pass all local gates (285 backend/
 18 frontend tests). Hosted run 38052949486 passes both jobs on exact code d25ad7a. No new technical

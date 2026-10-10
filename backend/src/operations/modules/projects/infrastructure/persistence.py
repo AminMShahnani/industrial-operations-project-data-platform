@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Literal
 from uuid import UUID
 
 from sqlalchemy import (
@@ -8,6 +9,7 @@ from sqlalchemy import (
     Index,
     String,
     UniqueConstraint,
+    func,
     select,
     text,
     update,
@@ -15,16 +17,66 @@ from sqlalchemy import (
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, Session, mapped_column
 
+from operations.contracts import ServiceError
 from operations.modules.projects.application.contracts import (
+    AnnotationValue,
     DepartmentProjectGrant,
     LifecycleDefinition,
     Milestone,
     Project,
+    ProjectAnnotation,
     ProjectContext,
     ProjectMembership,
     ProjectRole,
 )
 from operations.platform.database import Base
+
+
+class AnnotationRow(Base):
+    __tablename__ = "project_annotations"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["organization_id", "workspace_id", "project_id"],
+            ["projects.organization_id", "projects.workspace_id", "projects.id"],
+        ),
+        ForeignKeyConstraint(
+            ["organization_id", "created_by_id"],
+            ["users.organization_id", "users.id"],
+        ),
+        ForeignKeyConstraint(
+            ["organization_id", "id"],
+            ["audit_events.organization_id", "audit_events.id"],
+        ),
+        UniqueConstraint(
+            "organization_id", "project_id", "kind", "value", name="uq_project_annotation_value"
+        ),
+        CheckConstraint(
+            "kind IN ('tag','flag') AND char_length(value) BETWEEN 1 AND 60 "
+            "AND value ~ '^[a-zA-Z0-9_.:-]+$'",
+            name="project_annotation_value",
+        ),
+        Index(
+            "ix_project_annotations_scope_cursor",
+            "organization_id",
+            "workspace_id",
+            "project_id",
+            "id",
+        ),
+    )
+    id: Mapped[UUID] = mapped_column(primary_key=True)
+    organization_id: Mapped[UUID]
+    workspace_id: Mapped[UUID]
+    project_id: Mapped[UUID]
+    kind: Mapped[str] = mapped_column(String(10))
+    value: Mapped[str] = mapped_column(String(60))
+    created_by_id: Mapped[UUID]
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+def annotation_contract(row: AnnotationRow) -> ProjectAnnotation:
+    return ProjectAnnotation.model_validate(
+        {key: getattr(row, key) for key in ProjectAnnotation.model_fields}
+    )
 
 
 class MilestoneRow(Base):
@@ -186,6 +238,67 @@ def department_contract(row: DepartmentProjectGrantRow) -> DepartmentProjectGran
 
 
 class ProjectRepository:
+    def annotation(
+        self,
+        org: UUID,
+        workspace: UUID,
+        project: UUID,
+        value: AnnotationValue,
+    ) -> ProjectAnnotation | None:
+        row = self.session.scalar(
+            select(AnnotationRow).where(
+                AnnotationRow.organization_id == org,
+                AnnotationRow.workspace_id == workspace,
+                AnnotationRow.project_id == project,
+                AnnotationRow.kind == value.kind,
+                AnnotationRow.value == value.value,
+            )
+        )
+        return annotation_contract(row) if row else None
+
+    def annotation_count(self, org: UUID, workspace: UUID, project: UUID) -> int:
+        return (
+            self.session.scalar(
+                select(func.count())
+                .select_from(AnnotationRow)
+                .where(
+                    AnnotationRow.organization_id == org,
+                    AnnotationRow.workspace_id == workspace,
+                    AnnotationRow.project_id == project,
+                )
+            )
+            or 0
+        )
+
+    def add_annotation(self, row: ProjectAnnotation) -> None:
+        self.session.add(AnnotationRow(**row.model_dump()))
+        self.session.flush()
+
+    def annotations(
+        self,
+        org: UUID,
+        workspace: UUID,
+        project: UUID,
+        kind: Literal["tag", "flag"] | None,
+        after: UUID | None,
+    ) -> list[ProjectAnnotation]:
+        query = select(AnnotationRow).where(
+            AnnotationRow.organization_id == org,
+            AnnotationRow.workspace_id == workspace,
+            AnnotationRow.project_id == project,
+        )
+        if kind:
+            query = query.where(AnnotationRow.kind == kind)
+        if after:
+            cursor = self.session.scalar(query.where(AnnotationRow.id == after))
+            if cursor is None:
+                raise ServiceError(422, "project_annotation_cursor_invalid")
+            query = query.where(AnnotationRow.id > after)
+        return [
+            annotation_contract(row)
+            for row in self.session.scalars(query.order_by(AnnotationRow.id).limit(101))
+        ]
+
     def add_milestone(self, row: Milestone) -> None:
         self.session.add(MilestoneRow(**row.model_dump()))
         self.session.flush()

@@ -1,4 +1,5 @@
 from datetime import UTC, datetime
+from typing import Literal
 from uuid import UUID, uuid7
 
 from operations.contracts import ServiceError
@@ -8,10 +9,13 @@ from operations.modules.iam.application.service import Authorization
 from operations.modules.identity.application.contracts import IdentityStore, RequestContext, User
 from operations.modules.master_data.application.contracts import MasterDataReader
 from operations.modules.projects.application.contracts import (
+    AnnotationPage,
+    AnnotationValue,
     DepartmentProjectGrant,
     LifecycleDefinition,
     Milestone,
     Project,
+    ProjectAnnotation,
     ProjectContext,
     ProjectMembership,
     ProjectRole,
@@ -79,6 +83,80 @@ def effective(grant: ProjectMembership | DepartmentProjectGrant, now: datetime) 
 
 
 class ProjectService:
+    def annotation_access(
+        self,
+        actor: RequestContext,
+        org: UUID,
+        workspace: UUID,
+        project: UUID,
+    ) -> Project:
+        row = self.require_access(actor, org, workspace, project, "project.manage")
+        if row.state in row.lifecycle.terminal:
+            raise ServiceError(409, "terminal_project")
+        return row
+
+    def append_annotation(
+        self,
+        actor: RequestContext,
+        org: UUID,
+        workspace: UUID,
+        project: UUID,
+        value: AnnotationValue,
+    ) -> ProjectAnnotation:
+        row = self.annotation_access(actor, org, workspace, project)
+        existing = self.store.annotation(org, workspace, project, value)
+        if existing:
+            return existing
+        if self.store.annotation_count(org, workspace, project) >= 1000:
+            raise ServiceError(422, "project_annotation_limit")
+        user = self.authorization.user(actor, org)
+        annotation = ProjectAnnotation(
+            id=uuid7(),
+            organization_id=org,
+            workspace_id=workspace,
+            project_id=project,
+            kind=value.kind,
+            value=value.value,
+            created_by_id=user.id,
+            created_at=datetime.now(UTC),
+        )
+        self.audit.append(
+            AuditEvent(
+                id=annotation.id,
+                type=f"project.{value.kind}.appended",
+                occurred_at=annotation.created_at,
+                organization_id=org,
+                actor_id=user.id,
+                correlation_id=actor.correlation_id,
+                request_id=actor.request_id,
+                aggregate_type="project",
+                aggregate_id=project,
+                payload=AuditDetails(
+                    target_id=annotation.id,
+                    version=row.version,
+                    workspace_id=workspace,
+                    project_id=project,
+                ),
+            )
+        )
+        self.store.add_annotation(annotation)
+        return annotation
+
+    def annotations(
+        self,
+        actor: RequestContext,
+        org: UUID,
+        workspace: UUID,
+        project: UUID,
+        kind: Literal["tag", "flag"] | None = None,
+        after: UUID | None = None,
+    ) -> AnnotationPage:
+        self.require_access(actor, org, workspace, project, "project.read")
+        rows = self.store.annotations(org, workspace, project, kind, after)
+        return AnnotationPage(
+            items=rows[:100], next_cursor=rows[99].id if len(rows) > 100 else None
+        )
+
     def add_milestone(self, actor: RequestContext, row: Milestone) -> Milestone:
         project = self.require_access(
             actor, row.organization_id, row.workspace_id, row.project_id, "project.manage"

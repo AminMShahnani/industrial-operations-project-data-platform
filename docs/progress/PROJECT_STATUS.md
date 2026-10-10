@@ -58,13 +58,18 @@ Email delivery/recovery API/UI is implemented under ADR-0023; all local gates pa
 (272 backend/18 frontend tests). Hosted run 38049979000 passes both jobs on exact code b0b9d05.
 Generic task creation, claim/completion API and My Work are implemented under
 accepted ADR-0024; all local gates pass (285 backend/18 frontend tests), with
-hosted run 38052949486 passing both jobs on exact code d25ad7a. Tags/flags, webhooks and
-telemetry remain current-phase work. 0/8 accepted; Q-006 and Q-008 are resolved.
+hosted run 38052949486 passing both jobs on exact code d25ad7a. Controlled project
+tags/flags are implemented under ADR-0025, with scoped read/filter/page UI and
+immutable audited first-append evidence. All local gates pass (298 backend/18
+frontend tests); exact-code hosted verification is pending.
+Webhooks and telemetry remain current-phase work. 0/8 accepted; Q-006 and Q-008 are resolved.
 Phase 5 remains accepted on d91dfce / hosted run 37454353238.
 
 ## Blocked
 None. Q-008 resolved: user accepted claimant acknowledgement under ADR-0024.
-Generic-task implementation is in progress; Phase 6 remains 0/8 accepted.
+Generic tasks pass local/hosted gates; tags/flags pass local gates under ADR-0025
+and await exact-code hosted verification.
+Phase 6 remains 0/8 accepted.
 Q-007 resolved on 2026-10-10: user delegated the choice with "do best".
 ADR-0019 accepts token-free verified-email acceptance for new invitations,
 preserving existing bearer-token invitations. Lifecycle passes local/hosted verification;
@@ -77,7 +82,7 @@ Q-004 resolved by user: shared task claimed by one eligible member.
 Legacy export absent.
 
 ## Next 5 tasks
-1. Implement controlled tag/flag handlers through owning services.
+1. Finish controlled tag/flag local and exact-code hosted verification.
 2. Implement authorized durable webhook delivery and recovery.
 3. Complete queue/run telemetry and operator failure visibility.
 4. Complete remaining Phase 6 acceptance and fault/recovery coverage.
@@ -288,9 +293,24 @@ passes backend/frontend jobs on exact code
 real PKCE execution, committed Redis/claim/completion concurrency, migrations and
 generated contracts. Phase 6 remains 0/8 accepted.
 
+## Controlled annotation validation
+
+All 298 backend tests pass without skips in 274.79s; all 18 frontend tests pass.
+Ruff lint/format (348 files), strict mypy (275 files), frontend lint/types/build,
+Alembic roundtrip/drift and generated OpenAPI/client checks pass. Thirteen new
+integration cases verify scope/fresh authority, immutable audit binding, exact
+kind/case and cursor rules, terminal/cap handling, atomic retry and guarded rollback.
+Real PKCE browser refresh/filter/late-response handling and committed Redis/
+eight concurrent appends pass. Exact-code hosted verification is pending.
+Phase 6 remains 0/8 accepted.
+
 ## Migration status
 
-Development, isolated test and retained browser databases are at d318af6c902e.
+Development, isolated test and retained browser databases are at e49b7d83af20.
+Project annotations add composite scope/author/audit bindings, immutable history
+guards and a cursor index without rewriting retained projects or audits. Empty
+annotation rollback preserves existing audits; populated rollback locks writes
+and refuses before DDL. See ADR-0025 and the Phase 6 runbook.
 Generic task migration preserves form pins/history and adds kind/origin/completion
 constraints and guards. Form-only roundtrip and drift pass; populated generic
 rollback locks writes and refuses before DDL. No retained history is deleted.

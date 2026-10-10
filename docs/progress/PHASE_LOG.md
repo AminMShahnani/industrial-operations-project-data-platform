@@ -1,5 +1,33 @@
 # Phase Log
 
+## Phase 6 controlled tags and flags - 2026-10-10
+
+Implement docs/12 append tag/flag actions as project-owned inert annotations under
+ADR-0025, using docs/03 controlled metadata, existing docs/07/20 project authority,
+immutable correlated audits and transactional idempotency (docs/19). Preserve
+existing project/form/workflow identity and governance. Add contracts/migration
+before service adapters, scoped read API/UI and tests. No new unresolved authority
+boundary; Phase 6 remains 0/8 accepted.
+
+Implemented criteria for this increment: exact project-owned typed labels; fresh
+delegated write and read authority; immutable first-append audit with per-action
+receipts; duplicate/concurrent idempotency; bounded filtered cursor reads; scoped
+browser refresh/filter and stale-response protection; guarded reversible empty
+migration and documented populated rollback. Thirteen new integration cases cover
+case/kind distinction, unchanged project/version, tenant/project isolation, live
+read/delegation revocation, terminal retries, 1000-row bound, filtered 104-row pages,
+invalid cursors, atomic failure/retry, exact audit binding and immutable history.
+Committed Redis duplication and eight concurrent appends preserve one effect.
+Real PKCE browser verification passes, including existing task/form/workflow/email
+flows and delayed filter responses. Browser testing caught a sibling React key
+collision; a distinct panel key and single-panel assertion fix and cover it.
+Ruff lint/format (348 files), strict mypy (275 files), frontend lint/types/build,
+18 frontend tests, Alembic drift and generated OpenAPI/client checks pass.
+All 298 backend tests pass without skips in 274.79s. Exact-code hosted
+verification remains pending. Webhooks,
+telemetry and remaining Phase 6 acceptance/fault coverage are current-phase work;
+no full phase criterion is newly accepted and no Phase 7 work starts.
+
 ## Phase 6 generic tasks - 2026-10-10
 
 Q-008 resolved by the user selecting the recommendation. ADR-0024 is accepted.

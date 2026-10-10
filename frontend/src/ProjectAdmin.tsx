@@ -8,6 +8,7 @@ import { MemberLookup } from './MemberLookup';
 import { Scheduling } from './Scheduling';
 import { Workflows } from './Workflows';
 import { Automation } from './Automation';
+import { ProjectAnnotations } from './ProjectAnnotations';
 
 type Project = MethodResponse<ReturnType<typeof apiClient>, 'get', '/api/v1/organizations/{organization_id}/workspaces/{workspace_id}/projects/{project_id}'>;
 type Group = components['schemas']['Group'];
@@ -238,6 +239,7 @@ export function ProjectAdministration({ api, organization, workspace, userId }: 
       </select></label><label>Transition reason<input name="reason" required maxLength={500} /></label><button disabled={busy}>Preview transition</button></form>
       {preview && <div><p>Review: {current.state} → {preview.state}. Reason: {preview.reason}</p><button disabled={busy} onClick={() => void applyTransition()}>Apply transition</button></div>}
     </div>}
+    {current && <ProjectAnnotations key={'annotations'+organization+workspace+current.id} api={api} organization={organization} workspace={workspace} project={current.id} />}
     <h2>Departments and teams</h2>
     <ul>{groups.map(group => <li key={group.id}>{group.name} ({group.kind}, {group.active ? 'active' : 'inactive'})</li>)}</ul>
     {groupCursor && <button disabled={busy} onClick={() => void moreGroups()}>Load more departments and teams</button>}

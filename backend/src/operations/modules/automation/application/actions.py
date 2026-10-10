@@ -11,6 +11,7 @@ from operations.modules.automation.application.contracts import (
     RecordAction,
     Rule,
     Run,
+    TagAction,
     TaskAction,
     WorkflowAction,
 )
@@ -19,6 +20,7 @@ from operations.modules.forms.application.contracts import FormValues
 from operations.modules.forms.application.service import FormService
 from operations.modules.identity.application.contracts import RequestContext
 from operations.modules.master_data.application.contracts import DataRecord, RecordStatus
+from operations.modules.projects.application.contracts import AnnotationValue
 from operations.modules.scheduling.application.contracts import Recurrence, ScheduleDefinition
 from operations.modules.submissions.application.service import SubmissionService
 from operations.modules.tasks.application.contracts import GenericTaskDefinition
@@ -104,6 +106,10 @@ class ApplicationActions:
             if project is None:
                 raise ServiceError(422, "automation_project_metadata_required")
             self.forms.require(actor, org, workspace, project, "project.manage", True)
+        elif isinstance(action, TagAction):
+            if project is None:
+                raise ServiceError(422, "automation_project_annotation_required")
+            self.forms.projects.annotation_access(actor, org, workspace, project)
         elif isinstance(action, RecordAction):
             definition = self.forms.master_data.definition(actor, org, action.type_id, True)
             if definition.workspace_id != workspace or definition.project_id != project:
@@ -203,6 +209,19 @@ class ApplicationActions:
         action: AutomationAction,
     ) -> UUID | None:
         org, workspace, project = rule.organization_id, rule.workspace_id, rule.project_id
+        if isinstance(action, TagAction):
+            if project is None:
+                raise ServiceError(422, "automation_project_annotation_required")
+            annotation = self.forms.projects.append_annotation(
+                actor,
+                org,
+                workspace,
+                project,
+                AnnotationValue(
+                    kind="tag" if action.kind == "append_tag" else "flag", value=action.value
+                ),
+            )
+            return annotation.id
         if isinstance(action, MetadataAction):
             if project is None:
                 raise ServiceError(422, "automation_project_metadata_required")

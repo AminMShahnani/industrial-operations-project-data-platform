@@ -1,5 +1,11 @@
 # Open Questions
 
+Controlled project annotations (2026-10-10): ADR-0025 uses existing project.read/
+manage and accepted automation delegation for inert append-only labels. Labels do
+not alter access, lifecycle or record approval. No new unresolved security/domain
+question; unsupported target scopes fail explicitly. All local gates pass (298
+backend/18 frontend tests); exact-code hosted verification remains pending.
+
 ## Phase 6 generic task completion (resolved)
 
 - Q-008 (2026-10-10): May an eligible claimant finish a generic task by acknowledging

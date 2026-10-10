@@ -11,6 +11,7 @@ from operations.modules.audit.infrastructure.persistence import AuditRow
 from operations.modules.automation.application.contracts import (
     MetadataAction,
     RuleDefinition,
+    TagAction,
     TaskAction,
 )
 from operations.modules.automation.application.events import DeliveryMessage
@@ -20,7 +21,11 @@ from operations.modules.forms.application.contracts import Component, FormDefini
 from operations.modules.identity.application.contracts import Principal, RequestContext
 from operations.modules.notifications.infrastructure.persistence import AttemptRow, NoticeRow
 from operations.modules.organizations.application.contracts import OrganizationSettings
-from operations.modules.projects.application.contracts import LifecycleDefinition, ProjectContext
+from operations.modules.projects.application.contracts import (
+    AnnotationValue,
+    LifecycleDefinition,
+    ProjectContext,
+)
 from operations.modules.scheduling.application.contracts import Assignment
 from operations.modules.tasks.infrastructure.persistence import TaskRow
 from operations.platform.config import Settings
@@ -111,6 +116,9 @@ def test_real_redis_workers_concurrently_deduplicate_committed_action(
                             assignments=[Assignment(kind="user", target_id=user.id)],
                             due_seconds=60,
                         ),
+                        TagAction(kind="append_tag", value="worker_ready"),
+                        TagAction(kind="append_tag", value="worker_ready"),
+                        TagAction(kind="append_flag", value="worker_ready"),
                     ],
                 ),
             )
@@ -143,7 +151,15 @@ def test_real_redis_workers_concurrently_deduplicate_committed_action(
             assert row.context.description == "Worker completed" and row.version == 3
             run = services.automation.store.event_runs(org, source_id)[0]
             assert run.state == "completed" and run.attempts == 1
-            assert len(services.automation.store.receipts(org, run.id)) == 3
+            assert len(services.automation.store.receipts(org, run.id)) == 6
+            labels = services.projects.annotations(context, org, workspace, project).items
+            assert [(label.kind, label.value) for label in labels] == [
+                ("tag", "worker_ready"),
+                ("flag", "worker_ready"),
+            ]
+            for label in labels:
+                audit = session.get(AuditRow, label.id)
+                assert audit and audit.payload["run_id"] == str(run.id)
             generic = session.scalars(
                 select(TaskRow).where(TaskRow.organization_id == org, TaskRow.kind == "generic")
             ).all()
@@ -222,7 +238,33 @@ def test_real_redis_workers_concurrently_deduplicate_committed_action(
 
             completions = list(executor.map(complete_generic, range(8)))
         assert len(set(completions)) == 1
+
+        def append_shared_flag(_: int) -> str:
+            with Session(engine) as session, session.begin():
+                return str(
+                    compose(session)
+                    .projects.append_annotation(
+                        context,
+                        org,
+                        workspace,
+                        project,
+                        AnnotationValue(kind="flag", value="concurrent_flag"),
+                    )
+                    .id
+                )
+
+        with ThreadPoolExecutor(max_workers=8) as executor:
+            concurrent_label_ids = list(executor.map(append_shared_flag, range(8)))
+        assert len(set(concurrent_label_ids)) == 1
         with Session(engine) as session:
+            shared = compose(session).projects.store.annotation(
+                org, workspace, project, AnnotationValue(kind="flag", value="concurrent_flag")
+            )
+            assert (
+                shared
+                and str(shared.id) == concurrent_label_ids[0]
+                and session.get(AuditRow, shared.id)
+            )
             for action in ("task.claimed", "task.completed"):
                 assert (
                     session.scalar(

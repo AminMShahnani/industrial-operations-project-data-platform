@@ -1,5 +1,37 @@
 # Phase 6 automation operations
 
+## Controlled project tags and flags (ADR-0025)
+
+Use append_tag or append_flag with an exact case-sensitive ASCII value of 1–60
+characters (letters, digits, underscore, dot, colon or hyphen). The rule must have
+an exact project scope; workspace-only activation fails with
+automation_project_annotation_required. Labels are descriptive metadata. Domain
+Packs own industry meanings; labels do not change permissions, lifecycle or approval.
+
+The original activating administrator's authority and project.manage permission
+are checked at activation and every execution/retry. Terminal projects refuse all
+appends, including duplicates. Each project permits 1000 distinct annotations
+across both kinds. Repeating the same kind/value returns its original immutable
+row and audit; every run/action retains its own receipt pointing to that row.
+Case changes and tag versus flag are distinct. Multi-action failure rolls back
+annotation creation together with the other effects and receipts.
+
+Authorized project.read users can inspect tags/flags in workspace administration,
+filter by kind, refresh and load further pages. GET
+/api/v1/organizations/{org}/workspaces/{workspace}/projects/{project}/annotations
+returns 100 rows and next_cursor; optional kind=tag|flag filters before paging.
+Preserve the exact scope/filter when using the cursor. Foreign, missing or
+mismatched-filter cursors fail. Historical reads remain available on terminal
+projects under current authorization. There is no public manual append endpoint.
+
+Upgrade to e49b7d83af20 before deployment. It adds project_annotations and an audit
+tenant/ID uniqueness constraint without rewriting existing project or audit rows.
+Database guards bind inserts to exact creation audits and reject mutation/deletion/
+truncation. Downgrade to d318af6c902e locks annotation writes before checking rows,
+and refuses populated rollback before DDL. Stop producers/workers before application
+rollback and retain compatible read/evidence code. For populated schema rollback,
+use a verified backup/restore plan; never delete annotations or audits to force it.
+
 ## Generic task acknowledgements (ADR-0024)
 
 Activate a create_task action with name, distinct assignments and due_seconds
