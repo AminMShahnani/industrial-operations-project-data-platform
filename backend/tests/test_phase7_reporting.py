@@ -4,6 +4,7 @@ from uuid import UUID, uuid7
 import pytest
 from operations.modules.identity.application.contracts import Principal, RequestContext
 from operations.modules.reporting.application.datasets import ReportingService
+from operations.modules.scheduling.application.contracts import Assignment
 from operations.modules.tasks.application.contracts import Task
 from test_oidc import signing_key as signing_key
 from test_phase1_api import Api
@@ -47,7 +48,7 @@ def test_overdue_dataset_uses_task_query_and_returns_minimal_projection() -> Non
         timezone="UTC",
         occurs_at=now,
         due_at=now,
-        assignment={"kind": "user", "target_id": user},
+        assignment=Assignment(kind="user", target_id=user),
         assignment_key="user:" + str(user),
         recipient_ids=[user],
         reminder_offsets=[],

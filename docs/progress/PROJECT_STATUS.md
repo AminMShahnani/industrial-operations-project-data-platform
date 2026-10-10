@@ -139,10 +139,12 @@ unresolved (Q-010), so this endpoint is personal-only.
 ## Test status
 Phase 6 final checkpoint: 312 backend tests and one real PKCE browser flow
 pass; 19 frontend tests pass. Migration round-trip/drift, OpenAPI/client generation,
-Ruff, strict mypy and frontend build pass. Exact hosted run 38079026238 passes both
+Ruff and strict whole-repository mypy pass (301 files); frontend build passes. Exact hosted run 38079026238 passes both
 jobs; deployment controls are verified per the project owner's report. Phase 7
 checkpoint: backend 101 passed/222 skipped, frontend 19 passed; database-backed
-report integration test awaits configured test PostgreSQL and hosted run.
+report integration test awaits configured test PostgreSQL. Hosted run 38080630869
+failed on a test-only typing issue, corrected with the explicit `Assignment` model;
+rerun for the corrective commit is pending.
 141 backend tests pass locally without skips, including separate real Keycloak PKCE
 submitter/approver logins, concurrent approval retries, preserved corrections,
 live group/project revocation and 156-action paged history. PostgreSQL migration

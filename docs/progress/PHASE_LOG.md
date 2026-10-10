@@ -80,6 +80,12 @@ No migration or ADR is required for this personal query projection. Cross-user
 overdue aggregation is explicitly excluded until its reporting permission and
 privacy boundary are decided; see Q-010. No Phase 8 implementation.
 
+Hosted run 38080630869 caught a test-only typing issue missed by the source-scoped
+local mypy invocation: the unit fixture used a dictionary instead of the typed
+`Assignment` contract. The fixture now constructs `Assignment`; whole-repository
+`uv run mypy` passes on 301 files, and the focused unit test passes. Rerun hosted CI
+for the corrective commit before recording hosted verification.
+
 ## Phase 6 webhook recovery, mounted secrets and runtime verification - 2026-10-10
 
 Requirements: ADR-0026 requires an external tenant-scoped key provider, bounded
