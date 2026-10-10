@@ -1,5 +1,41 @@
 # Phase 6 automation operations
 
+## Verified-email invitations (ADR-0019)
+
+In workspace administration, choose **Verified email sign-in link**, review the
+organization/workspace, email and role, then create the invitation. Share the link
+with the intended member. This slice does not send email; the SMTP adapter remains
+required Phase 6 work. No bearer token, email, role or credential appears in the
+link. The member signs in through the configured OIDC provider and explicitly
+chooses **Accept sign-in invitation**. Validated organization/invitation IDs survive
+PKCE as application state and are cleared from the URL after acceptance. GET never
+accepts an invitation.
+
+Creation: `POST /api/v1/organizations/{org}/invitations/verified-email`, with
+`id` (caller-generated UUIDv7 retained for retry), `email`, `role`, `scope_type`
+and `scope_id`. The response contains only invitation/organization IDs and expiry.
+Retry the exact request with its original ID after a lost response. Reusing an ID
+with another target, scope, role, mode or inviter conflicts; every retry checks
+current delegation. A deliberate new invitation uses a new ID and seven-day life.
+
+Acceptance: authenticated
+`POST /api/v1/organizations/{org}/invitations/verified-email/{id}/accept`, without
+a bearer secret or request body. Only the provider's matching verified email is
+eligible. Acceptance checks active organization/target workspace, active inviter
+and exact current delegation. Used, expired, mismatched or revoked invitations
+fail closed. No pending-invitation list or public preview is exposed. Existing
+code invitations retain their endpoints and digest-only storage.
+
+Migration `e18c49c4be63` defaults existing invitations to `token`, preserving
+digests/timestamps, and adds `verified_email` with no digest. Database guards make
+binding fields immutable and acceptance one-way, and prohibit history deletion/
+truncation. Empty/token-only downgrade preserves rows. Any verified-email history
+causes downgrade to refuse before schema changes. For application rollback, stop
+new-mode creation and retain compatible acceptance code. Populated schema rollback
+requires a forward fix or verified full backup restore with a write-replay plan.
+Never fabricate digests, reset acceptance, extend expiry or remove evidence to
+force rollback. SMTP attempts/recovery will follow ADR-0011 in the next slice.
+
 Status: authorized action/consumer increment; no Phase 6 acceptance or production rollout.
 
 ## Current setup

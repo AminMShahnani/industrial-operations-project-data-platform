@@ -38,16 +38,20 @@ routing are implemented. Reviewed, audited notification replay is implemented th
 a scoped operator command. Bounded reviewed historical notify/reminder handoff
 reconciliation is implemented with exact intent provenance and notification-only
 delivery. All local and exact-code hosted gates pass.
+Verified-email invitation lifecycle/API/browser acceptance is implemented under
+accepted ADR-0019, preserving old tokens and requiring verified recipient email
+and current inviter authority. All local gates pass; hosted verification for this
+latest slice is pending. Links are manually shared until SMTP is implemented.
 Generic tasks, tags/flags, webhooks, email/invitations,
 rule/run UI and telemetry remain current-phase
 work. 0/8 accepted; Q-006 is resolved.
 Phase 5 remains accepted on d91dfce / hosted run 37454353238.
 
 ## Blocked
-Q-007: invitation email acceptance awaits user selection. Proposed ADR-0019 offers
-token-free verified-email acceptance for new email invitations or explicitly
-authorized temporary encrypted token storage. Dependent implementation pauses
-at this security boundary. Previous verified increments remain intact.
+None. Q-007 resolved on 2026-10-10: user delegated the choice with "do best".
+ADR-0019 accepts token-free verified-email acceptance for new invitations,
+preserving existing bearer-token invitations. Lifecycle passes local verification;
+SMTP delivery remains current Phase 6 work.
 Q-006 resolved: activating administrator delegates bounded scoped authority,
 rechecked for every run/retry. ADR-0011 accepted. Q-005 resolved: independent
 approval is mandatory, including administrators.
@@ -56,7 +60,8 @@ Q-004 resolved by user: shared task claimed by one eligible member.
 Legacy export absent.
 
 ## Next 5 tasks
-1. Complete email/invitation adapters under explicit recipient and delivery policy.
+1. Complete durable SMTP delivery/attempts/recovery for verified-email invitations
+   and minimal notices under ADR-0011/0019; lifecycle/API/browser flow is implemented.
 2. Expose scoped rule/run management and audited replay through typed API/UI.
 3. Implement generic task, tag/flag and webhook handlers.
 4. Complete queue/run telemetry and operator failure visibility.
@@ -201,7 +206,17 @@ empty migration roundtrip/drift and generated contracts.
 Phase 6 remains 0/8 accepted.
 
 ## Migration status
-Development, isolated test and retained browser databases are at 34e34c3ce85a.
+
+Latest lifecycle validation: 227 backend tests pass without skips in 399.71s;
+14 frontend tests pass. Ruff lint/format (318 files), strict mypy (251 files),
+frontend lint/types/build, empty migration roundtrip/drift and OpenAPI/generated
+client drift pass. Real browser PKCE preserves the link and accepts exactly once;
+committed concurrency produces one invitation/grant/audit across eight retries.
+Exact-code hosted verification is pending. Phase 6 remains 0/8 accepted.
+Development, isolated test and retained browser databases are at e18c49c4be63.
+Verified-email invitation migration preserves old mode/digest/timestamps, enforces
+credential-mode coherence and immutable binding/one-way acceptance. Token-only
+rollback preserves rows; populated new-mode rollback refuses before data changes.
 Historical handoff migration adds reversible lookup indexes
 only; populated rollback preserves all evidence. Existing notice/source IDs and
 audit/read history are retained.

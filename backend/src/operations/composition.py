@@ -97,7 +97,9 @@ def compose(
     projects = ProjectService(
         ProjectRepository(session), workspaces, groups, authorization, identities, references, audit
     )
-    identity = IdentityService(identities, organizations, authorization, audit, [groups, projects])
+    identity = IdentityService(
+        identities, organizations, authorization, audit, workspaces, [groups, projects]
+    )
     workspaces.project_visibility = projects
     master_data = MasterDataService(
         data, organizations, workspaces, projects, authorization, references, audit

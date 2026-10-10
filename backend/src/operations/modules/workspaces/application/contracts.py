@@ -26,5 +26,9 @@ class WorkspaceStore(Protocol):
     ) -> list[Workspace]: ...
 
 
+class WorkspaceReader(Protocol):
+    def active(self, organization_id: UUID, workspace_id: UUID) -> Workspace: ...
+
+
 class ProjectVisibility(Protocol):
     def workspace_ids(self, context: RequestContext, organization_id: UUID) -> list[UUID]: ...

@@ -1,7 +1,7 @@
 # ADR-0019: Invitation email acceptance
 
 Date: 2026-10-10
-Status: Proposed; awaiting Q-007
+Status: Accepted; user delegated the choice with "do best" on 2026-10-10
 
 ## Context
 
@@ -35,7 +35,30 @@ mailbox delivery. No external email is sent during decision review.
 
 ## Decision and verification
 
-Pending Q-007. No schema or runtime behavior changes. Following selection, specify
-typed contracts and rollback protection, then test tenant isolation, verified email,
-revocation, expiry, concurrent acceptance, duplicate dispatch, uncertain delivery
-and audit secrecy. Phase 6 remains open; Phase 7 is unstarted.
+Select option 1. This explicitly amends ADR-0006 only for new `verified_email`
+invitations: no bearer secret is generated or stored. Existing rows default to
+`token` and retain their exact digest and possession requirement. Creation and
+acceptance are separate audited commands. The link is a public pair of organization
+and invitation IDs, with no role, email or credential in its URL. Acceptance never
+uses GET, and requires trusted OIDC authentication plus the verified matching email.
+No pending-invitation listing or unauthenticated invitation preview is introduced.
+Workspace-scoped invitations require a currently active target workspace at creation
+and acceptance; organization-scoped invitations bind exactly to their organization.
+
+Creation accepts a caller-generated UUIDv7 request ID scoped to the organization;
+retries return the same invitation only when immutable email, role, scope, mode and
+inviter match, with fresh delegation checks. Other reuse conflicts. Acceptance
+serializes tenant-first and invitation-second with the existing revocation locks;
+an already used invitation remains invalid, without duplicate grants or audits.
+The PostgreSQL mode/digest check prohibits mixed credentials; invitation binding
+fields are immutable and acceptance is one-way. Populated downgrade refuses if any
+verified-email invitation exists. Use a forward fix or verified backup restore;
+never invent bearer digests or delete invitation history to downgrade.
+
+The first vertical slice implements lifecycle/API/browser acceptance and manually
+shared links. It does not claim to send email. Durable SMTP dispatch, attempt
+evidence, uncertain outcomes and controlled replay remain required Phase 6 work,
+under ADR-0011. No third-party credential storage is added by this slice.
+Verify isolation, verified-email binding, live revocation, expiry, concurrent
+acceptance, retry identity, immutable binding and rollback. Phase 6 remains open;
+Phase 7 is unstarted.

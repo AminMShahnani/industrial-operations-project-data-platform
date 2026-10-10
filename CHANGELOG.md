@@ -1,6 +1,14 @@
 # Changelog
 
-## Unreleased - Phase 6 in progress (2026-10-06)
+## Unreleased - Phase 6 in progress (2026-10-10)
+
+- Accept ADR-0019 under the user's delegated choice: token-free verified-email
+  invitations with idempotent creation, fresh scoped inviter authority, exact
+  OIDC-verified recipient email, seven-day expiry and one-time acceptance.
+  Add typed API/client and browser link/PKCE acceptance, preserving existing token
+  invitations. Guard immutable invitation binding and history, with token-only
+  reversible migration and populated new-mode rollback refusal. SMTP delivery
+  and recovery remain required Phase 6 work; links are currently shared manually.
 
 - Add bounded preview/apply reconciliation for historical workflow notify and task
   reminder handoffs (ADR-0018). Preserve original source/audit/read history; create

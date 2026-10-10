@@ -16,6 +16,7 @@ from operations.modules.identity.application.contracts import (
     User,
 )
 from operations.modules.organizations.application.contracts import OrganizationReader
+from operations.modules.workspaces.application.contracts import WorkspaceReader
 
 
 class IdentityService:
@@ -25,6 +26,7 @@ class IdentityService:
         organizations: OrganizationReader,
         authorization: Authorization,
         audit: AuditWriter,
+        workspaces: WorkspaceReader,
         revokers: list[AccessRevoker] | None = None,
     ) -> None:
         self.store, self.organizations, self.authorization, self.audit = (
@@ -34,6 +36,7 @@ class IdentityService:
             audit,
         )
         self.revokers = revokers or []
+        self.workspaces = workspaces
 
     def active_context(
         self, organization_id: UUID, identifier: UUID, source: RequestContext
@@ -98,16 +101,89 @@ class IdentityService:
         )
         return token
 
+    def invite_verified_email(
+        self, context: RequestContext, email: str, role: Role, scope: Scope, identifier: UUID
+    ) -> Invitation:
+        self.organizations.active(scope.organization_id)
+        actor = self.authorization.check_delegation(context, role, scope)
+        self._active_scope(scope)
+        if identifier.version != 7:
+            raise ServiceError(422, "invalid_invitation_id")
+        normalized = email.casefold()
+        existing = self.store.invitation_by_id(scope.organization_id, identifier)
+        if existing is not None:
+            if (
+                existing.acceptance_mode != "verified_email"
+                or existing.email != normalized
+                or existing.role != role
+                or existing.scope_id != scope.id
+                or existing.scope_type != scope.type
+                or existing.inviter_id != actor.id
+            ):
+                raise ServiceError(409, "invitation_request_conflict")
+            return existing
+        invitation = Invitation(
+            identifier,
+            scope.organization_id,
+            normalized,
+            None,
+            role,
+            scope.id,
+            scope.type,
+            actor.id,
+            datetime.now(UTC) + timedelta(days=7),
+            None,
+            "verified_email",
+        )
+        self.store.invite(invitation)
+        self.audit.append(
+            AuditEvent(
+                id=uuid7(),
+                type="identity.invitation.email_created",
+                occurred_at=datetime.now(UTC),
+                organization_id=scope.organization_id,
+                actor_id=actor.id,
+                correlation_id=context.correlation_id,
+                request_id=context.request_id,
+                aggregate_type="invitation",
+                aggregate_id=invitation.id,
+                payload=AuditDetails(role=role, scope_id=scope.id, scope_type=scope.type),
+            )
+        )
+        return invitation
+
+    def _active_scope(self, scope: Scope) -> None:
+        if scope.type == ScopeType.WORKSPACE:
+            self.workspaces.active(scope.organization_id, scope.id)
+        elif scope.type != ScopeType.ORGANIZATION or scope.id != scope.organization_id:
+            raise ServiceError(403, "invalid_invitation")
+
+    def accept_verified_email(
+        self, context: RequestContext, organization_id: UUID, identifier: UUID
+    ) -> User:
+        self.organizations.active(organization_id)
+        invitation = self.store.invitation_by_id(organization_id, identifier)
+        if invitation is None or invitation.acceptance_mode != "verified_email":
+            raise ServiceError(403, "invalid_invitation")
+        return self._accept_invitation(context, organization_id, invitation)
+
     def accept(self, context: RequestContext, organization_id: UUID, token: str) -> User:
         self.organizations.active(organization_id)
         invitation = self.store.invitation(
             organization_id,
             hashlib.sha256(token.encode()).hexdigest(),
         )
+        if invitation is None or invitation.acceptance_mode != "token":
+            raise ServiceError(403, "invalid_invitation")
+        return self._accept_invitation(context, organization_id, invitation)
+
+    def _accept_invitation(
+        self, context: RequestContext, organization_id: UUID, invitation: Invitation
+    ) -> User:
         principal = context.principal
         now = datetime.now(UTC)
         if (
-            invitation is None
+            invitation.organization_id != organization_id
             or invitation.accepted_at is not None
             or now >= invitation.expires_at
             or not principal.email_verified
@@ -124,6 +200,8 @@ class IdentityService:
             context.correlation_id,
         )
         scope = Scope(organization_id, ScopeType(invitation.scope_type), invitation.scope_id)
+        if invitation.acceptance_mode == "verified_email":
+            self._active_scope(scope)
         role = Role(invitation.role)
         self.authorization.check_delegation(inviter_context, role, scope)
         user = self.store.user(organization_id, principal)

@@ -3,6 +3,7 @@ import { createRoot } from 'react-dom/client';
 import { AuthProvider } from 'react-oidc-context';
 import { authSettings } from './auth';
 import { Administration } from './Admin';
+import { invitationPath, invitationTargetFromState } from './invitation-link';
 import './style.css';
 
 function App() {
@@ -18,7 +19,10 @@ function App() {
       <p className="eyebrow">Industrial Operations Platform</p>
       <h1>A shared foundation for operational work.</h1>
       <p>Governed workspaces, forms, tasks and approvals for your organization.</p>
-      {settings ? <AuthProvider {...settings} onSigninCallback={() => window.history.replaceState({}, '', '/')}>
+      {settings ? <AuthProvider {...settings} onSigninCallback={user => {
+        const target = invitationTargetFromState(user?.state);
+        window.history.replaceState({}, '', target ? invitationPath(target) : '/');
+      }}>
         <Administration />
       </AuthProvider> : <section aria-labelledby="status-heading">
         <h2 id="status-heading">Platform setup in progress</h2>

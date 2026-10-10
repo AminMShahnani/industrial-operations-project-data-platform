@@ -17,7 +17,6 @@ from operations.modules.audit.infrastructure.persistence import AuditRow
 from operations.modules.automation.application.contracts import NotifyAction, RuleDefinition
 from operations.modules.automation.application.events import DeliveryMessage
 from operations.modules.automation.domain.reliability import delivery_id
-from operations.modules.iam.application.contracts import Role, Scope, ScopeType
 from operations.modules.identity.application.contracts import Principal, RequestContext
 from operations.modules.organizations.application.contracts import OrganizationSettings
 from operations.modules.projects.application.contracts import ProjectRole
@@ -298,26 +297,59 @@ def test_real_oidc_pkce_login_and_workspace_creation(monkeypatch: pytest.MonkeyP
                 form_id = page.get_by_label("Form", exact=True).input_value()
                 workspace_id = page.get_by_label("Workspace", exact=True).input_value()
                 project_id = page.get_by_label("Project", exact=True).input_value()
-                # Seed the development identity through audited application services.
-                # Its subsequent review actions must use a separate real PKCE login.
+                # Create a token-free invitation in the browser, then accept through
+                # the invited identity's real PKCE login before granting project access.
+                page.get_by_label("Email", exact=True).fill("dev-reviewer@example.com")
+                page.get_by_label("Role", exact=True).select_option("Approver")
+                page.get_by_label("Invitation method", exact=True).select_option("verified_email")
+                page.get_by_role("button", name="Create invitation", exact=True).click()
+                expect(page.get_by_label("Sign-in invitation link", exact=True)).to_be_visible()
+                invitation_link = page.get_by_label(
+                    "Sign-in invitation link", exact=True
+                ).input_value()
+                assert "token=" not in invitation_link and "email=" not in invitation_link
+                invitation_context = browser.new_context()
+                try:
+                    invitation_page = invitation_context.new_page()
+                    invitation_page.goto(invitation_link)
+                    invitation_page.get_by_role("button", name="Sign in", exact=True).click()
+                    invitation_page.locator("#username").fill("dev-reviewer")
+                    invitation_page.locator("#password").fill(
+                        os.environ.get("IOP_OIDC_DEV_PASSWORD", "development-only-change-me")
+                    )
+                    invitation_page.locator("#kc-login").click()
+                    expect(
+                        invitation_page.get_by_label("Invited organization ID", exact=True)
+                    ).to_have_value(str(organization.id))
+                    expect(
+                        invitation_page.get_by_label("Sign-in invitation ID", exact=True)
+                    ).not_to_have_value("")
+                    invitation_page.get_by_role(
+                        "button", name="Accept sign-in invitation", exact=True
+                    ).click()
+                    expect(
+                        invitation_page.get_by_text("Sign-in invitation accepted.", exact=True)
+                    ).to_be_visible()
+                    expect(invitation_page.get_by_label("Organization", exact=True)).to_have_value(
+                        str(organization.id)
+                    )
+                    invitation_page.wait_for_load_state("networkidle")
+                    assert "invitation=" not in invitation_page.url
+                finally:
+                    invitation_context.close()
                 # Finish browser requests before the separate fixture transaction locks
                 # the same tenant and user rows in application-service setup order.
                 page.wait_for_load_state("networkidle")
                 with Session(engine) as session, session.begin():
                     services = compose(session, principal)
                     owner_context = RequestContext(principal, uuid7(), uuid7())
-                    token = services.identity.invite(
-                        owner_context,
-                        "dev-reviewer@example.com",
-                        Role.APPROVER,
-                        Scope(organization.id, ScopeType.WORKSPACE, UUID(workspace_id)),
-                    )
                     reviewer_principal = Principal(
                         issuer, "dev-reviewer", "dev-reviewer@example.com", True
                     )
-                    reviewer_user = services.identity.accept(
-                        RequestContext(reviewer_principal, uuid7(), uuid7()), organization.id, token
+                    reviewer_user = services.identity.store.user(
+                        organization.id, reviewer_principal
                     )
+                    assert reviewer_user is not None and reviewer_user.active
                     services.projects.add_member(
                         owner_context,
                         organization.id,

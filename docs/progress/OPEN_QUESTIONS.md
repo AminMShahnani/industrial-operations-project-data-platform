@@ -1,13 +1,16 @@
 # Open Questions
 
-## Phase 6 invitation email decision (pending)
+## Phase 6 invitation email decision (resolved)
 - Q-007 (2026-10-10): Select acceptance for durable invitation emails. ADR-0006
   stores only token digests; ADR-0011 prohibits plaintext tokens in outbox/broker
   payloads. Recommended: token-free sign-in and a distinct new invitation mode
   requiring matching OIDC-verified email and fresh inviter authority. Preserve
   existing bearer-token invitations. Alternative: authorize temporary encrypted
   token storage with explicit key, retention and replay policy. ADR-0019 is
-  proposed; user question submitted. Dependent implementation pauses under AGENTS.md.
+  accepted: user delegated with "do best" on 2026-10-10. Select the recommended
+  token-free verified-email mode; existing token invitations stay unchanged.
+  Lifecycle/API/browser implementation is being verified. SMTP delivery remains
+  current-phase work under ADR-0011, with no new unresolved security decision.
 
 ## Phase 0 blockers
 None. Remote configuration and required hosted CI are resolved.

@@ -148,6 +148,16 @@ class InvitationToken(Command):
     token: str
 
 
+class VerifiedEmailInvitationCreate(InvitationCreate):
+    id: UUID
+
+
+class InvitationReference(Command):
+    id: UUID
+    organization_id: UUID
+    expires_at: AwareDatetime
+
+
 class Membership(Command):
     organization_id: UUID
     organization_name: str
@@ -350,6 +360,43 @@ def accept(
     service: ServiceDependency,
 ) -> Identifier:
     return Identifier(id=service.identity.accept(actor, organization_id, body.token).id)
+
+
+@router.post(
+    "/organizations/{organization_id}/invitations/verified-email",
+    response_model=InvitationReference,
+    status_code=201,
+)
+def invite_verified_email(
+    organization_id: UUID,
+    body: VerifiedEmailInvitationCreate,
+    actor: Context,
+    service: ServiceDependency,
+) -> InvitationReference:
+    scope = validated_scope(service, organization_id, body)
+    invitation = service.identity.invite_verified_email(
+        actor, str(body.email), body.role, scope, body.id
+    )
+    return InvitationReference(
+        id=invitation.id,
+        organization_id=invitation.organization_id,
+        expires_at=invitation.expires_at,
+    )
+
+
+@router.post(
+    "/organizations/{organization_id}/invitations/verified-email/{invitation_id}/accept",
+    response_model=Identifier,
+)
+def accept_verified_email(
+    organization_id: UUID,
+    invitation_id: UUID,
+    actor: Context,
+    service: ServiceDependency,
+) -> Identifier:
+    return Identifier(
+        id=service.identity.accept_verified_email(actor, organization_id, invitation_id).id
+    )
 
 
 @router.post("/organizations/{organization_id}/users/{user_id}/revoke", status_code=204)

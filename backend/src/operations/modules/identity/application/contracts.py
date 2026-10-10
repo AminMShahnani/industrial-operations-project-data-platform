@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 from datetime import datetime
-from typing import Protocol
+from typing import Literal, Protocol
 from uuid import UUID
 
 
@@ -34,13 +34,14 @@ class Invitation:
     id: UUID
     organization_id: UUID
     email: str
-    token_digest: str
+    token_digest: str | None
     role: str
     scope_id: UUID
     scope_type: str
     inviter_id: UUID
     expires_at: datetime
     accepted_at: datetime | None
+    acceptance_mode: Literal["token", "verified_email"] = "token"
 
 
 class IdentityStore(Protocol):
@@ -55,6 +56,7 @@ class IdentityStore(Protocol):
     def set_active(self, organization_id: UUID, user_id: UUID, active: bool) -> None: ...
     def invite(self, invitation: Invitation) -> None: ...
     def invitation(self, organization_id: UUID, token_digest: str) -> Invitation | None: ...
+    def invitation_by_id(self, organization_id: UUID, identifier: UUID) -> Invitation | None: ...
     def accept(self, organization_id: UUID, invitation_id: UUID, accepted_at: datetime) -> None: ...
 
 

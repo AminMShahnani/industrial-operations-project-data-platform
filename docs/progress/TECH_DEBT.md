@@ -1,9 +1,10 @@
 # Technical Debt Register
 
-Phase 6 preparation (2026-10-10): Q-007 and proposed ADR-0019 record the pending
-invitation email security decision. This remains current-phase work, not deferred
-debt. Existing invitations/history are unchanged; no new implementation debt or
-phase acceptance is introduced.
+Phase 6 invitation lifecycle (2026-10-10): Q-007 is resolved and ADR-0019 accepts
+token-free verified-email invitations while preserving bearer-token history.
+Creation/acceptance API and browser flow are implemented with guarded migration.
+SMTP dispatch, immutable attempts, uncertain outcomes and controlled replay remain
+current Phase 6 work, not deferred debt. No phase acceptance is introduced.
 
 Empty at project start. Every intentional compromise must include owner/context, impact, target phase and remediation plan.
 

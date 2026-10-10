@@ -814,3 +814,36 @@ source-owned contracts/queries, exact provenance, notification-only enqueue and
 reversible lookup migration. Phase 6 stays 0/8 accepted; Phase 7 is unstarted.
 Email/invitations, management API/UI, generic tasks, tags/flags, webhooks and
 telemetry remain required current-phase work. Nothing is deferred.
+
+## Phase 6 verified-email invitation lifecycle - 2026-10-10
+
+User delegated Q-007 with "do best"; accepted ADR-0019 selects a token-free
+verified-email mode and explicitly preserves existing bearer-token invitations.
+Typed creation/acceptance API, generated client and browser link/PKCE acceptance
+are implemented. Creation retries reuse a UUIDv7 only with the same binding and
+fresh delegation. Acceptance requires matching trusted OIDC-verified email,
+seven-day expiry, unused state, active tenant/target and current inviter authority.
+Public IDs grant nothing; no unauthenticated preview/list or GET acceptance exists.
+Creation and acceptance audits omit email/secrets. Tenant-first locks serialize
+creation, acceptance and revocation through owning application contracts.
+
+Migration e18c49c4be63 preserves existing mode/digest/timestamps, checks credential
+coherence and guards immutable binding, one-way acceptance and retained history.
+Empty/token-only rollback preserves rows; verified-email history blocks downgrade.
+The old expiry test now advances the application clock rather than editing history.
+Eleven new API/integration cases cover email binding, tenant/scope/ID conflicts,
+privilege/revocation/expiry/activity, audit rollback/secrecy and migration rollback.
+One committed concurrency case checks eight creation retries and eight acceptance
+attempts: one invitation, grant and each audit. The real Keycloak browser suite now
+creates and accepts the link through a separate invited-user PKCE login. Three
+frontend tests cover validated state, malformed/ambiguous links and UUIDv7.
+
+All 227 backend tests pass without skips in 399.71s; 14 frontend tests pass.
+Ruff lint/format (318 files), strict mypy (251 files), frontend lint/types/build,
+empty migration roundtrip, Alembic/OpenAPI/generated client drift pass. Development,
+isolated test and retained browser databases are at e18c49c4be63. No retained
+browser history is deleted. Hosted exact-code verification is pending commit/push.
+Completed increment: manually shared token-free invitation lifecycle/API/browser.
+SMTP delivery, attempts, uncertain outcomes/replay, minimal email notices, remaining
+handlers, rule/run management and telemetry stay in Phase 6. Nothing is deferred;
+Phase 6 remains 0/8 accepted and Phase 7 is unstarted.

@@ -2,6 +2,7 @@ import os
 from collections.abc import Iterator
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
+from unittest.mock import patch
 from uuid import UUID, uuid7
 
 import pytest
@@ -20,7 +21,7 @@ from operations.modules.organizations.infrastructure.persistence import Organiza
 from operations.platform.config import Settings
 from operations.platform.database import create_database_engine
 from pydantic import SecretStr
-from sqlalchemy import select, text, update
+from sqlalchemy import select, text
 from sqlalchemy.exc import DBAPIError, IntegrityError
 from sqlalchemy.orm import Session, sessionmaker
 from test_oidc import Resolver, access_token, configured
@@ -351,17 +352,13 @@ def test_expired_and_revoked_inviter_tokens_fail(api: Api) -> None:
     organization = api.organization()
     workspace = api.workspace(organization)
     token = api.invitation(organization, workspace)
-    with api.session.begin_nested():
-        api.session.execute(
-            update(InvitationRow)
-            .where(InvitationRow.organization_id == organization)
-            .values(expires_at=datetime.now(UTC) - timedelta(seconds=1))
+    with patch("operations.modules.identity.application.service.datetime", wraps=datetime) as clock:
+        clock.now.return_value = datetime.now(UTC) + timedelta(days=8)
+        response = api.client.post(
+            f"/api/v1/organizations/{organization}/invitations/accept",
+            headers=api.headers("invitee", "invitee@example.com"),
+            json={"token": token},
         )
-    response = api.client.post(
-        f"/api/v1/organizations/{organization}/invitations/accept",
-        headers=api.headers("invitee", "invitee@example.com"),
-        json={"token": token},
-    )
     assert response.status_code == 403
     manager = api.accept(organization, api.invitation(organization, workspace, "WorkspaceAdmin"))
     pending = api.invitation(organization, workspace, subject="invitee", email="new@example.com")
