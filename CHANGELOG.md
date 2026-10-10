@@ -2,6 +2,16 @@
 
 ## Unreleased - Phase 6 in progress (2026-10-10)
 
+- Add distinct generic automation tasks through the owning task service under
+  accepted ADR-0024. Preserve assignment snapshots and event-time due dates;
+  support atomic claims and claimant-only audited completion in API/My Work.
+  Form submissions and independent approval remain governed by their existing
+  workflow. Migration d318af6c902e preserves form pins and refuses populated
+  generic rollback. All local gates pass (285 backend/18 frontend tests), including
+  real PKCE execution, committed Redis/claim/completion concurrency, lint/types,
+  migrations and generated contracts/build. Exact-code hosted CI is pending;
+  Phase 6 remains unaccepted.
+
 - Add organization-scoped email evidence and reviewed recovery API/UI under
   ADR-0023. Preserve original delegation, immutable attempts, exact review/reason
   and lifetime limits; require uncertain duplicate-delivery acknowledgement.

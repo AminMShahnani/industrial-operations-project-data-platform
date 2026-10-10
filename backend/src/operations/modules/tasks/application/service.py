@@ -1,5 +1,5 @@
 from datetime import UTC, datetime, timedelta
-from uuid import UUID, uuid7
+from uuid import UUID, uuid5, uuid7
 from zoneinfo import ZoneInfo
 
 from operations.contracts import ServiceError
@@ -11,6 +11,7 @@ from operations.modules.submissions.application.service import SubmissionService
 from operations.modules.tasks.application.contracts import (
     DeadlineEvent,
     DeadlineTick,
+    GenericTaskDefinition,
     Reminder,
     Task,
     TaskStore,
@@ -22,6 +23,102 @@ class TaskService:
         self, store: TaskStore, schedules: SchedulingService, submissions: SubmissionService
     ) -> None:
         self.store, self.schedules, self.submissions = store, schedules, submissions
+
+    def generic_recipients(
+        self,
+        actor: RequestContext,
+        org: UUID,
+        workspace: UUID,
+        project: UUID | None,
+        definition: GenericTaskDefinition,
+    ) -> dict[str, list[UUID]]:
+        self.schedules.require(actor, org, workspace, project, True)
+        recipients = {
+            item.key(): self.schedules.recipients(actor, org, workspace, project, item)
+            for item in definition.assignments
+        }
+        if any(not users for users in recipients.values()):
+            raise ServiceError(422, "assignment_has_no_eligible_recipients")
+        return recipients
+
+    def create_generic(
+        self,
+        actor: RequestContext,
+        org: UUID,
+        workspace: UUID,
+        project: UUID | None,
+        definition: GenericTaskDefinition,
+    ) -> list[Task]:
+        recipients = self.generic_recipients(actor, org, workspace, project, definition)
+        timezone = self.schedules.forms.workspaces.organizations.active(org).settings.timezone
+        rows: list[Task] = []
+        for target in definition.assignments:
+            identifier = uuid5(definition.origin_id, target.key())
+            existing = self.store.get(org, workspace, identifier)
+            if existing:
+                if (
+                    existing.kind != "generic"
+                    or existing.project_id != project
+                    or existing.name != definition.name
+                    or existing.assignment != target
+                    or existing.occurs_at != definition.occurs_at
+                    or existing.due_at
+                    != definition.occurs_at + timedelta(seconds=definition.due_seconds)
+                ):
+                    raise ServiceError(409, "task_creation_conflict")
+                rows.append(existing)
+                continue
+            row = Task(
+                id=identifier,
+                organization_id=org,
+                workspace_id=workspace,
+                project_id=project,
+                kind="generic",
+                origin_id=definition.origin_id,
+                name=definition.name,
+                timezone=timezone,
+                occurs_at=definition.occurs_at,
+                due_at=definition.occurs_at + timedelta(seconds=definition.due_seconds),
+                assignment=target,
+                assignment_key=target.key(),
+                recipient_ids=recipients[target.key()],
+                reminder_offsets=[],
+            )
+            if not self.store.add(row):
+                raise ServiceError(409, "task_creation_conflict")
+            self.event(actor, row, "task.created")
+            rows.append(row)
+        return rows
+
+    def complete(
+        self,
+        actor: RequestContext,
+        org: UUID,
+        workspace: UUID,
+        identifier: UUID,
+        expected: int,
+    ) -> Task:
+        row = self.access(actor, org, workspace, identifier, True)
+        user = self.schedules.forms.authorization.user(actor, org)
+        if row.kind != "generic":
+            raise ServiceError(409, "form_task_completion_requires_submission")
+        if row.claimant_id != user.id:
+            raise ServiceError(403, "task_claimant_required")
+        if row.state == "completed":
+            return row
+        if row.state != "in_progress" or row.revision != expected:
+            raise ServiceError(409, "task_completion_conflict")
+        changed = row.model_copy(
+            update={
+                "state": "completed",
+                "completed_at": datetime.now(UTC),
+                "revision": row.revision + 1,
+            }
+        )
+        if not self.store.save(changed, expected):
+            raise ServiceError(409, "task_completion_conflict")
+        self.event(actor, changed, "task.completed")
+        return changed
 
     def event(
         self,
@@ -302,20 +399,25 @@ class TaskService:
             return row
         if row.state != "open" or row.revision != expected:
             raise ServiceError(409, "task_claim_conflict")
-        draft = self.submissions.create(actor, org, workspace, row.form_id, row.form_number)
-        if draft.form_version_id != row.form_version_id:
-            raise ServiceError(409, "task_form_version_mismatch")
+        submission_id = None
+        if row.kind == "form":
+            if row.form_id is None or row.form_number is None:
+                raise ServiceError(409, "task_form_version_mismatch")
+            draft = self.submissions.create(actor, org, workspace, row.form_id, row.form_number)
+            if draft.form_version_id != row.form_version_id:
+                raise ServiceError(409, "task_form_version_mismatch")
+            submission_id = draft.id
         changed = row.model_copy(
             update={
                 "state": "in_progress",
                 "claimant_id": user.id,
-                "submission_id": draft.id,
+                "submission_id": submission_id,
                 "revision": row.revision + 1,
             }
         )
         if not self.store.save(changed, expected):
             raise ServiceError(409, "task_claim_conflict")
-        self.event(actor, row, "task.claimed")
+        self.event(actor, changed, "task.claimed")
         return changed
 
     def submitted(self, actor: RequestContext, submission: Submission) -> None:

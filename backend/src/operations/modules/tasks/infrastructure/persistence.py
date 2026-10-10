@@ -25,6 +25,10 @@ class TaskRow(Base):
     __tablename__ = "task_occurrences"
     __table_args__ = (
         ForeignKeyConstraint(
+            ["organization_id", "workspace_id"],
+            ["workspaces.organization_id", "workspaces.id"],
+        ),
+        ForeignKeyConstraint(
             ["organization_id", "workspace_id", "project_id"],
             ["projects.organization_id", "projects.workspace_id", "projects.id"],
         ),
@@ -75,15 +79,33 @@ class TaskRow(Base):
             name="uq_task_materialization",
         ),
         UniqueConstraint("organization_id", "submission_id", name="uq_task_submission"),
+        UniqueConstraint(
+            "organization_id", "origin_id", "assignment_key", name="uq_task_generic_origin"
+        ),
+        CheckConstraint(
+            "(kind='form' AND origin_id IS NULL AND schedule_id IS NOT NULL "
+            "AND schedule_version_id IS NOT NULL AND schedule_number IS NOT NULL "
+            "AND form_id IS NOT NULL AND form_version_id IS NOT NULL AND form_number IS NOT NULL "
+            "AND completed_at IS NULL AND state<>'completed') OR (kind='generic' "
+            "AND origin_id IS NOT NULL AND schedule_id IS NULL AND schedule_version_id IS NULL "
+            "AND schedule_number IS NULL AND form_id IS NULL AND form_version_id IS NULL "
+            "AND form_number IS NULL AND submission_id IS NULL "
+            "AND state IN ('open','in_progress','completed','cancelled') "
+            "AND ((state='completed' AND completed_at IS NOT NULL AND completed_at>=occurs_at) "
+            "OR (state<>'completed' AND completed_at IS NULL)))",
+            name="task_kind",
+        ),
         CheckConstraint(
             "revision > 0 AND due_at >= occurs_at AND state IN ('open','in_progress',"
-            "'submitted','awaiting_review','returned','approved','cancelled','superseded')",
+            "'submitted','awaiting_review','returned','approved','cancelled','superseded','completed')",
             name="task_state",
         ),
         CheckConstraint(
             "(state IN ('open','superseded') AND claimant_id IS NULL AND submission_id IS NULL) "
             "OR state='cancelled' OR (state IN ('in_progress','submitted','awaiting_review',"
-            "'returned','approved') AND claimant_id IS NOT NULL AND submission_id IS NOT NULL)",
+            "'returned','approved') AND claimant_id IS NOT NULL AND submission_id IS NOT NULL "
+            "AND kind='form') OR (kind='generic' AND state IN ('in_progress','completed') "
+            "AND claimant_id IS NOT NULL AND submission_id IS NULL)",
             name="task_claim",
         ),
         Index(
@@ -100,12 +122,15 @@ class TaskRow(Base):
     organization_id: Mapped[UUID]
     workspace_id: Mapped[UUID]
     project_id: Mapped[UUID | None]
-    schedule_id: Mapped[UUID]
-    schedule_version_id: Mapped[UUID]
-    schedule_number: Mapped[int]
-    form_id: Mapped[UUID]
-    form_version_id: Mapped[UUID]
-    form_number: Mapped[int]
+    kind: Mapped[str] = mapped_column(String(10), server_default="form")
+    origin_id: Mapped[UUID | None]
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    schedule_id: Mapped[UUID | None]
+    schedule_version_id: Mapped[UUID | None]
+    schedule_number: Mapped[int | None]
+    form_id: Mapped[UUID | None]
+    form_version_id: Mapped[UUID | None]
+    form_number: Mapped[int | None]
     name: Mapped[str] = mapped_column(String(120))
     timezone: Mapped[str] = mapped_column(String(80))
     occurs_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
@@ -275,7 +300,11 @@ class TaskRepository:
         result = self.session.execute(
             insert(TaskRow)
             .values(**values)
-            .on_conflict_do_nothing(constraint="uq_task_materialization")
+            .on_conflict_do_nothing(
+                constraint="uq_task_generic_origin"
+                if row.kind == "generic"
+                else "uq_task_materialization"
+            )
             .returning(TaskRow.id)
         )
         if result.scalar_one_or_none() is None:
@@ -320,6 +349,7 @@ class TaskRepository:
                 claimant_id=row.claimant_id,
                 submission_id=row.submission_id,
                 revision=row.revision,
+                completed_at=row.completed_at,
             )
         )
         return result.scalar_one_or_none() is not None

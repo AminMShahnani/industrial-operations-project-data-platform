@@ -394,6 +394,7 @@ def test_historical_pages_and_atomic_capture_failure(
     actor, org, workspace, task = task_fixture(api)
     services = compose(api.session)
     start = datetime.now(UTC) - timedelta(hours=105)
+    assert task.form_id is not None and task.form_number is not None
     schedule = services.scheduling.create(
         actor,
         org,

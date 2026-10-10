@@ -1,7 +1,7 @@
 # ADR-0024: Generic task completion authority
 
 Date: 2026-10-10
-Status: Proposed; awaiting Q-008
+Status: Accepted; user instructed "do your recommandation" on 2026-10-10
 
 ## Context
 
@@ -12,7 +12,7 @@ ADR-0009 limits shared-task completion to its eligible claimant. ADR-0010 requir
 independent approval of governed records. Whether generic completion needs review
 is a governance-sensitive boundary subject to AGENTS.md's stop condition.
 
-## Recommended decision (not accepted)
+## Accepted decision
 
 One eligible snapshotted recipient atomically claims the shared generic task,
 then acknowledges completion under fresh identity, scope, assignment and
@@ -25,9 +25,35 @@ belongs to the task service with typed immutable automation provenance, assignme
 snapshots, event-time due dates and database idempotency. Core remains neutral;
 industry-specific requirements belong in Domain Packs.
 
+Persist kind, immutable origin_id and completed_at on the owning task aggregate.
+Form tasks retain all six exact schedule/form pins; generic tasks have none.
+Automation derives origin_id from its pinned run and action position, and derives
+each task ID from origin plus assignment key. One action creates one shared task
+per distinct assignment; its receipt points to the first task in immutable action
+definition order, with all related tasks retaining the same origin. Creation audits
+retain delegated run/version/event correlation through the existing event bus.
+Due dates use source-event time; display timezone uses organization settings.
+Generic tasks reuse deadline/notification ports and have no implicit reminders.
+
+The historical action contract remains readable. Validation/execution explicitly
+reject create_task with form pins. Installations retaining that formerly ambiguous
+action must review a new create_form_task version, without rewriting the old one.
+Preflight found zero such actions in development, isolated test and retained browser
+databases. Duplicate generic assignment keys are rejected. Historical definitions
+are never silently reinterpreted as generic work.
+
+Migration d318af6c902e defaults existing rows to form, relaxes pin nullability under
+an explicit kind constraint and preserves the frozen Phase 5 form-task guard.
+Generic guards enforce open creation, claim preservation, completion/cancellation
+transitions and immutable history. Downgrade refuses before DDL if any generic task
+exists; use verified backup/restore for populated rollback.
+
 Alternative: independent review before completion. That requires a specified
 review policy, eligible reviewers and return/resubmission semantics; do not infer
 these from a nonexistent form workflow.
+
+Q-008 is resolved by the user's explicit selection. Implementation proceeds with
+claimant acknowledgement; independent record approval remains unchanged.
 
 ## Verification after resolution
 

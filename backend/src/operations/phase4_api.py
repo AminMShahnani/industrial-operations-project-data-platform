@@ -367,6 +367,27 @@ def cancel(
     )
 
 
+@router.post("/tasks/{task_id}/complete", response_model=Task)
+def complete(
+    organization_id: UUID,
+    workspace_id: UUID,
+    task_id: UUID,
+    command: TaskClaim,
+    context: Context,
+    services: ServiceDependency,
+) -> Task:
+    return services.tasks.public(
+        context,
+        services.tasks.complete(
+            context,
+            organization_id,
+            workspace_id,
+            task_id,
+            command.expected_revision,
+        ),
+    )
+
+
 @router.post("/shifts", response_model=Shift, status_code=201)
 def shift_create(
     organization_id: UUID,

@@ -1,5 +1,36 @@
 # Phase 6 automation operations
 
+## Generic task acknowledgements (ADR-0024)
+
+Activate a create_task action with name, distinct assignments and due_seconds
+(60 seconds to 30 days), without form_id/form_number. Execution creates shared
+generic work through the task service under fresh original delegation. Occurrence
+and due timestamps derive from the source event, including on retry. Snapshots do
+not grow when recipients are added later. Receipt target_id identifies the first
+created task; immutable origin_id groups all tasks from that exact run/action.
+
+In My Work, claim generic work then use Acknowledge completion when done. Only
+the current eligible claimant can acknowledge it. Completion records actor/time
+and a terminal completed state, without a form submission or record approval.
+Server-side membership, permission and project lifecycle checks apply every time,
+including retries. Completed/cancelled work cannot be reopened. Managers may cancel
+pending work with the existing reviewed reason flow but cannot complete for others.
+Governed records continue to use create_form_task and independent workflows.
+
+API POST /tasks/{task_id}/start and POST /tasks/{task_id}/complete under the
+organization/workspace prefix both accept expected_revision. Exact claimant
+completion retries return retained terminal evidence without another audit.
+Generic tasks reuse task-created notifications and due/overdue generation; no
+reminder policy is implicitly attached. Form tasks refuse the complete endpoint.
+
+Upgrade all databases to d318af6c902e before deploying these contracts. Existing
+tasks default to form with exact pins and history preserved. Downgrade to
+ba6e379cc281 works with retained form tasks, but refuses before DDL if generic tasks
+exist. Disable new writes before rollback; use a verified backup/restore plan when
+generic history exists. Never remove evidence to force a downgrade. Retained older
+create_task actions with form pins require a reviewed new create_form_task version;
+no immutable rule is rewritten automatically.
+
 ## Verified-email invitations (ADR-0019)
 
 In workspace administration, choose **Verified email sign-in link**, review the

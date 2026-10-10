@@ -1,14 +1,19 @@
 # Open Questions
 
-## Phase 6 generic task completion (unresolved)
+## Phase 6 generic task completion (resolved)
 
 - Q-008 (2026-10-10): May an eligible claimant finish a generic task by acknowledging
   completion, or must an independent reviewer approve it? docs/12 distinguishes
   generic/form tasks; docs/11 does not specify generic completion authority.
   Recommended: a distinct completed state with fresh claimant authorization and
   immutable audit, without submission/record approval. Governed work continues
-  through form tasks and independent workflows. ADR-0024 is proposed, not accepted.
-  This slice pauses under AGENTS.md's security-sensitive ambiguity stop condition.
+  through form tasks and independent workflows. User selected the recommendation
+  with "do your recommandation" on 2026-10-10. ADR-0024 is accepted; implementation
+  proceeds without reopening independent record approval.
+  Implementation passes all local gates (285 backend/18 frontend tests), including
+  real PKCE execution, committed worker/claim/completion concurrency and guarded
+  migration rollback. Exact-code hosted verification remains pending; no new
+  unresolved authority decision is introduced.
 
 ## Phase 6 invitation email decision (resolved)
 - Q-007 (2026-10-10): Select acceptance for durable invitation emails. ADR-0006

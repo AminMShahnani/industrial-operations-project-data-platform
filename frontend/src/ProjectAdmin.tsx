@@ -15,7 +15,7 @@ type Client = ReturnType<typeof apiClient>;
 const projectPath = '/api/v1/organizations/{organization_id}/workspaces/{workspace_id}/projects/{project_id}' as const;
 const workspacePath = '/api/v1/organizations/{organization_id}/workspaces/{workspace_id}' as const;
 
-export function ProjectAdministration({ api, organization, workspace }: { api: Client; organization: string; workspace: string }) {
+export function ProjectAdministration({ api, organization, workspace, userId }: { api: Client; organization: string; workspace: string; userId: string }) {
   const [projects, setProjects] = useState<Project[]>([]);
   const [groups, setGroups] = useState<Group[]>([]);
   const [selected, setSelected] = useState('');
@@ -275,7 +275,7 @@ export function ProjectAdministration({ api, organization, workspace }: { api: C
       {lastMembership && <button disabled={busy} onClick={() => void revokeLastMembership()}>Revoke the last access grant</button>}
     </>}
     <Scheduling key={'work'+organization+workspace+selected} api={api} organization={organization} workspace={workspace} project={selected}
-      canManage={selected?projectPermissions.includes('schedule.manage'):permissions.includes('schedule.manage')} onOpen={task=>{if(task.submission_id)setTaskForm({id:task.id,form:task.form_id,draft:task.submission_id});}} />
+      userId={userId} canManage={selected?projectPermissions.includes('schedule.manage'):permissions.includes('schedule.manage')} onOpen={task=>{if(task.submission_id&&task.form_id)setTaskForm({id:task.id,form:task.form_id,draft:task.submission_id});}} />
     <Workflows key={'workflow'+organization+workspace+selected} api={api} organization={organization} workspace={workspace} project={selected}
       canManage={selected?projectPermissions.includes('workflow.manage'):permissions.includes('workflow.manage')} submission={workflowSubmission} onOpenRevision={row=>setTaskForm({id:row.id,form:row.form_id,draft:row.id})}/>
     <FormStudio key={'forms' + organization + workspace + selected + (taskForm?.id??'')} api={api} organization={organization} workspace={workspace} project={selected}

@@ -55,14 +55,16 @@ Scoped rule/run management and reviewed replay API/UI are implemented under
 ADR-0022; all local gates pass (261 backend/16 frontend tests). Hosted run 38047837127 passes both jobs on exact
 code fe4ebc8.
 Email delivery/recovery API/UI is implemented under ADR-0023; all local gates pass
-(272 backend/18 frontend tests). Hosted run 38049979000 passes both jobs on exact code b0b9d05. Generic tasks, tags/flags, webhooks and telemetry remain current-phase
-work. 0/8 accepted; Q-006 is resolved.
+(272 backend/18 frontend tests). Hosted run 38049979000 passes both jobs on exact code b0b9d05.
+Generic task creation, claim/completion API and My Work are implemented under
+accepted ADR-0024; all local gates pass (285 backend/18 frontend tests), with
+exact-code hosted CI pending. Tags/flags, webhooks and
+telemetry remain current-phase work. 0/8 accepted; Q-006 and Q-008 are resolved.
 Phase 5 remains accepted on d91dfce / hosted run 37454353238.
 
 ## Blocked
-Generic-task completion authority awaits Q-008 / proposed ADR-0024. No schema or
-runtime change is applied before resolving this governance-sensitive boundary.
-Phase 6 remains 0/8 accepted. Other pending Phase 6 requirements remain in scope.
+None. Q-008 resolved: user accepted claimant acknowledgement under ADR-0024.
+Generic-task implementation is in progress; Phase 6 remains 0/8 accepted.
 Q-007 resolved on 2026-10-10: user delegated the choice with "do best".
 ADR-0019 accepts token-free verified-email acceptance for new invitations,
 preserving existing bearer-token invitations. Lifecycle passes local/hosted verification;
@@ -75,8 +77,8 @@ Q-004 resolved by user: shared task claimed by one eligible member.
 Legacy export absent.
 
 ## Next 5 tasks
-1. Implement the generic task action through the owning task service.
-2. Implement controlled tag/flag and webhook handlers.
+1. Implement controlled tag/flag handlers through owning services.
+2. Implement authorized durable webhook delivery and recovery.
 3. Complete queue/run telemetry and operator failure visibility.
 4. Complete remaining Phase 6 acceptance and fault/recovery coverage.
 5. Verify all Phase 6 local/hosted criteria before any Phase 7 work.
@@ -273,7 +275,21 @@ and generated contracts. Phase 6 remains 0/8 accepted; no Phase 7 work.
 
 ## Migration status
 
-Development, isolated test and retained browser databases are at ba6e379cc281.
+Latest generic-task validation: all 285 backend tests pass without skips in
+259.33s, including real PKCE browser claim/completion and committed concurrent
+Redis delivery, claims and completion retries. All 18 frontend tests pass.
+Ruff lint/format (345 files), strict mypy (273 files), frontend lint/types/build,
+OpenAPI/generated client checks and migration roundtrip/drift pass. Thirteen new
+integration cases cover scope/authority, immutable snapshots/evidence, atomic
+failure recovery and preserved form/guarded generic rollback. Exact-code hosted
+CI is pending; Phase 6 remains 0/8 accepted.
+
+Development, isolated test and retained browser databases are at d318af6c902e.
+Generic task migration preserves form pins/history and adds kind/origin/completion
+constraints and guards. Form-only roundtrip and drift pass; populated generic
+rollback locks writes and refuses before DDL. No retained history is deleted.
+Generic-task hosted verification remains pending; previous email console proof
+below remains the accepted baseline for that increment.
 Email console lookup indexes add chronological organization/state cursor access.
 Populated index downgrade preserves all delivery/attempt/audit evidence; no data
 rewrite is performed. All local/hosted gates pass on exact code b0b9d05 / run 38049979000.

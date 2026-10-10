@@ -1,5 +1,31 @@
 # Phase Log
 
+## Phase 6 generic tasks - 2026-10-10
+
+Q-008 resolved by the user selecting the recommendation. ADR-0024 is accepted.
+Implement docs/12's distinct generic action through the task service, shared
+assignment snapshots and fresh claim/completion authority (docs/07,11,20), immutable
+audits and idempotent event-time creation (docs/19). Preserve form/workflow records
+and test migration rollback, scoped API/browser execution and worker recovery.
+All local gates pass: 285 backend tests without skips in 259.33s, 18 frontend
+tests, Ruff lint/format (345 files), strict mypy (273 files), frontend lint/types/
+build, migration roundtrip/drift and generated OpenAPI/client checks. Thirteen new
+integration cases cover claimant/peer/manager boundaries, live group revocation,
+delegation revocation, cross-scope isolation, stale revision/terminal retries,
+assignment snapshot preservation, transactional failure/retry, form-task completion
+refusal, immutable database guards and preserved form/populated generic rollback.
+Real Redis duplicate delivery creates one generic task; eight committed concurrent
+claims and completions produce one claim audit and one completion audit/timestamp.
+Real PKCE browser creates an activated generic action, claims its result and
+acknowledges completion without any submission. Migration d318af6c902e retains
+form pins and guards; rollback locks writes before checking retained generic work.
+Initial full-run failures were test fixtures attempting forbidden self-assignment/
+self-revocation; corrected fixtures retain the existing authorization rules.
+Exact-code hosted CI remains pending. This increment completes the generic action
+and execution API/UI; no full phase criterion is newly accepted. Tags/flags,
+webhooks, telemetry and remaining acceptance coverage remain current Phase 6 work,
+not Phase 7 deferrals. Phase 6 stays 0/8 accepted.
+
 ## Phase 6 generic task preparation - 2026-10-10
 
 Inspected task contracts/claim lifecycle and automation adapters against docs/05,

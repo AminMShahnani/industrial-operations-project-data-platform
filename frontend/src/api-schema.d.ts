@@ -1435,6 +1435,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/organizations/{organization_id}/workspaces/{workspace_id}/tasks/{task_id}/complete": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Complete */
+        post: operations["complete_api_v1_organizations__organization_id__workspaces__workspace_id__tasks__task_id__complete_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/organizations/{organization_id}/workspaces/{workspace_id}/tasks/{task_id}/reminders": {
         parameters: {
             query?: never;
@@ -4069,28 +4086,30 @@ export interface components {
             assignment_key: string;
             /** Claimant Id */
             claimant_id?: string | null;
+            /** Completed At */
+            completed_at?: string | null;
             /**
              * Due At
              * Format: date-time
              */
             due_at: string;
-            /**
-             * Form Id
-             * Format: uuid
-             */
-            form_id: string;
+            /** Form Id */
+            form_id?: string | null;
             /** Form Number */
-            form_number: number;
-            /**
-             * Form Version Id
-             * Format: uuid
-             */
-            form_version_id: string;
+            form_number?: number | null;
+            /** Form Version Id */
+            form_version_id?: string | null;
             /**
              * Id
              * Format: uuid
              */
             id: string;
+            /**
+             * Kind
+             * @default form
+             * @enum {string}
+             */
+            kind: "form" | "generic";
             /** Name */
             name: string;
             /**
@@ -4103,6 +4122,8 @@ export interface components {
              * Format: uuid
              */
             organization_id: string;
+            /** Origin Id */
+            origin_id?: string | null;
             /** Project Id */
             project_id: string | null;
             /** Recipient Ids */
@@ -4114,24 +4135,18 @@ export interface components {
              * @default 1
              */
             revision: number;
-            /**
-             * Schedule Id
-             * Format: uuid
-             */
-            schedule_id: string;
+            /** Schedule Id */
+            schedule_id?: string | null;
             /** Schedule Number */
-            schedule_number: number;
-            /**
-             * Schedule Version Id
-             * Format: uuid
-             */
-            schedule_version_id: string;
+            schedule_number?: number | null;
+            /** Schedule Version Id */
+            schedule_version_id?: string | null;
             /**
              * State
              * @default open
              * @enum {string}
              */
-            state: "open" | "in_progress" | "submitted" | "awaiting_review" | "returned" | "approved" | "cancelled" | "superseded";
+            state: "open" | "in_progress" | "submitted" | "awaiting_review" | "returned" | "approved" | "cancelled" | "superseded" | "completed";
             /** Submission Id */
             submission_id?: string | null;
             /** Timezone */
@@ -16718,6 +16733,124 @@ export interface operations {
         requestBody: {
             content: {
                 "application/json": components["schemas"]["TaskCancel"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["Task"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+        };
+    };
+    complete_api_v1_organizations__organization_id__workspaces__workspace_id__tasks__task_id__complete_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                organization_id: string;
+                workspace_id: string;
+                task_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["TaskClaim"];
             };
         };
         responses: {

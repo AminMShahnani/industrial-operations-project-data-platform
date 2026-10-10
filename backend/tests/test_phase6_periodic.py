@@ -331,6 +331,7 @@ def test_pending_deadline_filter_and_bounded_pages_do_not_starve_new_work(api: A
     actor, org, workspace, task = task_fixture(api)
     services = compose(api.session)
     start = datetime.now(UTC) - timedelta(hours=104)
+    assert task.form_id is not None and task.form_number is not None
     schedule = services.scheduling.create(
         actor,
         org,

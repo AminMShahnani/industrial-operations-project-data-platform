@@ -2,7 +2,7 @@
 
 from datetime import UTC, datetime, timedelta
 from typing import Protocol
-from uuid import UUID, uuid7
+from uuid import UUID, uuid5, uuid7
 
 from operations.contracts import ServiceError
 from operations.modules.automation.application.contracts import (
@@ -21,6 +21,7 @@ from operations.modules.identity.application.contracts import RequestContext
 from operations.modules.master_data.application.contracts import DataRecord, RecordStatus
 from operations.modules.scheduling.application.contracts import Recurrence, ScheduleDefinition
 from operations.modules.submissions.application.service import SubmissionService
+from operations.modules.tasks.application.contracts import GenericTaskDefinition
 from operations.modules.tasks.application.service import TaskService
 from operations.modules.workflows.application.runtime import WorkflowRuntime
 
@@ -68,6 +69,19 @@ class ApplicationActions:
         self.forms, self.submissions, self.tasks = forms, submissions, tasks
         self.workflows, self.additional = workflows, additional
 
+    def generic(self, action: TaskAction, origin: UUID, at: datetime) -> GenericTaskDefinition:
+        if action.form_id is not None or action.form_number is not None:
+            raise ServiceError(422, "generic_task_must_not_pin_form")
+        if len({item.key() for item in action.assignments}) != len(action.assignments):
+            raise ServiceError(422, "duplicate_task_assignment")
+        return GenericTaskDefinition(
+            origin_id=origin,
+            name=action.name,
+            assignments=action.assignments,
+            occurs_at=at,
+            due_seconds=action.due_seconds,
+        )
+
     def schedule(
         self, action: TaskAction, at: OperationalEvent | None = None
     ) -> ScheduleDefinition:
@@ -108,7 +122,15 @@ class ApplicationActions:
                     values=action.values,
                 ),
             )
-        elif isinstance(action, TaskAction) and action.form_id is not None:
+        elif isinstance(action, TaskAction) and action.kind == "create_task":
+            self.tasks.generic_recipients(
+                actor,
+                org,
+                workspace,
+                project,
+                self.generic(action, rule.id, datetime(2000, 1, 1, tzinfo=UTC)),
+            )
+        elif isinstance(action, TaskAction) and action.kind == "create_form_task":
             self.tasks.schedules.require(actor, org, workspace, project, True)
             self.tasks.schedules.check(actor, org, workspace, project, self.schedule(action))
         elif isinstance(action, WorkflowAction):
@@ -210,7 +232,16 @@ class ApplicationActions:
                 action.values,
             )
             return record.id
-        if isinstance(action, TaskAction) and action.form_id is not None:
+        if isinstance(action, TaskAction) and action.kind == "create_task":
+            rows = self.tasks.create_generic(
+                actor,
+                org,
+                workspace,
+                project,
+                self.generic(action, uuid5(run.id, f"generic-task:{position}"), event.occurred_at),
+            )
+            return rows[0].id
+        if isinstance(action, TaskAction) and action.kind == "create_form_task":
             schedule = self.tasks.schedules.create(
                 actor, org, workspace, project, action.name, self.schedule(action, event)
             )

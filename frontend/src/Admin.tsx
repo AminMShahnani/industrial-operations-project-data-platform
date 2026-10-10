@@ -185,7 +185,7 @@ export function Administration() {
     </section>}
     {organization && permissions.includes('organization.manage') && <EmailRecovery key={'email' + organization} api={api} organization={organization}/>}
     {organization && workspace && <Notifications key={'notifications' + organization + workspace} api={api} organization={organization} workspace={workspace} />}
-    {organization && workspace && <ProjectAdministration key={organization + workspace} api={api} organization={organization} workspace={workspace} />}
+    {organization && workspace && <ProjectAdministration key={organization + workspace} api={api} organization={organization} workspace={workspace} userId={me?.memberships.find(item=>item.organization_id===organization)?.user_id??''} />}
     <section><h2>Accept an invitation</h2><form onSubmit={event => void acceptInvitation(event)}>
       <label>Organization ID<input name="organization" required /></label>
       <label>Invitation code<input name="token" type="password" autoComplete="off" required /></label>

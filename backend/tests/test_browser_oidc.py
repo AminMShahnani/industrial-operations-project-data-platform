@@ -15,7 +15,11 @@ from alembic.config import Config
 from operations.composition import compose
 from operations.email_worker import email_service
 from operations.modules.audit.infrastructure.persistence import AuditRow
-from operations.modules.automation.application.contracts import NotifyAction, RuleDefinition
+from operations.modules.automation.application.contracts import (
+    NotifyAction,
+    RuleDefinition,
+    TaskAction,
+)
 from operations.modules.automation.application.events import DeliveryMessage
 from operations.modules.automation.domain.reliability import delivery_id
 from operations.modules.identity.application.contracts import Principal, RequestContext
@@ -23,6 +27,7 @@ from operations.modules.notifications.application.email_contracts import EmailRe
 from operations.modules.notifications.infrastructure.email_persistence import EmailRow
 from operations.modules.organizations.application.contracts import OrganizationSettings
 from operations.modules.projects.application.contracts import ProjectRole
+from operations.modules.scheduling.application.contracts import Assignment
 from operations.platform.config import Settings
 from operations.platform.database import create_database_engine
 from operations.worker import process_automation
@@ -173,7 +178,15 @@ def test_real_oidc_pkce_login_and_workspace_creation(monkeypatch: pytest.MonkeyP
                     user = services.authorization.user(actor, organization.id)
                     automation_definition = RuleDefinition(
                         trigger="project.phase.changed",
-                        actions=[NotifyAction(kind="notify", recipients=[user.id])],
+                        actions=[
+                            NotifyAction(kind="notify", recipients=[user.id]),
+                            TaskAction(
+                                kind="create_task",
+                                name="Browser work acknowledgement",
+                                assignments=[Assignment(kind="user", target_id=user.id)],
+                                due_seconds=60,
+                            ),
+                        ],
                     ).model_dump(mode="json")
                 automation = page.get_by_role("region", name="Automation administration")
                 automation.get_by_label("Automation name", exact=True).fill("Browser notice")
@@ -293,6 +306,33 @@ def test_real_oidc_pkce_login_and_workspace_creation(monkeypatch: pytest.MonkeyP
                 notifications.get_by_role("button", name="Refresh notifications").click()
                 expect(notifications.get_by_text("Operational notice", exact=True)).to_be_visible()
                 notifications.get_by_role("button", name="Mark as read", exact=True).click()
+                page.get_by_role("button", name="Refresh My Work", exact=True).click()
+                generic_work = page.get_by_role("listitem").filter(
+                    has_text="Browser work acknowledgement"
+                )
+                expect(generic_work).to_have_count(1)
+                generic_work.get_by_role("button", name="Claim task", exact=True).click()
+                expect(
+                    generic_work.get_by_role("button", name="Acknowledge completion", exact=True)
+                ).to_be_visible()
+                expect(
+                    generic_work.get_by_role("button", name="Open task form", exact=True)
+                ).to_have_count(0)
+                with page.expect_response(
+                    lambda response: response.url.endswith("/complete")
+                ) as completion_response:
+                    generic_work.get_by_role(
+                        "button", name="Acknowledge completion", exact=True
+                    ).click()
+                completed_work = completion_response.value.json()
+                assert (
+                    completed_work["kind"] == "generic" and completed_work["state"] == "completed"
+                )
+                assert completed_work["form_id"] is None and completed_work["submission_id"] is None
+                expect(generic_work).to_contain_text("completed")
+                expect(
+                    generic_work.get_by_role("button", name="Acknowledge completion", exact=True)
+                ).to_have_count(0)
                 expect(notifications.get_by_text("Read", exact=True)).to_be_visible()
                 notifications.get_by_role("button", name="Refresh notifications").click()
                 expect(notifications.get_by_text("Read", exact=True)).to_be_visible()
@@ -713,6 +753,12 @@ def test_real_oidc_pkce_login_and_workspace_creation(monkeypatch: pytest.MonkeyP
                 )
             )
             assert approval is not None and approval.actor_subject == "dev-reviewer"
+            completion = session.scalar(
+                select(AuditRow).where(
+                    AuditRow.organization_id == organization.id, AuditRow.type == "task.completed"
+                )
+            )
+            assert completion is not None and completion.actor_subject == "dev-platform"
             assert (
                 session.scalar(
                     select(func.count())

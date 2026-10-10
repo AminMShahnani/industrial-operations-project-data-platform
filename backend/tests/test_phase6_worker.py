@@ -22,6 +22,7 @@ from operations.modules.notifications.infrastructure.persistence import AttemptR
 from operations.modules.organizations.application.contracts import OrganizationSettings
 from operations.modules.projects.application.contracts import LifecycleDefinition, ProjectContext
 from operations.modules.scheduling.application.contracts import Assignment
+from operations.modules.tasks.infrastructure.persistence import TaskRow
 from operations.platform.config import Settings
 from operations.platform.database import create_database_engine
 from operations.worker import register_actor
@@ -104,6 +105,12 @@ def test_real_redis_workers_concurrently_deduplicate_committed_action(
                             form_number=1,
                             assignments=[Assignment(kind="user", target_id=user.id)],
                         ),
+                        TaskAction(
+                            kind="create_task",
+                            name="Worker acknowledgement",
+                            assignments=[Assignment(kind="user", target_id=user.id)],
+                            due_seconds=60,
+                        ),
                     ],
                 ),
             )
@@ -136,7 +143,12 @@ def test_real_redis_workers_concurrently_deduplicate_committed_action(
             assert row.context.description == "Worker completed" and row.version == 3
             run = services.automation.store.event_runs(org, source_id)[0]
             assert run.state == "completed" and run.attempts == 1
-            assert len(services.automation.store.receipts(org, run.id)) == 2
+            assert len(services.automation.store.receipts(org, run.id)) == 3
+            generic = session.scalars(
+                select(TaskRow).where(TaskRow.organization_id == org, TaskRow.kind == "generic")
+            ).all()
+            assert len(generic) == 1 and generic[0].submission_id is None
+            generic_id = generic[0].id
             assert (
                 session.scalar(
                     select(func.count())
@@ -147,7 +159,9 @@ def test_real_redis_workers_concurrently_deduplicate_committed_action(
             )
             task_source = session.scalar(
                 select(AuditRow).where(
-                    AuditRow.organization_id == org, AuditRow.type == "task.created"
+                    AuditRow.organization_id == org,
+                    AuditRow.type == "task.created",
+                    AuditRow.aggregate_id != generic_id,
                 )
             )
             assert task_source
@@ -187,7 +201,37 @@ def test_real_redis_workers_concurrently_deduplicate_committed_action(
         with ThreadPoolExecutor(max_workers=8) as executor:
             receipts = list(executor.map(read_notice, range(8)))
         assert len(set(receipts)) == 1
+
+        # Separate concurrent claim and completion rounds: a completed task cannot be reclaimed.
+        with ThreadPoolExecutor(max_workers=8) as executor:
+
+            def claim_generic(_: int) -> None:
+                with Session(engine) as session, session.begin():
+                    compose(session).tasks.claim(context, org, workspace, generic_id, 1)
+
+            list(executor.map(claim_generic, range(8)))
+        with ThreadPoolExecutor(max_workers=8) as executor:
+
+            def complete_generic(_: int) -> str:
+                with Session(engine) as session, session.begin():
+                    return str(
+                        compose(session)
+                        .tasks.complete(context, org, workspace, generic_id, 2)
+                        .completed_at
+                    )
+
+            completions = list(executor.map(complete_generic, range(8)))
+        assert len(set(completions)) == 1
         with Session(engine) as session:
+            for action in ("task.claimed", "task.completed"):
+                assert (
+                    session.scalar(
+                        select(func.count())
+                        .select_from(AuditRow)
+                        .where(AuditRow.aggregate_id == generic_id, AuditRow.type == action)
+                    )
+                    == 1
+                )
             assert (
                 session.scalar(
                     select(func.count())
