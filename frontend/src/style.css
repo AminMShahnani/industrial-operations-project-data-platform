@@ -20,3 +20,4 @@ summary { cursor: pointer; font-weight: 600; padding: .7rem 0; }
 fieldset { border: 1px solid #cedae1; margin: 1rem 0; }
 button { margin: .25rem .25rem .25rem 0; }
 [role="status"] { overflow-wrap: anywhere; }
+.sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }

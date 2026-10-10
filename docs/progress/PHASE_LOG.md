@@ -69,12 +69,12 @@ behavior. The runbook documents scope and rollback.
 
 The integration test creates an overdue item and checks admin visibility and a
 second workspace member's absence of that row; it skips locally because
-`IOP_TEST_DATABASE_URL` is not configured, and must run in hosted CI. The service
-projection unit test passes. Backend suite: 101 passed / 222 optional or
-infrastructure-dependent skips with a workspace-local temp directory. Ruff and
-format pass; strict mypy passes on 210 source files. Frontend lint/type/tests/build
-pass (19 tests), and OpenAPI/TypeScript contracts regenerate. P7-01 has an initial
-vertical slice but remains incomplete; P7-01 through P7-08 remain 0/8 accepted.
+`IOP_TEST_DATABASE_URL` is not configured. The service projection unit test passes.
+The frontend now displays this personal dataset in an accessible, cursor-paged table
+for the selected organization/workspace. Backend suite: 101 passed / 213 skipped /
+9 deselected with a workspace-local temp directory. Frontend lint, typecheck, 19 tests
+and production build pass. P7-01 has an initial vertical slice but remains incomplete;
+P7-01 through P7-08 remain 0/8 accepted.
 
 No migration or ADR is required for this personal query projection. Cross-user
 overdue aggregation is explicitly excluded until its reporting permission and
@@ -83,8 +83,17 @@ privacy boundary are decided; see Q-010. No Phase 8 implementation.
 Hosted run 38080630869 caught a test-only typing issue missed by the source-scoped
 local mypy invocation: the unit fixture used a dictionary instead of the typed
 `Assignment` contract. The fixture now constructs `Assignment`; whole-repository
-`uv run mypy` passes on 301 files, and the focused unit test passes. Rerun hosted CI
-for the corrective commit before recording hosted verification.
+`uv run mypy` passes on 301 files, and the focused unit test passes. Hosted run
+[38080915275](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/38080915275)
+for the corrective commit passed frontend but failed at backend pytest. Public run
+details show only the failing step; action logs require authenticated GitHub access,
+and `gh` is not installed in this checkout. Local database-backed API tests skip
+without `IOP_TEST_DATABASE_URL`, so backend hosted status remains unresolved and no
+Phase 7 criteria are accepted.
+
+The browser UI increment introduces no migration or new domain rule. Its frontend
+lint, strict typecheck, 19 tests and production build pass locally. It uses the
+existing typed API contract and does not broaden personal task visibility.
 
 ## Phase 6 webhook recovery, mounted secrets and runtime verification - 2026-10-10
 

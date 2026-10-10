@@ -5,13 +5,15 @@
 - Add the first Phase 7 governed dataset endpoint for a caller's overdue tasks,
   delegated to the task service's existing scoped personal query and returning a
   100-row-capped minimal projection. Add a PostgreSQL integration test for assignment
-  privacy and a service projection unit test. Cross-user aggregates, saved reports,
-  dashboards and export/import jobs remain unimplemented pending their contracts.
+  privacy and a service projection unit test. Add a browser view for the selected
+  workspace with accessible table semantics and cursor pagination. Frontend lint,
+  typecheck, 19 tests and build pass. Cross-user aggregates, saved reports, dashboards
+  and export/import jobs remain unimplemented pending their contracts. Latest hosted
+  backend run failed at pytest; see Phase 7 progress log, and no criteria are accepted.
 - Accept Phase 6 P6-01 through P6-08 after local quality gates, exact hosted run
   38079026238 on `b97822eb136c47946b6a1252149abc64fbf09f4b`, and project-owner
   verification of deployment secret-mount isolation and network egress controls.
-- Define Phase 7 reporting/export/import acceptance criteria. No Phase 7 feature
-  implementation is included in this checkpoint.
+- Define Phase 7 reporting/export/import acceptance criteria and record 0/8 accepted.
 
 - Add tenant-scoped webhook delivery history and reviewed replay with state/attempt
   hash previews, fresh operator and original-delegator authority, reasoned audit, and

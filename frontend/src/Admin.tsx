@@ -30,6 +30,9 @@ export function Administration() {
   const [busy, setBusy] = useState(false);
   const [acceptance, setAcceptance] = useState('token');
   const [emailDelivery, setEmailDelivery] = useState(false);
+  const [overdue, setOverdue] = useState<components['schemas']['OverdueTaskRow'][]>([]);
+  const [overdueCursor, setOverdueCursor] = useState<string | null>(null);
+  const [overdueMessage, setOverdueMessage] = useState('');
   const permissions = me?.memberships.find(item => item.organization_id === organization)?.permissions ?? [];
 
   useEffect(() => {
@@ -61,6 +64,32 @@ export function Administration() {
     }).catch(() => { if (current) setMessage('Workspaces could not be loaded.'); });
     return () => { current = false; };
   }, [api, organization, auth.isAuthenticated]);
+
+  useEffect(() => {
+    setOverdue([]); setOverdueCursor(null); setOverdueMessage('');
+    if (!organization || !workspace || !auth.isAuthenticated) return;
+    let current = true;
+    void api.GET('/api/v1/organizations/{organization_id}/workspaces/{workspace_id}/reports/overdue-tasks', {
+      params: { path: { organization_id: organization, workspace_id: workspace } },
+    }).then(result => {
+      if (!current) return;
+      if (result.data) { setOverdue(result.data.items); setOverdueCursor(result.data.next_cursor); }
+      else setOverdueMessage('Overdue tasks could not be loaded. Check your access and try again.');
+    }).catch(() => { if (current) setOverdueMessage('The overdue task report could not be reached.'); });
+    return () => { current = false; };
+  }, [api, organization, workspace, auth.isAuthenticated]);
+
+  async function loadMoreOverdue() {
+    if (!organization || !workspace || !overdueCursor) return;
+    setOverdueMessage('');
+    try {
+      const result = await api.GET('/api/v1/organizations/{organization_id}/workspaces/{workspace_id}/reports/overdue-tasks', {
+        params: { path: { organization_id: organization, workspace_id: workspace }, query: { cursor: overdueCursor } },
+      });
+      if (result.data) { setOverdue(items => [...items, ...result.data.items]); setOverdueCursor(result.data.next_cursor); }
+      else setOverdueMessage('More overdue tasks could not be loaded.');
+    } catch { setOverdueMessage('The overdue task report could not be reached.'); }
+  }
 
   async function createWorkspace(event: FormEvent<HTMLFormElement>) {
     event.preventDefault(); setBusy(true); setMessage('');
@@ -168,6 +197,17 @@ export function Administration() {
         <button disabled={busy}>Create workspace</button>
       </form>}
     </section>
+    {organization && workspace && <section aria-labelledby="overdue-heading">
+      <h2 id="overdue-heading">My overdue tasks</h2>
+      <p>Only tasks assigned to you in the selected workspace are shown.</p>
+      {overdueMessage && <p role="status">{overdueMessage}</p>}
+      {overdue.length === 0 && !overdueMessage ? <p>No overdue tasks.</p> : <table>
+        <caption className="sr-only">Your overdue tasks</caption>
+        <thead><tr><th scope="col">Task</th><th scope="col">Type</th><th scope="col">Due</th><th scope="col">Status</th></tr></thead>
+        <tbody>{overdue.map(task => <tr key={task.id}><th scope="row">{task.name}</th><td>{task.kind}</td><td>{new Date(task.due_at).toLocaleString()}</td><td>{task.state}</td></tr>)}</tbody>
+      </table>}
+      {overdueCursor && <button onClick={() => void loadMoreOverdue()}>Load more overdue tasks</button>}
+    </section>}
     {permissions.includes('iam.grants.manage') && workspace && <section><h2>Invite a workspace member</h2>
       <p>Review the selected organization and workspace before creating access.</p>
       <form onSubmit={event => void createInvitation(event)}>
