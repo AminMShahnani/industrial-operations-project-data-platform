@@ -8,7 +8,8 @@
   privacy and a service projection unit test. Add a browser view for the selected
   workspace with accessible table semantics and cursor pagination. Frontend lint,
   typecheck, 19 tests and build pass. Cross-user aggregates, saved reports, dashboards
-  and export/import jobs remain unimplemented pending their contracts. Latest hosted
+  and export/import jobs remain unimplemented pending their contracts. The opt-in PKCE
+  browser test checks successful report loading and the empty state. Latest hosted
   backend run failed at pytest; see Phase 7 progress log, and no criteria are accepted.
 - Accept Phase 6 P6-01 through P6-08 after local quality gates, exact hosted run
   38079026238 on `b97822eb136c47946b6a1252149abc64fbf09f4b`, and project-owner

@@ -174,10 +174,16 @@ def test_real_oidc_pkce_login_and_workspace_creation(monkeypatch: pytest.MonkeyP
                 ).to_be_visible()
                 page.get_by_label("Organization", exact=True).select_option(str(organization.id))
                 page.get_by_label("Workspace name", exact=True).fill("Browser created workspace")
-                page.get_by_role("button", name="Create workspace", exact=True).click()
+                with page.expect_response(
+                    lambda response: response.url.endswith("/reports/overdue-tasks")
+                ) as overdue_response:
+                    page.get_by_role("button", name="Create workspace", exact=True).click()
+                assert overdue_response.value.status == 200
                 expect(
                     page.get_by_role("status").filter(has_text="Workspace created.")
                 ).to_be_visible()
+                expect(page.get_by_role("heading", name="My overdue tasks")).to_be_visible()
+                expect(page.get_by_text("No overdue tasks.", exact=True)).to_be_visible()
                 page.get_by_label("Project name", exact=True).fill("Browser created project")
                 with page.expect_response(
                     lambda response: (

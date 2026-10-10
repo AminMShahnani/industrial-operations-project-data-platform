@@ -73,7 +73,10 @@ second workspace member's absence of that row; it skips locally because
 The frontend now displays this personal dataset in an accessible, cursor-paged table
 for the selected organization/workspace. Backend suite: 101 passed / 213 skipped /
 9 deselected with a workspace-local temp directory. Frontend lint, typecheck, 19 tests
-and production build pass. P7-01 has an initial vertical slice but remains incomplete;
+and production build pass. The opt-in PKCE browser flow now also asserts that the
+personal report request succeeds and its empty state renders after workspace creation;
+it is skipped locally without the dedicated `IOP_BROWSER_DATABASE_URL`. P7-01 has an
+initial vertical slice but remains incomplete;
 P7-01 through P7-08 remain 0/8 accepted.
 
 No migration or ADR is required for this personal query projection. Cross-user
