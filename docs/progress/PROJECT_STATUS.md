@@ -61,17 +61,16 @@ accepted ADR-0024; all local gates pass (285 backend/18 frontend tests), with
 hosted run 38052949486 passing both jobs on exact code d25ad7a. Controlled project
 tags/flags are implemented under ADR-0025, with scoped read/filter/page UI and
 immutable audited first-append evidence. All local gates pass (298 backend/18
-frontend tests); exact-code hosted verification is pending.
+frontend tests); hosted run 38057404691 passes both jobs on exact code b5e4581a80586b95960cdb192e83a6fadbf53d2d.
 Webhook implementation awaits Q-009 / proposed ADR-0026, which documents the
 network-egress and payload-disclosure boundary; the existing action remains
-fail-closed. Tag/flag exact-code hosted verification is in progress. Telemetry and
-remaining coverage are current-phase work. 0/8 accepted; Q-006 and Q-008 are resolved.
+fail-closed. Telemetry and remaining coverage are current-phase work. 0/8
+accepted; Q-006 and Q-008 are resolved.
 Phase 5 remains accepted on d91dfce / hosted run 37454353238.
 
 ## Blocked
 None. Q-008 resolved: user accepted claimant acknowledgement under ADR-0024.
-Generic tasks pass local/hosted gates; tags/flags pass local gates under ADR-0025
-and await exact-code hosted verification.
+Generic tasks and tags/flags pass local/hosted gates under ADR-0024/0025.
 Phase 6 remains 0/8 accepted.
 Q-007 resolved on 2026-10-10: user delegated the choice with "do best".
 ADR-0019 accepts token-free verified-email acceptance for new invitations,
@@ -85,11 +84,10 @@ Q-004 resolved by user: shared task claimed by one eligible member.
 Legacy export absent.
 
 ## Next 5 tasks
-1. Finish controlled tag/flag exact-code hosted verification.
-2. Resolve webhook egress and payload policy (Q-009); implement the accepted design.
-3. Complete queue/run telemetry and operator failure visibility.
-4. Complete remaining Phase 6 acceptance and fault/recovery coverage.
-5. Verify all Phase 6 local/hosted criteria before any Phase 7 work.
+1. Resolve webhook egress and payload policy (Q-009); implement the accepted design.
+2. Complete queue/run telemetry and operator failure visibility.
+3. Complete remaining Phase 6 acceptance and fault/recovery coverage.
+4. Verify all Phase 6 local/hosted criteria before any Phase 7 work.
 
 ## Test status
 141 backend tests pass locally without skips, including separate real Keycloak PKCE

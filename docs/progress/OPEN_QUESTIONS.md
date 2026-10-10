@@ -15,7 +15,9 @@ Controlled project annotations (2026-10-10): ADR-0025 uses existing project.read
 manage and accepted automation delegation for inert append-only labels. Labels do
 not alter access, lifecycle or record approval. No new unresolved security/domain
 question; unsupported target scopes fail explicitly. All local gates pass (298
-backend/18 frontend tests); exact-code hosted verification remains pending.
+backend/18 frontend tests). Hosted
+[38057404691](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/38057404691)
+passes both jobs on exact code b5e4581a80586b95960cdb192e83a6fadbf53d2d.
 
 ## Phase 6 generic task completion (resolved)
 

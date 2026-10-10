@@ -32,9 +32,10 @@ Real PKCE browser verification passes, including existing task/form/workflow/ema
 flows and delayed filter responses. Browser testing caught a sibling React key
 collision; a distinct panel key and single-panel assertion fix and cover it.
 Ruff lint/format (348 files), strict mypy (275 files), frontend lint/types/build,
-18 frontend tests, Alembic drift and generated OpenAPI/client checks pass.
-All 298 backend tests pass without skips in 274.79s. Exact-code hosted
-verification remains pending. Webhooks,
+18 frontend tests, Alembic drift and generated OpenAPI/client checks pass. Hosted
+[38057404691](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/38057404691)
+passes both jobs on exact code b5e4581a80586b95960cdb192e83a6fadbf53d2d.
+All 298 backend tests pass without skips in 274.79s. Webhook delivery,
 telemetry and remaining Phase 6 acceptance/fault coverage are current-phase work;
 no full phase criterion is newly accepted and no Phase 7 work starts.
 

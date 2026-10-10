@@ -5,7 +5,8 @@ egress and payload security policy. Current call_webhook fails closed; no unsafe
 network adapter or secret storage has been introduced. This is current Phase 6 work.
 
 Controlled tags/flags (2026-10-10): implementation passes all local gates (298
-backend/18 frontend tests) under ADR-0025; exact-code hosted verification is pending.
+backend/18 frontend tests) under ADR-0025. Hosted run
+38057404691 passes both jobs on exact code b5e4581a80586b95960cdb192e83a6fadbf53d2d.
 No acceptance shortcut, historical rewrite or Phase 7
 deferral; webhook delivery and telemetry remain separate required slices.
 
