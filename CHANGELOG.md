@@ -10,7 +10,8 @@
 - Add authenticated organization/workspace webhook endpoint administration UI for
   registration, immutable versioning and revocation. Secret references are write-only
   from the UI and remain stored externally. Frontend checks pass; delivery remains
-  fail-closed pending the deployment resolver and durable worker.
+  fail-closed pending the deployment resolver and durable worker. Hosted run
+  38065351280 passes both jobs on exact code f0c13473762d5452179fab58c2a90ebc326e7652.
 
 - Add a bounded direct HTTPS webhook transport foundation: validate all resolved
   addresses, pin TCP to a vetted IP while preserving TLS hostname checks, reject

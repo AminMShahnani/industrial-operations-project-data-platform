@@ -71,7 +71,9 @@ API responses. Existing server authorization remains authoritative. Endpoint
 versions remain immutable and outbound delivery stays disabled until the
 tenant-isolated resolver and durable delivery worker are implemented. Frontend lint,
 strict TypeScript, 18 unit tests and production build pass. Exact-code hosted checks
-are pending; no Phase 6 acceptance criterion is claimed (0/8).
+pass in [38065351280](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/38065351280)
+on commit `f0c13473762d5452179fab58c2a90ebc326e7652`; no Phase 6 acceptance criterion
+is claimed (0/8).
 
 ## Phase 6 webhook revocation at delivery - 2026-10-10
 

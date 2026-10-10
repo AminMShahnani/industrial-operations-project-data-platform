@@ -66,7 +66,8 @@ Q-009 is resolved and ADR-0026 accepted. Typed identifiers-only payload projecti
 canonical HMAC-SHA256 signing, DNS/IP policy checks, audited scoped immutable
 endpoint versions, and a pinned-address HTTPS transport foundation are implemented.
 Authenticated organization/workspace endpoint administration UI is also implemented
-and passes frontend local gates. The sender contract checks the current endpoint head
+and passes local gates; hosted run 38065351280 passes both jobs on exact code
+f0c13473762d5452179fab58c2a90ebc326e7652. The sender contract checks the current endpoint head
 on every attempt so revocation tombstones block older rule pins; the durable worker
 must supply that fresh head when delivery is integrated.
 Delivery remains fail-closed pending a deployment secret-resolver adapter and
