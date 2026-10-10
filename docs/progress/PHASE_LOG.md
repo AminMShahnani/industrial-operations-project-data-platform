@@ -1,5 +1,62 @@
 # Phase Log
 
+## Phase 6 final acceptance - 2026-10-10
+
+The user confirmed the deployment secret mount and webhook CIDR egress controls
+were verified and requested acceptance of all Phase 6 criteria. Exact-code hosted
+run [38079026238](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/38079026238)
+passes backend and frontend jobs on commit `b97822eb136c47946b6a1252149abc64fbf09f4b`.
+Local evidence recorded below covers 312 backend tests, the separate PKCE browser
+recovery flow, 19 frontend tests, Ruff, strict mypy, Alembic upgrade/drift and
+round-trip, OpenAPI generation, frontend checks/build. Deployment verification is
+accepted on the project owner's report; no credentials or external endpoint were
+handled by this implementation session.
+
+- P6-01 PASS: typed scoped rules and immutable activation; audited preview/activation.
+- P6-02 PASS: atomic operational events, durable dispatch and causation protection.
+- P6-03 PASS: delegated, rechecked execution authority and owning services.
+- P6-04 PASS: durable idempotent runs/receipts/attempts, bounded retry and reviewed replay.
+- P6-05 PASS: in-app, email and signed webhook delivery, including uncertain outcomes.
+- P6-06 PASS: scoped administration/recovery UI and bounded redacted histories.
+- P6-07 PASS: workers, periodic generation, telemetry, reconciliation, secret and egress
+  deployment contracts, guarded migrations and operations runbooks.
+- P6-08 PASS: local and exact-commit hosted quality gates, migrations and contracts pass.
+
+8/8 accepted. No Phase 6 acceptance item is deferred. Phase 7 may begin.
+
+## Phase 7 preparation - reporting, exports and import wizard foundation - 2026-10-10
+
+Requirements: docs/15 governs reporting datasets, saved report definitions,
+dashboards, exports and historical correctness; docs/16 requires tenant-scoped
+credentials/integration boundaries and CSV/XLSX transfer support; docs/04, 07,
+18-23 and 28 govern isolation, authorization, bounded jobs, contracts, testing and
+Definition of Done. Phase 6 is accepted 8/8; overall 7/11 phases accepted.
+
+Acceptance criteria before implementation:
+- P7-01: Governed reporting datasets enforce organization/workspace/project and
+  record authorization in application queries, and preserve historical definition
+  and measurement meaning.
+- P7-02: Saved report definitions provide bounded source, filter, column, sort and
+  grouping contracts; arbitrary SQL and uncurated joins are unavailable.
+- P7-03: Dashboard widgets use governed datasets and supported metric/trend/chart/
+  table/status/overdue shapes, with server-side authorization on every read.
+- P7-04: CSV/XLSX/PDF exports are bounded and reproducible; large exports are durable
+  background jobs, idempotent and access-checked both at generation and download.
+- P7-05: Excel/CSV migration wizard foundation supports safe upload/reference,
+  mapping, validation, dry-run preview and explicit bounded apply; imports do not
+  bypass owning domain services or overwrite immutable history.
+- P7-06: Accessible scoped UI supports report/dashboard authoring, job status,
+  authorized downloads and reviewable import previews/results.
+- P7-07: Migrations/rollback, tenant isolation, authorization negatives, bounded
+  resource behavior, audit, telemetry and worker failure/recovery are tested and
+  documented in an operations runbook.
+- P7-08: Full unit/integration/API/browser/worker tests, lint, types, migrations,
+  generated contracts and production build pass locally and on exact hosted code;
+  progress and changelog evidence are committed.
+
+0/8 accepted; no Phase 8 implementation. Existing synchronous CSV master-data
+imports and paged exports remain their Phase 2 feature and are not silently replaced.
+
 ## Phase 6 webhook recovery, mounted secrets and runtime verification - 2026-10-10
 
 Requirements: ADR-0026 requires an external tenant-scoped key provider, bounded
@@ -27,9 +84,10 @@ review and duplicate acknowledgement without external delivery. Ruff check/forma
 (372 files), strict mypy (297 files), OpenAPI drift, frontend lint/types/tests (19),
 API type generation and production build pass.
 
-No Phase 6 acceptance criterion is claimed. P6-01 through P6-08 remain pending exact
-hosted-code evidence and deployment verification of externally provisioned tenant
-key mounts plus network egress enforcement. No customer endpoint was contacted.
+At this checkpoint, the eight criteria were awaiting exact hosted-code evidence and
+deployment verification. Both were subsequently supplied: exact hosted run
+38079026238 passes the implementation commit, and the owner reports the mounted
+tenant keys and network egress controls verified. See Phase 6 final acceptance above.
 
 ## Phase 6 webhook security foundation - 2026-10-10
 

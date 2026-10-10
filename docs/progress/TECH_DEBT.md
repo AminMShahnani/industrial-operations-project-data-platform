@@ -14,16 +14,16 @@ Migration `fc5310a0d279` reconciles endpoint audit foreign keys to the tenant-co
 constraint used in the local deployed schema. Operator history and reviewed replay
 are now available through scoped API/UI with current operator and original delegator
 authority checks. ADR-0027 adds an external secret-store mounted-volume adapter; the
-application fails closed while it is not configured. Still open: deployment must
-mount verified tenant-scoped key versions and enforce the approved egress policy at
-its network boundary. Phase 6 cannot be accepted on code-only checks without those
-deployment controls and complete exact-code CI verification.
+application fails closed while it is not configured. The project owner reports
+tenant-scoped key versions and approved egress controls verified; exact hosted run
+38079026238 passes on `b97822eb136c47946b6a1252149abc64fbf09f4b`. Phase 6 is accepted
+8/8. Keep fail-closed runtime behavior if configuration is absent or invalid.
 The sender now requires the latest endpoint head on each attempt so revocation cannot
 be bypassed by an older active rule pin.
 Endpoint version administration passes hosted run 38062270395 on exact code
 9ab5647c74e5103426b3f419934a9b1947634835; pinned transport foundation passes run
-38063940999 on exact code 0bc54de5fb009fe0f7cc3765fd8b9766c8bd7f74. The deployment
-mount and network policy must be verified before external sends are enabled.
+38063940999 on exact code 0bc54de5fb009fe0f7cc3765fd8b9766c8bd7f74. Deployment
+verification has since been reported by the project owner.
 Latest-head revocation enforcement passes both jobs on exact code
 a9843addf6484edd0aebf10a098c9b7cb273e259 / run 38066369565.
 

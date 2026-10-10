@@ -1,6 +1,12 @@
 # Changelog
 
-## Unreleased - Phase 6 in progress (2026-10-10)
+## Unreleased - Phase 7 in progress (2026-10-10)
+
+- Accept Phase 6 P6-01 through P6-08 after local quality gates, exact hosted run
+  38079026238 on `b97822eb136c47946b6a1252149abc64fbf09f4b`, and project-owner
+  verification of deployment secret-mount isolation and network egress controls.
+- Define Phase 7 reporting/export/import acceptance criteria. No Phase 7 feature
+  implementation is included in this checkpoint.
 
 - Add tenant-scoped webhook delivery history and reviewed replay with state/attempt
   hash previews, fresh operator and original-delegator authority, reasoned audit, and

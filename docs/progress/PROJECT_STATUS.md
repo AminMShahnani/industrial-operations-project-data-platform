@@ -1,10 +1,10 @@
 # Project Status
 
-Status: PHASE 6 IN PROGRESS
-Current phase: Phase 6 - automation and notifications
+Status: PHASE 7 IN PROGRESS
+Current phase: Phase 7 - reporting, export and import wizard foundation
 Last updated: 2026-10-10
-Overall completion: 6/11 phases accepted. Phase 0 through Phase 5 each
-satisfy 8/8 criteria. Phase 5: P5-01 through P5-08 PASS.
+Overall completion: 7/11 phases accepted. Phase 0 through Phase 6 each
+satisfy 8/8 criteria. Phase 6: P6-01 through P6-08 PASS.
 No unsupported project-wide percentage is reported.
 
 ## Completed modules
@@ -22,7 +22,7 @@ No unsupported project-wide percentage is reported.
 - Preserved correction/amendment links, task transitions and approved defaults.
 - Scoped assigned-action inbox, administration and immutable evidence/history UI.
 
-## In progress
+## Completed Phase 6
 Phase 6 typed event/delivery contracts, bounded retry/causation rules and tested
 Dramatiq transport. Durable outbox/rule/run persistence, transactional source capture,
 delegated authority, receipts/attempts and replay application services are implemented.
@@ -84,24 +84,26 @@ Full local backend regression for the webhook delivery/recovery increment passes
 browser test also passes and covers webhook recovery without external delivery.
 Ruff check/format (372 files), strict mypy (297 files), Alembic upgrade/drift,
 OpenAPI drift and frontend lint/type/test/build pass. The generated TypeScript client
-is updated for webhook delivery history/replay. Hosted verification for this exact
-code is pending.
+is updated for webhook delivery history/replay. Exact-code hosted run 38079026238
+passes backend and frontend jobs on `b97822eb136c47946b6a1252149abc64fbf09f4b`.
+The project owner reports deployment secret mount and network egress verification
+complete; Phase 6 is accepted 8/8.
 Migration `ee31ac92bf10` adds guarded mutable delivery state and immutable audited
 attempts, and refuses populated rollback. Migration `fc5310a0d279` aligns endpoint
 audit FKs to the tenant-composite constraint. Reviewed webhook history/replay API/UI,
 ADR-0027 mounted secret resolution and a repeatable dispatcher are implemented.
-Local tests cover expired claims and duplicate-risk acknowledgement. Deployment
-mount, network egress policy, remaining coverage and exact-code hosted CI are open. 0/8
-accepted; Q-006 and Q-008 are resolved.
+Local tests cover expired claims and duplicate-risk acknowledgement. Exact-code hosted
+verification passes; deployment controls are reported verified by the project owner.
+Phase 6 acceptance is 8/8; Q-006 and Q-008 are resolved.
 Phase 5 remains accepted on d91dfce / hosted run 37454353238.
 
-## Blocked
-Production webhook sending and Phase 6 acceptance remain blocked on deployment
-configuration: provision the read-only tenant-scoped secret mount and enforce the
-matching network egress policy. The application remains fail-closed until both pass.
+## Current blockers
+No known Phase 6 blocker remains after exact hosted CI and owner-reported deployment
+verification. The application still fails closed if runtime secret configuration is
+absent or invalid.
 Q-008 resolved: user accepted claimant acknowledgement under ADR-0024.
 Generic tasks and tags/flags pass local/hosted gates under ADR-0024/0025.
-Phase 6 remains 0/8 accepted.
+Phase 6 is accepted 8/8.
 Q-007 resolved on 2026-10-10: user delegated the choice with "do best".
 ADR-0019 accepts token-free verified-email acceptance for new invitations,
 preserving existing bearer-token invitations. Lifecycle passes local/hosted verification;
@@ -113,18 +115,29 @@ ADR-0010 accepted on 2026-10-06.
 Q-004 resolved by user: shared task claimed by one eligible member.
 Legacy export absent.
 
+## In progress: Phase 7
+P7-01 through P7-08 are defined in the Phase Log from docs/15, docs/16 and
+cross-cutting security, data, API, testing and operations requirements. No Phase 7
+feature code has started. Existing Phase 2 synchronous, bounded master-data transfer
+behavior remains unchanged. Initial inspection confirms the reporting module contains
+only empty architectural boundaries; there are no report datasets, saved definitions,
+dashboard widgets or background export/import job contracts yet. Existing master-data
+transfer directly exercises its owning service and emits audits, but remains limited
+to CSV/XLSX synchronous imports and 100-row export pages. Reporting projections must
+consume explicit read ports/application contracts rather than unrelated tables.
+
 ## Next 5 tasks
-1. Configure an externally managed read-only secret mount and verify tenant/key-version isolation.
-2. Enforce and verify webhook CIDR egress policy at the deployment network boundary.
-3. Run full backend/API/browser/worker tests and migration round-trip/drift on a fresh database.
-4. Verify CI on the exact phase implementation and close remaining fault/recovery coverage.
-5. Mark P6-01 through P6-08 from recorded evidence; accept Phase 6 only if every gate passes.
+1. Inspect reporting, export and import application contracts and persistence boundaries.
+2. Specify governed datasets, scope filters and historical-correctness behavior.
+3. Define saved report and dashboard schemas before migrations or API implementation.
+4. Design bounded export/import jobs with generation/download access checks.
+5. Implement a tested vertical slice after material domain/security questions are resolved.
 
 ## Test status
-Current Phase 6 webhook checkpoint: 312 backend tests and one real PKCE browser flow
+Phase 6 final checkpoint: 312 backend tests and one real PKCE browser flow
 pass; 19 frontend tests pass. Migration round-trip/drift, OpenAPI/client generation,
-Ruff, strict mypy and frontend build pass. Webhook verification uses fake transports;
-the mounted provider and network egress policy remain deployment gates.
+Ruff, strict mypy and frontend build pass. Exact hosted run 38079026238 passes both
+jobs; deployment controls are verified per the project owner's report.
 141 backend tests pass locally without skips, including separate real Keycloak PKCE
 submitter/approver logins, concurrent approval retries, preserved corrections,
 live group/project revocation and 156-action paged history. PostgreSQL migration

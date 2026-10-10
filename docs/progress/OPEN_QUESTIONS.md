@@ -1,5 +1,20 @@
 # Open Questions
 
+## Phase 7 reporting/export/import foundation
+
+No unresolved domain or security decision blocks Phase 7 preparation. The reporting
+and transfer capabilities must use governed datasets and owning application
+services, with server-side authorization and bounded durable jobs as defined in
+P7-01 through P7-08 in `PHASE_LOG.md`. Any later ambiguity about historical metric
+semantics, dataset scope, or import overwrite behavior must be resolved before its
+affected implementation slice; do not infer behavior from the legacy MVP.
+
+## Phase 6 webhook deployment verification (reported complete)
+
+The project owner reports tenant-isolated read-only signing-key mounts and matching
+network egress controls verified on 2026-10-10. This satisfies the deployment
+verification input for Phase 6 acceptance; runtime remains fail-closed if missing.
+
 ## Phase 6 webhook security boundary (resolved)
 
 - Q-009 (2026-10-10): Resolved when the user selected the documented
