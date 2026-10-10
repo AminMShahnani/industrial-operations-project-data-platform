@@ -181,5 +181,5 @@ ADR-0020 records explicit organization-admin queue intent, fresh original delega
 source-owning eligibility, external tenant secrets, uncertain-send recovery and
 exact reviewed replay. It does not enable automatic opt-in/backfill or rule email
 channels. No unresolved security/domain boundary or industry coupling is introduced.
-All local gates pass (240 backend/14 frontend tests); exact-code hosted verification
-is pending. Phase 6 remains open.
+All local gates pass (240 backend/14 frontend tests); hosted run 38042281045
+passes both jobs on exact code ee70500. Phase 6 remains open.

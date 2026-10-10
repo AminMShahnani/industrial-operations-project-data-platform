@@ -874,5 +874,8 @@ exact replay, attempt caps, real Redis duplicate workers and send/commit crash
 recovery. All 240 backend tests pass without skips in 204.87s; all 14 frontend
 tests pass. Ruff check/format (330 files), strict mypy (262 files), frontend
 lint/types/build, empty migration round-trip/drift and generated OpenAPI/client
-checks pass. Exact-code hosted verification is pending. Phase 6 stays 0/8
+checks pass. Hosted run 38042281045 passes both jobs on exact code
+ee705002772df68d9ea0be34b9c07a68a2cfb35a, including Linux gates, real browser
+flows, committed Redis worker/concurrency/crash recovery, migrations and generated
+contracts. No external email was sent. Phase 6 stays 0/8
 accepted; automatic email capture/channels and other remaining work are not deferred.

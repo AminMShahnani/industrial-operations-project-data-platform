@@ -44,7 +44,7 @@ and current inviter authority. All local and hosted gates pass on final code
 82cf4e5 / run 38036138271. Explicit scoped SMTP queue/dispatch/worker and reviewed
 replay are implemented under ADR-0020, with immutable attempt evidence and guarded
 migration 208f826ca492. All local gates pass (240 backend/14 frontend tests);
-exact-code hosted verification is pending. Automatic
+hosted run 38042281045 passes both jobs on exact code ee70500. Automatic
 email capture/action channels remain current Phase 6 requirements.
 Generic tasks, tags/flags, webhooks, automatic email capture/channels,
 rule/run UI and telemetry remain current-phase
@@ -55,7 +55,7 @@ Phase 5 remains accepted on d91dfce / hosted run 37454353238.
 None. Q-007 resolved on 2026-10-10: user delegated the choice with "do best".
 ADR-0019 accepts token-free verified-email acceptance for new invitations,
 preserving existing bearer-token invitations. Lifecycle passes local/hosted verification;
-Scoped SMTP verification and automatic email capture remain current Phase 6 work.
+Scoped SMTP delivery/recovery is verified; automatic email capture remains Phase 6 work.
 Q-006 resolved: activating administrator delegates bounded scoped authority,
 rechecked for every run/retry. ADR-0011 accepted. Q-005 resolved: independent
 approval is mandatory, including administrators.
@@ -64,7 +64,7 @@ Q-004 resolved by user: shared task claimed by one eligible member.
 Legacy export absent.
 
 ## Next 5 tasks
-1. Verify the scoped SMTP increment, then integrate explicit email intent capture
+1. Integrate explicit email intent capture
    for invitation/notice producers and supported action channels under ADR-0020.
 2. Expose scoped rule/run management and audited replay through typed API/UI.
 3. Implement generic task, tag/flag and webhook handlers.

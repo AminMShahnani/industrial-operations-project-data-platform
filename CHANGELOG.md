@@ -9,8 +9,10 @@
   loopback SMTP only. Add guarded additive migration `208f826ca492`. Automatic
   email capture/action channels and other Phase 6 requirements remain open.
   All local gates pass: 240 backend and 14 frontend tests, Ruff/strict types,
-  migration round-trip/drift and generated contracts/build. Hosted verification
-  is pending; Phase 6 remains unaccepted.
+  migration round-trip/drift and generated contracts/build. Hosted
+  [38042281045](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/38042281045)
+  passes both jobs on exact code ee70500, including browser/committed workers,
+  Linux quality gates and migrations. Phase 6 remains unaccepted.
 
 - Accept ADR-0019 under the user's delegated choice: token-free verified-email
   invitations with idempotent creation, fresh scoped inviter authority, exact
