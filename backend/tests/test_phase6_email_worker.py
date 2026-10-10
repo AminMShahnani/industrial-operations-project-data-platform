@@ -71,11 +71,17 @@ def test_committed_workers_deduplicate_and_recover_uncertainty(
             scope = Scope(org, ScopeType.WORKSPACE, workspace)
             identifiers = []
             for _ in range(3):
-                invitation = services.identity.invite_verified_email(
-                    actor, "recipient@example.test", Role.VIEWER, scope, uuid7()
+                invitation = services.email.invite(
+                    actor,
+                    "recipient@example.test",
+                    Role.VIEWER,
+                    scope,
+                    uuid7(),
+                    True,
+                    "Fixture producer request",
                 )
                 delivery = email_service(session).queue(
-                    actor, org, "invitation", invitation.id, None, True, "Fixture request"
+                    actor, org, "invitation", invitation.id, None
                 )
                 identifiers.append(delivery.id)
         first, crashed, revoked = identifiers

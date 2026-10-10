@@ -11,6 +11,7 @@ from operations.modules.audit.infrastructure.persistence import AuditRow
 from operations.modules.iam.application.contracts import Role, Scope, ScopeType
 from operations.modules.iam.infrastructure.persistence import GrantRow
 from operations.modules.identity.application.contracts import Principal, RequestContext
+from operations.modules.notifications.infrastructure.email_persistence import EmailRow
 from operations.modules.organizations.application.contracts import OrganizationSettings
 from operations.platform.config import Settings
 from operations.platform.database import create_database_engine
@@ -56,14 +57,32 @@ def test_committed_invitation_retries_and_acceptance_create_one_grant(
             with Session(engine) as session, session.begin():
                 return str(
                     compose(session, principal)
-                    .identity.invite_verified_email(
-                        actor, "invitation-fixture@example.test", Role.VIEWER, scope, identifier
+                    .email.invite(
+                        actor,
+                        "invitation-fixture@example.test",
+                        Role.VIEWER,
+                        scope,
+                        identifier,
+                        True,
+                        "Requested concurrent invitation",
                     )
                     .id
                 )
 
         with ThreadPoolExecutor(max_workers=8) as pool:
             assert list(pool.map(lambda _: create(), range(8))) == [str(identifier)] * 8
+        with Session(engine) as session:
+            assert (
+                session.scalar(
+                    select(func.count())
+                    .select_from(EmailRow)
+                    .where(
+                        EmailRow.organization_id == org,
+                        EmailRow.source_id == identifier,
+                    )
+                )
+                == 1
+            )
 
         def accept() -> bool:
             try:

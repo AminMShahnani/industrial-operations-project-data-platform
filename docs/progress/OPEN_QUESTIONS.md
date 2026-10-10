@@ -183,3 +183,13 @@ exact reviewed replay. It does not enable automatic opt-in/backfill or rule emai
 channels. No unresolved security/domain boundary or industry coupling is introduced.
 All local gates pass (240 backend/14 frontend tests); hosted run 38042281045
 passes both jobs on exact code ee70500. Phase 6 remains open.
+
+## Explicit email source capture - 2026-10-10
+
+ADR-0021 uses the existing organization-admin delegation for explicit invitation
+requests and activated rule channel lists. Email-only evidence is retained privately;
+no mailbox delivery claim, tenant-wide opt-in, historical backfill or source identity
+bypass is introduced. Task/workflow email uses explicitly activated notify rules,
+preserving fixed automatic in-app projections and existing delegated authority.
+No new unresolved security/domain question. All local gates pass (250 backend/
+14 frontend tests); exact-code hosted verification is pending.

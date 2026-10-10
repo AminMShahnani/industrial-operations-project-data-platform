@@ -5,8 +5,8 @@ from uuid import NAMESPACE_URL, UUID, uuid5, uuid7
 
 from operations.contracts import ServiceError
 from operations.modules.audit.application.contracts import AuditDetails, AuditEvent
-from operations.modules.iam.application.contracts import Scope, ScopeType
-from operations.modules.identity.application.contracts import RequestContext
+from operations.modules.iam.application.contracts import Role, Scope, ScopeType
+from operations.modules.identity.application.contracts import Invitation, RequestContext
 from operations.modules.notifications.application.email_contracts import (
     EmailAttempt,
     EmailContent,
@@ -23,6 +23,33 @@ class EmailService:
     def __init__(self, store: EmailStore, notices: NotificationService) -> None:
         self.store, self.notices = store, notices
         self.identity = notices.identity
+
+    def invite(
+        self,
+        actor: RequestContext,
+        email: str,
+        role: Role,
+        scope: Scope,
+        identifier: UUID,
+        email_delivery: bool = False,
+        email_reason: str | None = None,
+    ) -> Invitation:
+        if email_delivery:
+            self.administrator(actor, scope.organization_id)
+            if not email_reason or not 1 <= len(email_reason.strip()) <= 500:
+                raise ServiceError(422, "email_reason_required")
+        invitation = self.identity.invite_verified_email(actor, email, role, scope, identifier)
+        if email_delivery:
+            self.queue(
+                actor,
+                scope.organization_id,
+                "invitation",
+                invitation.id,
+                None,
+                True,
+                email_reason,
+            )
+        return invitation
 
     def administrator(self, actor: RequestContext, org: UUID) -> UUID:
         self.identity.organizations.active(org)

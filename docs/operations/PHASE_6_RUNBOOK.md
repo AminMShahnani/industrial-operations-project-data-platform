@@ -368,7 +368,10 @@ delivery ID and queue audit atomically. Repeating this command preserves the sam
 delivery and attempt history. Addresses and fixed message text are rendered only
 at send time through the owning identity/notification services. This queue does
 not opt in tenants, capture all future notices, or backfill historical email.
-Rule email channels remain unavailable pending their Phase 6 capture integration.
+ADR-0021 now supports explicit email channels on newly authored/activated notify
+actions. Existing in-app definitions and automatic task/workflow projection remain
+unchanged. Queue capture works while SMTP is disabled; configure the tenant profile
+and periodically dispatch to send captured intents.
 
 Start the separate worker and preview/dispatch a tenant batch:
 
@@ -405,3 +408,41 @@ Stop queue/dispatch and the worker to disable sending. Empty tables can downgrad
 to `e18c49c4be63`; populated downgrade refuses before removing either ledger.
 Preserve evidence and use a forward fix or verified full restore with a write-replay
 plan. Never delete attempt/source/audit history to force rollback or redelivery.
+
+## Explicit invitation and rule email capture
+
+Upgrade to `5caef6ad5721` before enabling the new source paths. Existing notices
+remain visible with `in_app=true`; their IDs, source bindings and audit/read history
+are preserved. The new partial index filters visible notices before inbox paging.
+
+An organization administrator can select **Verified email sign-in link**, check
+**Email the sign-in invitation**, and provide an **Email request reason** in the
+workspace invitation form. The typed creation API accepts `email_delivery=true`
+and `email_reason` with the existing exact invitation UUID. Creation and email
+queue/audit commit atomically. Retries produce one invitation and one email intent.
+Default `email_delivery=false` preserves manual sharing. A false retry does not
+cancel previously queued email. Workspace invitation managers without organization
+management authority can create manual invitations but cannot delegate email.
+The UI says queued rather than claiming provider/mailbox delivery.
+
+Notify actions accept unique channel lists `["in_app"]`, `["email"]`, or both in
+either order. The activating organization administrator delegates those exact
+immutable channels and captured recipients. Automation commits minimal notice,
+email intent, action receipt and audits together inside its run savepoint. Failure
+rolls back the entire attempt. No SMTP or broker publication occurs in that transaction.
+Email-only notices remain immutable internal source evidence; inbox/detail/read
+and cursor APIs exclude them. Source authorization is still checked when rendering
+email. A restored grant does not backfill skipped delivery, and duplicate dispatch
+does not reset accepted mail. Use the same scoped SMTP dispatcher and worker above.
+
+This does not introduce tenant-wide opt-in or implicit email for task assignment,
+workflow review/notify or reminder projections. Their existing in-app behavior and
+historical handoffs remain intact. Configure email on supported task/workflow events
+through explicitly activated notify rules. Rule management API/UI and other handlers/
+telemetry remain Phase 6 requirements.
+
+Downgrade to `208f826ca492` is allowed only when no email-channel rule version or
+email-only notice exists; the old SQL channel guard and schema are restored. With
+retained email channel evidence, rollback refuses before changes. Stop producers,
+dispatch and workers, then use a forward fix or verified full restore with a write
+replay plan. Never edit immutable versions, notices or attempts to force downgrade.

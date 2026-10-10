@@ -12,14 +12,13 @@ from operations.composition import compose
 from operations.contracts import ServiceError
 from operations.modules.notifications.application.email_contracts import EmailTransport
 from operations.modules.notifications.application.email_service import EmailService
-from operations.modules.notifications.infrastructure.email_persistence import EmailRepository
 from operations.modules.notifications.infrastructure.smtp import SmtpTransport, load_profile
 from operations.platform.config import Settings
 from operations.platform.database import create_database_engine
 
 
 def email_service(session: Session, settings: Settings | None = None) -> EmailService:
-    return EmailService(EmailRepository(session), compose(session, settings=settings).notifications)
+    return compose(session, settings=settings).email
 
 
 def process_email(

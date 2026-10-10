@@ -21,6 +21,7 @@ class Notice(Command):
     position: int | None = Field(default=None, ge=0, le=19)
     origin: Literal["automation", "automatic"] = "automation"
     source_intent_id: UUID | None = None
+    in_app: bool = True
     topic: NoticeTopic
     source_kind: NoticeSource
     source_id: UUID
@@ -34,7 +35,8 @@ class Notice(Command):
             if self.run_id is None or self.position is None or self.source_intent_id is not None:
                 raise ValueError("notification_automation_binding_required")
         elif (
-            self.run_id is not None
+            not self.in_app
+            or self.run_id is not None
             or self.position is not None
             or self.source_intent_id is None
             or self.source_kind not in {"task", "workflow"}

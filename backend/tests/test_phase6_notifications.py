@@ -263,7 +263,7 @@ def test_notification_channels_and_duplicate_recipients_fail_closed(api: Api) ->
     workspace = api.workspace(org)
     actor, user = context(api, org)
     for action in (
-        NotifyAction(kind="notify", recipients=[user], channels=["email"]),
+        NotifyAction(kind="notify", recipients=[user], channels=["email", "email"]),
         NotifyAction(kind="notify", recipients=[user, user]),
     ):
         with pytest.raises(ServiceError):

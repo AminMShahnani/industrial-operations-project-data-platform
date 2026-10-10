@@ -2910,6 +2910,11 @@
             "title": "Id",
             "type": "string"
           },
+          "in_app": {
+            "default": true,
+            "title": "In App",
+            "type": "boolean"
+          },
           "organization_id": {
             "format": "uuid",
             "title": "Organization Id",
@@ -5473,6 +5478,24 @@
             "format": "email",
             "title": "Email",
             "type": "string"
+          },
+          "email_delivery": {
+            "default": false,
+            "title": "Email Delivery",
+            "type": "boolean"
+          },
+          "email_reason": {
+            "anyOf": [
+              {
+                "maxLength": 500,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Email Reason"
           },
           "id": {
             "format": "uuid",

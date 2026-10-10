@@ -44,9 +44,13 @@ and current inviter authority. All local and hosted gates pass on final code
 82cf4e5 / run 38036138271. Explicit scoped SMTP queue/dispatch/worker and reviewed
 replay are implemented under ADR-0020, with immutable attempt evidence and guarded
 migration 208f826ca492. All local gates pass (240 backend/14 frontend tests);
-hosted run 38042281045 passes both jobs on exact code ee70500. Automatic
-email capture/action channels remain current Phase 6 requirements.
-Generic tasks, tags/flags, webhooks, automatic email capture/channels,
+hosted run 38042281045 passes both jobs on exact code ee70500. Explicit transactional
+invitation opt-in and immutable notify email channels are now implemented under
+ADR-0021, including email-only evidence visibility and API/browser creation.
+All local gates pass (250 backend/14 frontend tests); exact-code hosted verification
+is pending. Task/workflow email uses explicit activated notify rules; fixed
+automatic in-app projections remain unchanged.
+Generic tasks, tags/flags, webhooks,
 rule/run UI and telemetry remain current-phase
 work. 0/8 accepted; Q-006 is resolved.
 Phase 5 remains accepted on d91dfce / hosted run 37454353238.
@@ -55,7 +59,8 @@ Phase 5 remains accepted on d91dfce / hosted run 37454353238.
 None. Q-007 resolved on 2026-10-10: user delegated the choice with "do best".
 ADR-0019 accepts token-free verified-email acceptance for new invitations,
 preserving existing bearer-token invitations. Lifecycle passes local/hosted verification;
-Scoped SMTP delivery/recovery is verified; automatic email capture remains Phase 6 work.
+Scoped SMTP delivery/recovery is verified; explicit source capture verification
+remains Phase 6 work.
 Q-006 resolved: activating administrator delegates bounded scoped authority,
 rechecked for every run/retry. ADR-0011 accepted. Q-005 resolved: independent
 approval is mandatory, including administrators.
@@ -64,8 +69,7 @@ Q-004 resolved by user: shared task claimed by one eligible member.
 Legacy export absent.
 
 ## Next 5 tasks
-1. Integrate explicit email intent capture
-   for invitation/notice producers and supported action channels under ADR-0020.
+1. Verify explicit invitation/notify email capture under ADR-0021.
 2. Expose scoped rule/run management and audited replay through typed API/UI.
 3. Implement generic task, tag/flag and webhook handlers.
 4. Complete queue/run telemetry and operator failure visibility.
@@ -221,7 +225,12 @@ generated contracts. The deterministic fixture repair also passes 46 affected te
 locally in 101.42s. Phase 6 remains 0/8 accepted.
 
 ## Migration status
-Development, isolated test and retained browser databases are at e18c49c4be63.
+Development, isolated test and retained browser databases are at 5caef6ad5721.
+Explicit email channels add immutable notice visibility and a filtered cursor index.
+Existing notice IDs/source/audit/read history remain intact. Empty/default-only
+round-trip and drift pass; email channel evidence blocks populated rollback.
+Prior SMTP migration 208f826ca492 preserves immutable source/attempt history and
+refuses populated rollback. See the Phase 6 runbook for source/worker rollback.
 Verified-email invitation migration preserves old mode/digest/timestamps, enforces
 credential-mode coherence and immutable binding/one-way acceptance. Token-only
 rollback preserves rows; populated new-mode rollback refuses before data changes.

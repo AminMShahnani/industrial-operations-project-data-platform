@@ -6,6 +6,7 @@ from uuid import UUID
 from pydantic import AwareDatetime, Field
 
 from operations.contracts import Command
+from operations.modules.identity.application.contracts import RequestContext
 
 type EmailState = Literal["pending", "sending", "sent", "retry", "uncertain", "failed", "skipped"]
 type EmailKind = Literal["invitation", "notice"]
@@ -60,6 +61,19 @@ class EmailStore(Protocol):
     def save(self, delivery: EmailDelivery) -> None: ...
     def attempt(self, attempt: EmailAttempt) -> None: ...
     def due(self, org: UUID, now: datetime) -> list[UUID]: ...
+
+
+class EmailCapture(Protocol):
+    def queue(
+        self,
+        actor: RequestContext,
+        org: UUID,
+        kind: EmailKind,
+        source: UUID,
+        recipient: UUID | None,
+        apply: bool = False,
+        reason: str | None = None,
+    ) -> EmailDelivery: ...
 
 
 class EmailReview(Command):

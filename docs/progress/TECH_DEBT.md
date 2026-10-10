@@ -169,3 +169,12 @@ bounded network operations; assess contention in Phase 10 without weakening fres
 revocation checks. No evidence rewrite or new acceptance debt is introduced.
 All local gates pass (240 backend/14 frontend tests); hosted run 38042281045
 passes both jobs on exact code ee70500. No quality or phase acceptance gate is waived.
+
+## Explicit email source capture - 2026-10-10
+
+Invitation and activated notify intent capture is implemented under ADR-0021, with
+atomic source/notice/audit handoff and private email-only evidence. No historical
+data rewrite or acceptance deferral. Scoped
+rule/run management API/UI, remaining handlers and telemetry remain current Phase 6
+requirements. All local gates pass (250 backend/14 frontend tests); exact-code
+hosted verification is pending.

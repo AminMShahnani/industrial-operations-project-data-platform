@@ -2570,6 +2570,11 @@ export interface components {
              */
             id: string;
             /**
+             * In App
+             * @default true
+             */
+            in_app: boolean;
+            /**
              * Organization Id
              * Format: uuid
              */
@@ -3572,6 +3577,13 @@ export interface components {
              * Format: email
              */
             email: string;
+            /**
+             * Email Delivery
+             * @default false
+             */
+            email_delivery: boolean;
+            /** Email Reason */
+            email_reason?: string | null;
             /**
              * Id
              * Format: uuid

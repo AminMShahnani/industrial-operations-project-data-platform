@@ -2,6 +2,16 @@
 
 ## Unreleased - Phase 6 in progress (2026-10-10)
 
+- Add explicit transactional email capture for verified-email invitations and
+  activated notify action channels under ADR-0021. Expose invitation opt-in/reason
+  in the typed API/browser form. Email-only rule notices retain minimal immutable
+  evidence while inbox/detail/read stay private. Preserve manual defaults and
+  automatic in-app projections. Add guarded migration `5caef6ad5721`, source
+  rollback/dedup tests, real browser opt-in and rule-to-Redis-to-loopback-SMTP checks.
+  All local gates pass (250 backend/14 frontend tests, lint/types, migrations and
+  generated contracts/build). Exact-code hosted verification is pending;
+  Phase 6 remains unaccepted.
+
 - Implement explicit scoped SMTP queue/worker/dispatch and reviewed replay under
   ADR-0020. Preserve source IDs, fresh authority, immutable attempt/audit evidence,
   bounded retries and stable Message-ID. Expired claims become uncertain without

@@ -49,3 +49,10 @@ tenant isolation, revocation, idempotency, duplicate workers, lease recovery, sa
 retry, uncertainty, replay conflicts/caps, SMTP protocol and secret redaction.
 SMTP tests use only fake transports or loopback sinks; no external mail is sent.
 Phase 6 remains open and Core remains industry-neutral.
+
+## Explicit source capture extension
+
+ADR-0021 implements the previously pending per-invitation/per-rule capture handoff.
+Immutable notify channels can now explicitly request email; manual defaults and
+automatic task/workflow in-app projections are preserved. Delivery/replay semantics,
+tenant secrets and fresh original queue authority remain as decided above.

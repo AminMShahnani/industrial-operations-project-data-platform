@@ -25,8 +25,10 @@ from operations.modules.master_data.application.references import DataReferences
 from operations.modules.master_data.application.service import MasterDataService
 from operations.modules.master_data.infrastructure.persistence import DataRepository
 from operations.modules.master_data.infrastructure.tabular import TabularFiles
+from operations.modules.notifications.application.email_service import EmailService
 from operations.modules.notifications.application.service import NotificationService
 from operations.modules.notifications.application.sources import NoticeSources
+from operations.modules.notifications.infrastructure.email_persistence import EmailRepository
 from operations.modules.notifications.infrastructure.persistence import NoticeRepository
 from operations.modules.organizations.application.service import OrganizationService
 from operations.modules.organizations.infrastructure.persistence import OrganizationRepository
@@ -53,6 +55,7 @@ from operations.platform.config import Settings
 
 @dataclass(frozen=True)
 class Services:
+    email: EmailService
     notifications: NotificationService
     automation: AutomationService
     timers: TimerService
@@ -132,6 +135,8 @@ def compose(
         identity,
         NoticeSources(forms, submissions, tasks, workflow_runtime),
     )
+    email = EmailService(EmailRepository(session), notifications)
+    notifications.email = email
     automation = AutomationService(
         AutomationRepository(session),
         forms,
@@ -139,6 +144,7 @@ def compose(
         ApplicationActions(forms, submissions, tasks, workflow_runtime, notifications),
     )
     return Services(
+        email,
         notifications,
         automation,
         TimerService(TimerRepository(session), automation),

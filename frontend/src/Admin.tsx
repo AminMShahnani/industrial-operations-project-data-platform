@@ -25,6 +25,8 @@ export function Administration() {
   const [invitationLink, setInvitationLink] = useState('');
   const invitationRequest = useRef<{ fingerprint: string; id: string } | undefined>(undefined);
   const [busy, setBusy] = useState(false);
+  const [acceptance, setAcceptance] = useState('token');
+  const [emailDelivery, setEmailDelivery] = useState(false);
   const permissions = me?.memberships.find(item => item.organization_id === organization)?.permissions ?? [];
 
   useEffect(() => {
@@ -42,6 +44,7 @@ export function Administration() {
 
   useEffect(() => {
     setWorkspaces([]); setWorkspace(''); setInvitation(''); setInvitationLink(''); setCursor(null);
+    setEmailDelivery(false); setAcceptance('token');
     if (!organization || !auth.isAuthenticated) return;
     let current = true;
     void api.GET('/api/v1/organizations/{organization_id}/workspaces', {
@@ -77,19 +80,20 @@ export function Administration() {
     const form = new FormData(event.currentTarget);
     try {
       if (form.get('acceptance') === 'verified_email') {
-        const fingerprint = JSON.stringify([organization, workspace, form.get('email'), form.get('role')]);
+        const fingerprint = JSON.stringify([organization, workspace, form.get('email'), form.get('role'), emailDelivery, form.get('email_reason')]);
         if (invitationRequest.current?.fingerprint !== fingerprint) {
           invitationRequest.current = { fingerprint, id: invitationRequestId() };
         }
         const result = await api.POST('/api/v1/organizations/{organization_id}/invitations/verified-email', {
           params: { path: { organization_id: organization } },
           body: { id: invitationRequest.current.id, email: String(form.get('email')),
-            role: String(form.get('role')) as Role, scope_type: 'workspace', scope_id: workspace },
+            role: String(form.get('role')) as Role, scope_type: 'workspace', scope_id: workspace,
+            email_delivery: emailDelivery, email_reason: emailDelivery ? String(form.get('email_reason')) : null },
         });
         if (result.data) {
           invitationRequest.current = undefined;
           setInvitationLink(window.location.origin + invitationPath({ organization: result.data.organization_id, invitation: result.data.id }));
-          setMessage('Sign-in invitation created. Share the link with the invited member.');
+          setMessage(emailDelivery ? 'Sign-in invitation created and email queued. Delivery may be delayed until email is configured.' : 'Sign-in invitation created. Share the link with the invited member.');
         } else setMessage('Invitation could not be created. Check your access and selected role.');
         return;
       }
@@ -166,12 +170,16 @@ export function Administration() {
       <form onSubmit={event => void createInvitation(event)}>
         <label>Email<input type="email" name="email" required /></label>
         <label>Role<select name="role" aria-label="Role"><option>Viewer</option><option>Contributor</option><option>Reviewer</option><option>Approver</option><option>WorkspaceAdmin</option><option>WorkspaceOwner</option></select></label>
-        <label>Invitation method<select name="acceptance" aria-label="Invitation method"><option value="token">Invitation code</option><option value="verified_email">Verified email sign-in link</option></select></label>
+        <label>Invitation method<select name="acceptance" aria-label="Invitation method" value={acceptance} onChange={event => { setAcceptance(event.target.value); setEmailDelivery(false); }}><option value="token">Invitation code</option><option value="verified_email">Verified email sign-in link</option></select></label>
+        {acceptance === 'verified_email' && permissions.includes('organization.manage') && <>
+          <label><input type="checkbox" checked={emailDelivery} onChange={event => setEmailDelivery(event.target.checked)} />Email the sign-in invitation</label>
+          {emailDelivery && <label>Email request reason<input name="email_reason" required maxLength={500} /></label>}
+        </>}
         <button disabled={busy}>Create invitation</button>
       </form>
       {invitation && <div><p>Share this code and organization ID with the intended member. The code expires in seven days.</p>
         <label>Invitation code<textarea readOnly value={invitation} /></label></div>}
-      {invitationLink && <div><p>Share this link with the intended member. It expires in seven days. Email delivery is not yet available.</p>
+      {invitationLink && <div><p>This link expires in seven days. Share it only with the intended member.</p>
         <label>Sign-in invitation link<textarea aria-label="Sign-in invitation link" readOnly value={invitationLink} /></label></div>}
     </section>}
     {organization && workspace && <Notifications key={'notifications' + organization + workspace} api={api} organization={organization} workspace={workspace} />}

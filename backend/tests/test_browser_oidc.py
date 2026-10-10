@@ -18,6 +18,7 @@ from operations.modules.automation.application.contracts import NotifyAction, Ru
 from operations.modules.automation.application.events import DeliveryMessage
 from operations.modules.automation.domain.reliability import delivery_id
 from operations.modules.identity.application.contracts import Principal, RequestContext
+from operations.modules.notifications.infrastructure.email_persistence import EmailRow
 from operations.modules.organizations.application.contracts import OrganizationSettings
 from operations.modules.projects.application.contracts import ProjectRole
 from operations.platform.config import Settings
@@ -302,12 +303,28 @@ def test_real_oidc_pkce_login_and_workspace_creation(monkeypatch: pytest.MonkeyP
                 page.get_by_label("Email", exact=True).fill("dev-reviewer@example.com")
                 page.get_by_label("Role", exact=True).select_option("Approver")
                 page.get_by_label("Invitation method", exact=True).select_option("verified_email")
+                page.get_by_label("Email the sign-in invitation", exact=True).check()
+                page.get_by_label("Email request reason", exact=True).fill(
+                    "Requested browser invitation"
+                )
                 page.get_by_role("button", name="Create invitation", exact=True).click()
                 expect(page.get_by_label("Sign-in invitation link", exact=True)).to_be_visible()
                 invitation_link = page.get_by_label(
                     "Sign-in invitation link", exact=True
                 ).input_value()
                 assert "token=" not in invitation_link and "email=" not in invitation_link
+                with Session(engine) as email_session:
+                    queued_email = email_session.scalar(
+                        select(EmailRow).where(
+                            EmailRow.organization_id == organization.id,
+                            EmailRow.source_kind == "invitation",
+                        )
+                    )
+                    assert (
+                        queued_email
+                        and queued_email.state == "pending"
+                        and queued_email.attempts == 0
+                    )
                 invitation_context = browser.new_context()
                 try:
                     invitation_page = invitation_context.new_page()

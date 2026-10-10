@@ -46,6 +46,7 @@ class NoticeRow(Base):
         UniqueConstraint(
             "organization_id", "run_id", "position", "recipient_id", name="uq_notice_action_once"
         ),
+        CheckConstraint("origin='automation' OR in_app", name="notice_automatic_in_app"),
         CheckConstraint(
             "position BETWEEN 0 AND 19 "
             "AND topic IN ('work_assigned','review_requested','rule_notice') "
@@ -57,6 +58,15 @@ class NoticeRow(Base):
             "AND source_intent_id IS NULL) OR (origin='automatic' AND run_id IS NULL "
             "AND position IS NULL AND source_intent_id IS NOT NULL)",
             name="notice_origin",
+        ),
+        Index(
+            "ix_notice_visible_cursor",
+            "organization_id",
+            "workspace_id",
+            "recipient_id",
+            "created_at",
+            "id",
+            postgresql_where=text("in_app"),
         ),
         Index(
             "uq_notice_automatic_once",
@@ -85,6 +95,7 @@ class NoticeRow(Base):
     position: Mapped[int | None]
     origin: Mapped[str] = mapped_column(String(20), server_default="automation")
     source_intent_id: Mapped[UUID | None]
+    in_app: Mapped[bool] = mapped_column(server_default=text("true"))
     topic: Mapped[str] = mapped_column(String(30))
     source_kind: Mapped[str] = mapped_column(String(20))
     source_id: Mapped[UUID]
@@ -169,6 +180,7 @@ class NoticeRepository:
             NoticeRow.organization_id == org,
             NoticeRow.workspace_id == workspace,
             NoticeRow.recipient_id == recipient,
+            NoticeRow.in_app.is_(True),
         )
         if after:
             cursor = self.session.scalar(statement.where(NoticeRow.id == after))

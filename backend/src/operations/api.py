@@ -150,6 +150,8 @@ class InvitationToken(Command):
 
 class VerifiedEmailInvitationCreate(InvitationCreate):
     id: UUID
+    email_delivery: bool = False
+    email_reason: str | None = Field(default=None, min_length=1, max_length=500)
 
 
 class InvitationReference(Command):
@@ -374,8 +376,8 @@ def invite_verified_email(
     service: ServiceDependency,
 ) -> InvitationReference:
     scope = validated_scope(service, organization_id, body)
-    invitation = service.identity.invite_verified_email(
-        actor, str(body.email), body.role, scope, body.id
+    invitation = service.email.invite(
+        actor, str(body.email), body.role, scope, body.id, body.email_delivery, body.email_reason
     )
     return InvitationReference(
         id=invitation.id,

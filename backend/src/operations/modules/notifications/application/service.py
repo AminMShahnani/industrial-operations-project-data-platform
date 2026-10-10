@@ -10,6 +10,7 @@ from operations.modules.automation.application.contracts import (
     Run,
 )
 from operations.modules.automation.application.events import OperationalEvent
+from operations.modules.iam.application.contracts import Scope, ScopeType
 from operations.modules.identity.application.contracts import RequestContext
 from operations.modules.identity.application.service import IdentityService
 from operations.modules.notifications.application.contracts import (
@@ -18,6 +19,7 @@ from operations.modules.notifications.application.contracts import (
     NoticeStore,
     ReadReceipt,
 )
+from operations.modules.notifications.application.email_contracts import EmailCapture
 from operations.modules.notifications.application.sources import NoticeSources
 
 
@@ -26,12 +28,21 @@ class NotificationService:
         self, store: NoticeStore, identity: IdentityService, sources: NoticeSources
     ) -> None:
         self.store, self.identity, self.sources = store, identity, sources
+        self.email: EmailCapture | None = None
 
     def validate(self, actor: RequestContext, rule: Rule, action: AutomationAction) -> None:
         if not isinstance(action, NotifyAction):
             raise ServiceError(422, "automation_action_not_configured")
-        if action.channels != ["in_app"]:
+        if "email" in action.channels and self.email is None:
             raise ServiceError(422, "notification_channel_not_configured")
+        if len(set(action.channels)) != len(action.channels):
+            raise ServiceError(422, "notification_duplicate_channel")
+        if "email" in action.channels:
+            self.identity.authorization.require(
+                actor,
+                "organization.manage",
+                Scope(rule.organization_id, ScopeType.ORGANIZATION, rule.organization_id),
+            )
         if len(set(action.recipients)) != len(action.recipients):
             raise ServiceError(422, "notification_duplicate_recipient")
         for identifier in action.recipients:
@@ -107,10 +118,22 @@ class NotificationService:
                 source_kind=kind,
                 source_id=source,
                 created_at=datetime.now(UTC),
+                in_app="in_app" in action.channels,
             )
             if self.store.get(rule.organization_id, identifier, notice.id) is None:
                 self.audit(actor, notice, "notification.created")
                 self.store.add(notice)
+            if "email" in action.channels:
+                assert self.email is not None
+                self.email.queue(
+                    actor,
+                    rule.organization_id,
+                    "notice",
+                    notice.id,
+                    identifier,
+                    True,
+                    "activated_notification_email",
+                )
         return run.id
 
     def require(self, actor: RequestContext, notice: Notice) -> None:
@@ -152,7 +175,7 @@ class NotificationService:
     def mark_read(self, actor: RequestContext, org: UUID, identifier: UUID) -> ReadReceipt:
         user = self.identity.authorization.user(actor, org)
         notice = self.store.get(org, user.id, identifier, True)
-        if notice is None:
+        if notice is None or not notice.in_app:
             raise ServiceError(404, "notification_not_found")
         self.require(actor, notice)
         receipt = self.store.receipt(org, notice.id)
@@ -174,7 +197,7 @@ class NotificationService:
     ) -> InboxItem:
         user = self.identity.authorization.user(actor, org)
         notice = self.store.get(org, user.id, identifier)
-        if notice is None or notice.workspace_id != workspace:
+        if notice is None or not notice.in_app or notice.workspace_id != workspace:
             raise ServiceError(404, "notification_not_found")
         self.require(actor, notice)
         receipt = self.store.receipt(org, notice.id)

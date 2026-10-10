@@ -879,3 +879,27 @@ ee705002772df68d9ea0be34b9c07a68a2cfb35a, including Linux gates, real browser
 flows, committed Redis worker/concurrency/crash recovery, migrations and generated
 contracts. No external email was sent. Phase 6 stays 0/8
 accepted; automatic email capture/channels and other remaining work are not deferred.
+
+## Phase 6 explicit email source capture - 2026-10-10
+
+Requirements: docs/02, 03, 12, 16, 19, 20, 21, 22, 26–28; ADR-0011/0019/0020.
+ADR-0021 records explicit per-invitation/per-rule intent without tenant-wide opt-in.
+Implement typed verified-email invitation opt-in/reason, transactional application
+handoff and accessible browser form. Notify actions support unique in_app/email/both
+channels; minimal retained notice, deterministic email intent, receipts and audits
+commit together in the run savepoint. Email-only evidence is hidden from public
+inbox/detail/read and cursor paging, with fresh internal source authorization.
+Migration 5caef6ad5721 defaults old/automatic notices to in_app=true, adds a partial
+index and proves channel visibility/read constraints. Default-only rollback restores
+old guards; retained email channels refuse rollback. No historical artifact is rewritten.
+Nine new integration cases cover channels, privacy, revocation, atomic failure,
+API dedup/defaults/reasons, delegated permission and rollback refusal. Extend real
+PKCE browser invitation creation and committed concurrent invitation retries; add
+a complete email-only rule/Redis/loopback SMTP duplicate-delivery test. No external
+mail is sent. All 250 backend tests pass without skips in 223.08s; 14 frontend
+tests pass. Ruff check/format (334 files), strict mypy (265 files), frontend lint/
+types/build, migration round-trip/drift and generated API/OpenAPI checks pass.
+Exact-code hosted verification is pending. Task/workflow email uses explicit notify
+rules; fixed automatic in-app projections remain unchanged.
+Phase 6 remains 0/8 accepted. Rule/run UI,
+other handlers and telemetry remain current-phase requirements; no Phase 7 deferral.
