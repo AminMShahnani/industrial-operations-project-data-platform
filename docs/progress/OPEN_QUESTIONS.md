@@ -208,5 +208,5 @@ ADR-0023 uses existing organization-admin email authority and original delegatio
 Minimal evidence remains inspectable when a source expires or authority changes;
 this confers no source-read/send authority. Public uncertain replay requires explicit
 possible-duplicate acknowledgement. No new domain/security ambiguity or industry
-coupling. All local gates pass (272 backend/18 frontend tests); hosted exact-code verification
-is pending. No new unresolved question.
+coupling. All local gates pass (272 backend/18 frontend tests); hosted run 38049979000
+passes both jobs on exact code b0b9d05. No new unresolved question.

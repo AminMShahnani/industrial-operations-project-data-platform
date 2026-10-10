@@ -55,7 +55,7 @@ Scoped rule/run management and reviewed replay API/UI are implemented under
 ADR-0022; all local gates pass (261 backend/16 frontend tests). Hosted run 38047837127 passes both jobs on exact
 code fe4ebc8.
 Email delivery/recovery API/UI is implemented under ADR-0023; all local gates pass
-(272 backend/18 frontend tests). Exact-code hosted verification is pending. Generic tasks, tags/flags, webhooks and telemetry remain current-phase
+(272 backend/18 frontend tests). Hosted run 38049979000 passes both jobs on exact code b0b9d05. Generic tasks, tags/flags, webhooks and telemetry remain current-phase
 work. 0/8 accepted; Q-006 is resolved.
 Phase 5 remains accepted on d91dfce / hosted run 37454353238.
 
@@ -72,8 +72,8 @@ Q-004 resolved by user: shared task claimed by one eligible member.
 Legacy export absent.
 
 ## Next 5 tasks
-1. Verify the exact email recovery console commit in hosted CI.
-2. Implement generic task, tag/flag and webhook handlers.
+1. Implement the generic task action through the owning task service.
+2. Implement controlled tag/flag and webhook handlers.
 3. Complete queue/run telemetry and operator failure visibility.
 4. Complete remaining Phase 6 acceptance and fault/recovery coverage.
 5. Verify all Phase 6 local/hosted criteria before any Phase 7 work.
@@ -262,15 +262,18 @@ with timestamp ties, invalid/foreign cursors, preserved evidence after source ex
 and revoked delegation, replay reason/hash/uncertain acknowledgement, terminal
 states, lifetime cap and populated index rollback. Real PKCE browser recovery and
 eight committed concurrent reviews produce one requeue, then one provider effect.
-No external email is sent; fake/loopback tests only. Hosted exact-code verification
-is pending. Phase 6 remains 0/8 accepted.
+No external email is sent; fake/loopback tests only. Hosted [38049979000](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/38049979000)
+passes backend/frontend jobs on exact code
+`b0b9d052c6d0f78278346500e146fc97b05ec8b5`, including Linux strict types,
+real PKCE email recovery, committed concurrent replay/worker delivery, migrations
+and generated contracts. Phase 6 remains 0/8 accepted; no Phase 7 work.
 
 ## Migration status
 
 Development, isolated test and retained browser databases are at ba6e379cc281.
 Email console lookup indexes add chronological organization/state cursor access.
 Populated index downgrade preserves all delivery/attempt/audit evidence; no data
-rewrite is performed. All local gates pass; hosted evidence is pending.
+rewrite is performed. All local/hosted gates pass on exact code b0b9d05 / run 38049979000.
 Prior explicit email channel migration 5caef6ad5721 remains intact.
 Explicit email channels add immutable notice visibility and a filtered cursor index.
 Existing notice IDs/source/audit/read history remain intact. Empty/default-only

@@ -954,6 +954,9 @@ with timestamp ties, invalid/foreign cursors, preserved evidence after source ex
 and revoked delegation, replay reason/hash/uncertain acknowledgement, terminal
 states, lifetime cap and populated index rollback. Real PKCE browser recovery and
 eight committed concurrent reviews produce one requeue, then one provider effect.
-No external email is sent; fake/loopback tests only. Hosted exact-code verification
-is pending. Phase 6 remains 0/8 accepted.
+No external email is sent; fake/loopback tests only. Hosted [38049979000](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/38049979000)
+passes backend/frontend jobs on exact code
+`b0b9d052c6d0f78278346500e146fc97b05ec8b5`, including Linux strict types,
+real PKCE email recovery, committed concurrent replay/worker delivery, migrations
+and generated contracts. Phase 6 remains 0/8 accepted; no Phase 7 work.
 Remaining handlers and telemetry are current-phase work, not Phase 7 deferrals.

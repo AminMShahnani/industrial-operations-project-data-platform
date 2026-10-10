@@ -192,5 +192,5 @@ passes both jobs on exact code fe4ebc8. No phase acceptance gate is waived.
 Email evidence/recovery API/UI is implemented under ADR-0023 and in verification.
 Chronological cursor indexes are reversible with retained evidence. Generic task,
 tag/flag/webhook handlers and telemetry remain current Phase 6 work. No acceptance
-gate is waived or deferred; all local gates pass (272 backend/18 frontend tests); hosted exact-code verification
-is pending.
+gate is waived or deferred; all local gates pass (272 backend/18 frontend tests); hosted run 38049979000
+passes both jobs on exact code b0b9d05.

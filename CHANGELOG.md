@@ -9,7 +9,9 @@
   mailbox delivery. Add reversible chronological lookup indexes in ba6e379cc281.
   All local gates pass (272 backend/18 frontend tests, real PKCE browser and
   committed concurrent recovery, lint/types, migrations and generated contracts/
-  build); exact-code hosted verification is pending. Phase 6 remains unaccepted.
+  build). Hosted
+  [38049979000](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/38049979000)
+  passes both jobs on exact code b0b9d05. Phase 6 remains unaccepted.
 
 - Add scoped automation rule/version administration and immutable run evidence
   API/UI under ADR-0022. Review exact saved content before activation; preserve
