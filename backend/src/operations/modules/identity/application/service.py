@@ -42,13 +42,19 @@ class IdentityService:
         self, organization_id: UUID, identifier: UUID, source: RequestContext
     ) -> RequestContext:
         """Trusted application handoff; resolve a current tenant membership, never a token."""
+        return self.background_context(
+            organization_id, identifier, source.request_id, source.correlation_id
+        )
+
+    def background_context(
+        self, organization_id: UUID, identifier: UUID, request_id: UUID, correlation_id: UUID
+    ) -> RequestContext:
+        """Internal scoped identity resolution; callers still require current permissions."""
         self.organizations.active(organization_id)
         user = self.store.by_id(organization_id, identifier)
         if user is None or not user.active:
             raise ServiceError(403, "notification_recipient_unavailable")
-        return RequestContext(
-            Principal(user.issuer, user.subject), source.request_id, source.correlation_id
-        )
+        return RequestContext(Principal(user.issuer, user.subject), request_id, correlation_id)
 
     def bootstrap(self, principal: Principal, reason: str) -> None:
         self.store.bootstrap(principal)
@@ -166,6 +172,28 @@ class IdentityService:
         if invitation is None or invitation.acceptance_mode != "verified_email":
             raise ServiceError(403, "invalid_invitation")
         return self._accept_invitation(context, organization_id, invitation)
+
+    def email_invitation(self, organization_id: UUID, identifier: UUID) -> Invitation:
+        self.organizations.active(organization_id)
+        invitation = self.store.invitation_by_id(organization_id, identifier)
+        if (
+            invitation is None
+            or invitation.acceptance_mode != "verified_email"
+            or invitation.accepted_at is not None
+            or invitation.expires_at <= datetime.now(UTC)
+        ):
+            raise ServiceError(403, "invalid_invitation")
+        inviter = self.store.by_id(organization_id, invitation.inviter_id)
+        if inviter is None or not inviter.active:
+            raise ServiceError(403, "invalid_invitation")
+        scope = Scope(organization_id, ScopeType(invitation.scope_type), invitation.scope_id)
+        self._active_scope(scope)
+        self.authorization.check_delegation(
+            RequestContext(Principal(inviter.issuer, inviter.subject), uuid7(), uuid7()),
+            Role(invitation.role),
+            scope,
+        )
+        return invitation
 
     def accept(self, context: RequestContext, organization_id: UUID, token: str) -> User:
         self.organizations.active(organization_id)

@@ -861,3 +861,18 @@ the fixture's exact trusted issuer and `admin` subject. Production authorization
 is unchanged. All 46 affected automation/notice/handoff/periodic tests pass locally
 in 101.42s, and lint/format/strict types pass. Exact-code hosted verification includes
 this deterministic fixture repair; the full lifecycle regression remains 227 tests.
+
+## Phase 6 SMTP delivery increment - 2026-10-10
+
+Implement ADR-0020: notifications-owned scoped email ledger, source-owning minimal
+rendering, external tenant SMTP profiles, committed claims, immutable attempts,
+safe retry, expired-claim uncertainty and reviewed replay. Add explicit audited
+operator queue, bounded dispatcher and separate Dramatiq actor. Migration
+208f826ca492 is additive and rejects populated rollback before evidence removal.
+Thirteen new checks cover loopback SMTP, tenant/profile boundaries, evidence guards,
+exact replay, attempt caps, real Redis duplicate workers and send/commit crash
+recovery. All 240 backend tests pass without skips in 204.87s; all 14 frontend
+tests pass. Ruff check/format (330 files), strict mypy (262 files), frontend
+lint/types/build, empty migration round-trip/drift and generated OpenAPI/client
+checks pass. Exact-code hosted verification is pending. Phase 6 stays 0/8
+accepted; automatic email capture/channels and other remaining work are not deferred.

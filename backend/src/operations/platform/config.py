@@ -25,6 +25,7 @@ class Settings(BaseSettings):
     oidc_profile: Literal["rfc9068", "keycloak"] = "rfc9068"
     api_rate_limit: int = Field(default=600, ge=1, le=100000)
     oidc_max_token_lifetime: int = Field(default=3600, ge=30, le=3600)
+    email_profiles_directory: str | None = None
 
     @model_validator(mode="after")
     def validate_trust(self) -> Settings:

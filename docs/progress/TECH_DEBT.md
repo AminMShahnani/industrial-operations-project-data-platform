@@ -159,3 +159,13 @@ Hosted run 37519811189 passes both jobs on exact code 079b8c8, including Linux
 gates, real browser/worker flows, committed duplicate handoffs and migrations. No new
 debt or acceptance deferral; email/invitations, management API/UI, other action
 handlers and telemetry remain current Phase 6 work.
+
+## SMTP delivery increment - 2026-10-10
+
+Explicit scoped SMTP delivery/recovery is implemented under ADR-0020. Automatic
+email capture/action channels and Phase 6 management/other handlers remain required
+current-phase work, not accepted deferrals. SMTP holds the existing tenant lock for
+bounded network operations; assess contention in Phase 10 without weakening fresh
+revocation checks. No evidence rewrite or new acceptance debt is introduced.
+All local gates pass (240 backend/14 frontend tests); exact-code hosted verification
+is pending. No quality or phase acceptance gate is waived.

@@ -2,6 +2,16 @@
 
 ## Unreleased - Phase 6 in progress (2026-10-10)
 
+- Implement explicit scoped SMTP queue/worker/dispatch and reviewed replay under
+  ADR-0020. Preserve source IDs, fresh authority, immutable attempt/audit evidence,
+  bounded retries and stable Message-ID. Expired claims become uncertain without
+  automatic resend. Tenant profiles remain external secrets; tests use fake or
+  loopback SMTP only. Add guarded additive migration `208f826ca492`. Automatic
+  email capture/action channels and other Phase 6 requirements remain open.
+  All local gates pass: 240 backend and 14 frontend tests, Ruff/strict types,
+  migration round-trip/drift and generated contracts/build. Hosted verification
+  is pending; Phase 6 remains unaccepted.
+
 - Accept ADR-0019 under the user's delegated choice: token-free verified-email
   invitations with idempotent creation, fresh scoped inviter authority, exact
   OIDC-verified recipient email, seven-day expiry and one-time acceptance.

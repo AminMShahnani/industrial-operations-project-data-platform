@@ -174,3 +174,12 @@ handoffs stay terminal, and recipient eligibility is checked by the worker. No n
 unresolved security/domain decision or industry coupling is introduced.
 All local gates pass (215 backend/11 frontend); hosted run 37519811189 passes both
 jobs on exact code 079b8c8. Phase 6 stays unaccepted with no unresolved new question.
+
+## SMTP delivery increment - 2026-10-10
+
+ADR-0020 records explicit organization-admin queue intent, fresh original delegation,
+source-owning eligibility, external tenant secrets, uncertain-send recovery and
+exact reviewed replay. It does not enable automatic opt-in/backfill or rule email
+channels. No unresolved security/domain boundary or industry coupling is introduced.
+All local gates pass (240 backend/14 frontend tests); exact-code hosted verification
+is pending. Phase 6 remains open.

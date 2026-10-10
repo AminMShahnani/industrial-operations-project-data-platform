@@ -343,3 +343,65 @@ rollback, preserve evidence and use a reviewed forward fix or a verified complet
 database restore with a write-replay plan. Existing already-captured runs keep their
 exact version and fresh delegation checks. Never delete marks/history to force a
 downgrade or use a cursor as a permanent completeness watermark.
+
+## Scoped SMTP delivery
+
+ADR-0020 adds an explicit operator queue for a verified-email invitation or one
+retained notice. Upgrade to `208f826ca492` and check migration drift. Email is
+disabled unless `IOP_EMAIL_PROFILES_DIRECTORY` names an externally mounted secret
+directory. Never commit this directory or copy its contents into logs or evidence.
+Each `<organization-UUID>.json` contains the same `organization_id`, `host`, `port`,
+`sender`, `tls`, `app_origin`, and optional paired `username`/`password`. Production
+requires verified STARTTLS and an HTTPS application origin. Cleartext is allowed
+only for an unauthenticated loopback test sink. Profiles are read on each attempt.
+
+Preview the exact source as a current organization administrator using the
+configured trusted issuer:
+
+```powershell
+uv run python scripts/email_operations.py queue --organization <UUID> --subject <trusted-subject> --kind invitation --source <invitation-UUID>
+uv run python scripts/email_operations.py queue --organization <UUID> --subject <trusted-subject> --kind notice --source <notice-UUID> --recipient <user-UUID>
+```
+
+Add `--apply --reason "Requested email delivery"` to commit the deterministic
+delivery ID and queue audit atomically. Repeating this command preserves the same
+delivery and attempt history. Addresses and fixed message text are rendered only
+at send time through the owning identity/notification services. This queue does
+not opt in tenants, capture all future notices, or backfill historical email.
+Rule email channels remain unavailable pending their Phase 6 capture integration.
+
+Start the separate worker and preview/dispatch a tenant batch:
+
+```powershell
+uv run dramatiq operations.smtp_worker:broker
+uv run python scripts/email_operations.py dispatch --organization <UUID> --subject <trusted-subject>
+uv run python scripts/email_operations.py dispatch --organization <UUID> --subject <trusted-subject> --apply
+```
+
+Dispatch is capped at 100 due IDs, including expired claims. Repeat periodically;
+safe retries become due after bounded backoff. Broker envelopes contain only tenant
+and delivery UUIDs. Redis acknowledgment is not completion. `sent` records provider
+DATA acceptance, not mailbox delivery. No provider configuration consumes an attempt.
+Each committed claim has a 90-second lease; the actor has a 60-second limit and SMTP
+operations have five-second socket timeouts. Original operator, inviter/recipient,
+tenant and source authority are checked under the tenant revocation lock before send.
+Lost authority records terminal `skipped` evidence.
+
+A send or commit crash becomes `uncertain` when its claim expires. It never resends
+automatically. Review provider evidence before previewing replay:
+
+```powershell
+uv run python scripts/email_operations.py replay --organization <UUID> --subject <trusted-subject> --delivery <delivery-UUID>
+```
+
+Apply with `--apply --review-sha256 <returned-hash> --reason "Provider evidence reviewed"`.
+Stale reviews are rejected. Replays preserve the original source, recipient, operator
+and stable Message-ID; a duplicate mail remains possible when the original outcome
+was uncertain. Automatic retry stops at eight attempts; controlled replay stops at
+twenty total attempts. Accepted/skipped deliveries are terminal. Inspect scoped
+`email_deliveries`, immutable `email_attempts`, and `email.*` audits as evidence.
+
+Stop queue/dispatch and the worker to disable sending. Empty tables can downgrade
+to `e18c49c4be63`; populated downgrade refuses before removing either ledger.
+Preserve evidence and use a forward fix or verified full restore with a write-replay
+plan. Never delete attempt/source/audit history to force rollback or redelivery.
