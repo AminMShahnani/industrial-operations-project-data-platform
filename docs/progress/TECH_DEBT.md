@@ -176,5 +176,5 @@ Invitation and activated notify intent capture is implemented under ADR-0021, wi
 atomic source/notice/audit handoff and private email-only evidence. No historical
 data rewrite or acceptance deferral. Scoped
 rule/run management API/UI, remaining handlers and telemetry remain current Phase 6
-requirements. All local gates pass (250 backend/14 frontend tests); exact-code
-hosted verification is pending.
+requirements. All local gates pass (250 backend/14 frontend tests); hosted run
+38044650329 passes both jobs on exact code 6fd5082. No acceptance gate is waived.

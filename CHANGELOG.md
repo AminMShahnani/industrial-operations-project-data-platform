@@ -9,7 +9,10 @@
   automatic in-app projections. Add guarded migration `5caef6ad5721`, source
   rollback/dedup tests, real browser opt-in and rule-to-Redis-to-loopback-SMTP checks.
   All local gates pass (250 backend/14 frontend tests, lint/types, migrations and
-  generated contracts/build). Exact-code hosted verification is pending;
+  generated contracts/build). Hosted
+  [38044650329](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/38044650329)
+  passes both jobs on exact code 6fd5082, including real PKCE browser opt-in,
+  committed concurrency, Redis/loopback SMTP delivery and migrations;
   Phase 6 remains unaccepted.
 
 - Implement explicit scoped SMTP queue/worker/dispatch and reviewed replay under

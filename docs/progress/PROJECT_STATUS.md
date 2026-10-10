@@ -47,8 +47,9 @@ migration 208f826ca492. All local gates pass (240 backend/14 frontend tests);
 hosted run 38042281045 passes both jobs on exact code ee70500. Explicit transactional
 invitation opt-in and immutable notify email channels are now implemented under
 ADR-0021, including email-only evidence visibility and API/browser creation.
-All local gates pass (250 backend/14 frontend tests); exact-code hosted verification
-is pending. Task/workflow email uses explicit activated notify rules; fixed
+All local gates pass (250 backend/14 frontend tests); hosted run 38044650329 passes
+both jobs on exact code 6fd5082. Task/workflow email uses explicit activated notify
+rules; fixed
 automatic in-app projections remain unchanged.
 Generic tasks, tags/flags, webhooks,
 rule/run UI and telemetry remain current-phase
@@ -59,8 +60,7 @@ Phase 5 remains accepted on d91dfce / hosted run 37454353238.
 None. Q-007 resolved on 2026-10-10: user delegated the choice with "do best".
 ADR-0019 accepts token-free verified-email acceptance for new invitations,
 preserving existing bearer-token invitations. Lifecycle passes local/hosted verification;
-Scoped SMTP delivery/recovery is verified; explicit source capture verification
-remains Phase 6 work.
+Scoped SMTP delivery/recovery and explicit source capture are verified.
 Q-006 resolved: activating administrator delegates bounded scoped authority,
 rechecked for every run/retry. ADR-0011 accepted. Q-005 resolved: independent
 approval is mandatory, including administrators.
@@ -69,8 +69,8 @@ Q-004 resolved by user: shared task claimed by one eligible member.
 Legacy export absent.
 
 ## Next 5 tasks
-1. Verify explicit invitation/notify email capture under ADR-0021.
-2. Expose scoped rule/run management and audited replay through typed API/UI.
+1. Expose scoped rule/run management and audited replay through typed API/UI.
+2. Expose scoped email delivery/recovery status through operator UI.
 3. Implement generic task, tag/flag and webhook handlers.
 4. Complete queue/run telemetry and operator failure visibility.
 5. Verify all Phase 6 local/hosted criteria before any Phase 7 work.
@@ -224,7 +224,18 @@ including Linux tests/types, browser PKCE, committed concurrency, migrations and
 generated contracts. The deterministic fixture repair also passes 46 affected tests
 locally in 101.42s. Phase 6 remains 0/8 accepted.
 
+Latest explicit email capture validation: all 250 backend tests pass without skips
+in 223.08s, including real browser opt-in, concurrent invitation retries and a full
+email-only rule/Redis/loopback SMTP pipeline producing one message/attempt from
+eight duplicate messages. All 14 frontend tests pass. Ruff check/format (334 files),
+strict mypy (265 files), frontend lint/types/build, migration round-trip/drift and
+generated OpenAPI/client checks pass. Hosted
+[38044650329](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/38044650329)
+passes both jobs on exact code `6fd5082ea167d0b6ad97836afe3a075ad055dd14`.
+Phase 6 remains 0/8 accepted; no external mail was sent.
+
 ## Migration status
+
 Development, isolated test and retained browser databases are at 5caef6ad5721.
 Explicit email channels add immutable notice visibility and a filtered cursor index.
 Existing notice IDs/source/audit/read history remain intact. Empty/default-only

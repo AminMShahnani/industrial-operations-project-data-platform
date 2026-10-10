@@ -899,7 +899,11 @@ a complete email-only rule/Redis/loopback SMTP duplicate-delivery test. No exter
 mail is sent. All 250 backend tests pass without skips in 223.08s; 14 frontend
 tests pass. Ruff check/format (334 files), strict mypy (265 files), frontend lint/
 types/build, migration round-trip/drift and generated API/OpenAPI checks pass.
-Exact-code hosted verification is pending. Task/workflow email uses explicit notify
+Hosted run 38044650329 passes both jobs on exact code
+6fd5082ea167d0b6ad97836afe3a075ad055dd14, including Linux quality gates,
+real PKCE browser opt-in, committed invitation concurrency, Redis/loopback SMTP
+duplicate delivery, migrations and generated contracts. Task/workflow email uses
+explicit notify
 rules; fixed automatic in-app projections remain unchanged.
 Phase 6 remains 0/8 accepted. Rule/run UI,
 other handlers and telemetry remain current-phase requirements; no Phase 7 deferral.

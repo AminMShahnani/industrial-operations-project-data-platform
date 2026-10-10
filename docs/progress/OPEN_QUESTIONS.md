@@ -192,4 +192,4 @@ no mailbox delivery claim, tenant-wide opt-in, historical backfill or source ide
 bypass is introduced. Task/workflow email uses explicitly activated notify rules,
 preserving fixed automatic in-app projections and existing delegated authority.
 No new unresolved security/domain question. All local gates pass (250 backend/
-14 frontend tests); exact-code hosted verification is pending.
+14 frontend tests); hosted run 38044650329 passes both jobs on exact code 6fd5082.
