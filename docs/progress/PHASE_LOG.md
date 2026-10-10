@@ -847,3 +847,12 @@ Completed increment: manually shared token-free invitation lifecycle/API/browser
 SMTP delivery, attempts, uncertain outcomes/replay, minimal email notices, remaining
 handlers, rule/run management and telemetry stay in Phase 6. Nothing is deferred;
 Phase 6 remains 0/8 accepted and Phase 7 is unstarted.
+
+CI fixture follow-up: earlier docs-only run 38032097939 failed because the Phase 6
+`context` test helper selected an arbitrary tenant user without ordering/filtering.
+Linux selected a workspace administrator after another member was invited;
+organization-level activation correctly denied that actor. The helper now selects
+the fixture's exact trusted issuer and `admin` subject. Production authorization
+is unchanged. All 46 affected automation/notice/handoff/periodic tests pass locally
+in 101.42s, and lint/format/strict types pass. Exact-code hosted verification includes
+this deterministic fixture repair; the full lifecycle regression remains 227 tests.

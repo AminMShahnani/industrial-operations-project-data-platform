@@ -205,14 +205,14 @@ Linux types/tests, real browser/worker flows, committed duplicate handoff/delive
 empty migration roundtrip/drift and generated contracts.
 Phase 6 remains 0/8 accepted.
 
-## Migration status
-
 Latest lifecycle validation: 227 backend tests pass without skips in 399.71s;
 14 frontend tests pass. Ruff lint/format (318 files), strict mypy (251 files),
 frontend lint/types/build, empty migration roundtrip/drift and OpenAPI/generated
 client drift pass. Real browser PKCE preserves the link and accepts exactly once;
 committed concurrency produces one invitation/grant/audit across eight retries.
 Exact-code hosted verification is pending. Phase 6 remains 0/8 accepted.
+
+## Migration status
 Development, isolated test and retained browser databases are at e18c49c4be63.
 Verified-email invitation migration preserves old mode/digest/timestamps, enforces
 credential-mode coherence and immutable binding/one-way acceptance. Token-only

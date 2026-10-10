@@ -43,7 +43,13 @@ pytestmark = pytest.mark.integration
 
 
 def context(api: Api, org: UUID) -> tuple[RequestContext, UUID]:
-    user = api.session.scalar(select(UserRow).where(UserRow.organization_id == org))
+    user = api.session.scalar(
+        select(UserRow).where(
+            UserRow.organization_id == org,
+            UserRow.issuer == "https://identity.example.test",
+            UserRow.subject == "admin",
+        )
+    )
     assert user
     return RequestContext(Principal(user.issuer, user.subject), uuid7(), uuid7()), user.id
 
