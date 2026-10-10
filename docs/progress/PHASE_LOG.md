@@ -1,5 +1,15 @@
 # Phase Log
 
+## Phase 6 generic task preparation - 2026-10-10
+
+Inspected task contracts/claim lifecycle and automation adapters against docs/05,
+11,12 and ADR-0009/0010/0011. Generic completion/review authority is unspecified.
+Recorded Q-008 and proposed ADR-0024, recommending claimant acknowledgement.
+Stopped this slice before schema/runtime changes under AGENTS.md's ambiguity
+condition. No migrations or application changes. Baseline remains 272 backend/18
+frontend tests and hosted run 38049979000 on b0b9d05; no new gates claimed or
+acceptance criteria completed. Phase 6 remains 0/8 accepted.
+
 ## Phase 6 email/invitation preparation - 2026-10-10
 
 Read AGENTS.md and numbered source documents; reviewed progress and invitation

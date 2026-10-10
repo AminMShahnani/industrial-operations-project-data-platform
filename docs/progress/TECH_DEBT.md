@@ -1,5 +1,9 @@
 # Technical Debt Register
 
+Generic task preparation (2026-10-10): Q-008 / proposed ADR-0024 awaits completion
+authority policy. This remains current Phase 6 work, not a Phase 7 deferral.
+No schema/runtime change or new technical debt introduced in this preparation.
+
 Phase 6 invitation lifecycle (2026-10-10): Q-007 is resolved and ADR-0019 accepts
 token-free verified-email invitations while preserving bearer-token history.
 Creation/acceptance API and browser flow are implemented with guarded migration.

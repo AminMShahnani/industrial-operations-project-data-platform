@@ -60,7 +60,10 @@ work. 0/8 accepted; Q-006 is resolved.
 Phase 5 remains accepted on d91dfce / hosted run 37454353238.
 
 ## Blocked
-None. Q-007 resolved on 2026-10-10: user delegated the choice with "do best".
+Generic-task completion authority awaits Q-008 / proposed ADR-0024. No schema or
+runtime change is applied before resolving this governance-sensitive boundary.
+Phase 6 remains 0/8 accepted. Other pending Phase 6 requirements remain in scope.
+Q-007 resolved on 2026-10-10: user delegated the choice with "do best".
 ADR-0019 accepts token-free verified-email acceptance for new invitations,
 preserving existing bearer-token invitations. Lifecycle passes local/hosted verification;
 Scoped SMTP delivery/recovery and explicit source capture are verified.
