@@ -7,9 +7,10 @@
   versions; HTTPS; external tenant secrets; no redirects; validated and pinned
   destination addresses; deployment-managed CIDR exceptions for private industrial
   endpoints; and a fixed identifiers-only signed envelope. Scalar event fields are
-  excluded. Scoped endpoint version administration is implemented; runtime delivery
-  remains fail-closed until external secret resolution and safe pinned transport are
-  implemented.
+  excluded. Scoped endpoint version administration and tested pinned HTTPS transport
+  foundation are implemented and pass hosted CI on 0bc54de. Runtime delivery remains
+  fail-closed until the deployment secret resolver and durable intent/attempt worker
+  are wired.
 
 Controlled project annotations (2026-10-10): ADR-0025 uses existing project.read/
 manage and accepted automation delegation for inert append-only labels. Labels do

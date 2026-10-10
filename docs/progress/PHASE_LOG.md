@@ -57,7 +57,10 @@ worker; no retries/attempts are claimed. Full local gates pass: 303 backend test
 Linux mypy (284 files), frontend lint/types/build, Alembic migration roundtrip/drift
 and generated OpenAPI/client checks. Migration a84f1c9d62e0 adds positive,
 immutable signing-key-version binding and refuses rollback if endpoint history is
-retained. Exact-code hosted verification is pending. Phase 6 remains 0/8 accepted.
+retained. Hosted [38063940999](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/38063940999)
+passes both jobs on exact commit `0bc54de5fb009fe0f7cc3765fd8b9766c8bd7f74`,
+including Linux strict types, backend/browser tests, migrations and generated API
+checks. Phase 6 remains 0/8 accepted.
 
 ## Phase 6 controlled tags and flags - 2026-10-10
 

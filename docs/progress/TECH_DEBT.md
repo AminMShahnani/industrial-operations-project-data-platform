@@ -6,7 +6,9 @@ scoped endpoint versions/API, and pinned HTTPS transport foundation are implemen
 Delivery remains fail-closed; deployment secret resolver, durable attempts/retries,
 worker wiring and reviewed replay are still current Phase 6 implementation work.
 Endpoint version administration passes hosted run 38062270395 on exact code
-9ab5647c74e5103426b3f419934a9b1947634835; transport follow-up awaits hosted CI.
+9ab5647c74e5103426b3f419934a9b1947634835; pinned transport foundation passes run
+38063940999 on exact code 0bc54de5fb009fe0f7cc3765fd8b9766c8bd7f74. The deployment
+resolver, durable attempts/retries, worker wiring and reviewed replay remain open.
 
 Controlled tags/flags (2026-10-10): implementation passes all local gates (298
 backend/18 frontend tests) under ADR-0025. Hosted run

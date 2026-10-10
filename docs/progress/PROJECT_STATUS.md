@@ -67,8 +67,9 @@ canonical HMAC-SHA256 signing, DNS/IP policy checks, audited scoped immutable
 endpoint versions, and a pinned-address HTTPS transport foundation are implemented.
 Delivery remains fail-closed pending a deployment secret-resolver adapter and
 durable delivery ledger/retries/replay. Endpoint administration hosted run 38062270395
-passes on 9ab5647; the transport follow-up awaits exact-code hosted checks. Telemetry
-and remaining coverage are current-phase work. 0/8
+passes on 9ab5647; pinned transport hosted run 38063940999 passes both jobs on exact
+commit 0bc54de5fb009fe0f7cc3765fd8b9766c8bd7f74. Telemetry and remaining coverage
+are current-phase work. 0/8
 accepted; Q-006 and Q-008 are resolved.
 Phase 5 remains accepted on d91dfce / hosted run 37454353238.
 
@@ -88,11 +89,10 @@ Q-004 resolved by user: shared task claimed by one eligible member.
 Legacy export absent.
 
 ## Next 5 tasks
-1. Verify pinned transport follow-up in exact-code hosted CI.
-2. Integrate a deployment-provided tenant-isolated external secret resolver.
-3. Add durable webhook delivery intents, bounded attempts/retries and reviewed replay.
-4. Complete queue/run telemetry and operator failure visibility.
-5. Complete remaining Phase 6 acceptance and fault/recovery coverage; verify all gates.
+1. Integrate a deployment-provided tenant-isolated external secret resolver.
+2. Add durable webhook delivery intents, bounded attempts/retries and reviewed replay.
+3. Complete queue/run telemetry and operator failure visibility.
+4. Complete remaining Phase 6 acceptance and fault/recovery coverage; verify all gates.
 
 ## Test status
 141 backend tests pass locally without skips, including separate real Keycloak PKCE
