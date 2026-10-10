@@ -6,14 +6,18 @@ scoped endpoint versions/API, and pinned HTTPS transport foundation are implemen
 The authenticated organization/workspace endpoint administration screen is now
 implemented and passes hosted run 38065351280 on exact code
 f0c13473762d5452179fab58c2a90ebc326e7652; backend authorization remains authoritative.
-Delivery remains fail-closed; deployment secret resolver, durable attempts/retries,
-worker wiring and reviewed replay are still current Phase 6 implementation work.
+Delivery remains fail-closed pending a deployment secret resolver and reviewed
+replay. The durable attempt/state ledger, bounded retries and ID-only worker are now
+implemented; deployment provider and scheduled dispatcher operation remain open.
 An explicit unconfigured secret-resolver default now fails closed with a redacted
 availability error; deployments must inject their tenant-isolated provider before
 any worker may send.
 Automation now records a deterministic identifiers-only intent atomically with
-exact delegated audit evidence (`d62a1f48c0e1`); bounded attempts, resolver and
-worker integration remain open.
+exact delegated audit evidence (`d62a1f48c0e1`); bounded attempts and ID-only worker
+integration are now implemented. Migration `ee31ac92bf10` adds the audited state and
+attempt ledger with populated rollback protection; the Dramatiq worker now commits
+leases before outbound I/O and records uncertain expired claims. The actual
+tenant-isolated provider and reviewed operator replay remain unimplemented.
 The sender now requires the latest endpoint head on each attempt so revocation cannot
 be bypassed by an older active rule pin.
 Endpoint version administration passes hosted run 38062270395 on exact code

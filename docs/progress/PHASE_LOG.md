@@ -62,7 +62,26 @@ generic `webhook_signing_secret_unavailable` error; it never returns secret byte
 includes the opaque reference in an error. The pinned HTTPS sender remains behind
 the resolver call. Fourteen focused webhook security tests, Ruff, formatting and
 strict mypy pass. No provider vendor is selected and no network delivery is enabled.
-Durable attempts, worker injection and reviewed replay remain current Phase 6 work.
+Deployment provider injection and reviewed replay remain current Phase 6 work.
+
+## Phase 6 webhook delivery ledger and worker - 2026-10-10
+
+Add a mutable delivery-state row plus immutable, individually audited attempt rows;
+intent capture creates its `pending` state in the same transaction. Database guards
+require matching audit evidence for state transitions and attempts, and refuse
+update/delete/truncate of retained attempts. Migration `ee31ac92bf10` is additive
+and refuses populated rollback. The Dramatiq actor accepts organization/delivery IDs
+only; its due-intent poller can republish safely because committed claims are locked
+and leased. The worker checks the pinned endpoint and latest revocation head, closes
+the read transaction before DNS/secret/network work, then records a bounded result
+in a new transaction. Automatic retries stop at eight; expired in-flight work is
+recorded as uncertain, not blindly resent. A default-unconfigured secret resolver
+fails before claiming, so deployments without an injected provider consume no
+attempts and send nothing. Tenancy, duplicate source handling, initial audit-linked
+state, claim idempotency and expired-claim uncertainty are tested. Full backend
+regression passes 310 tests with 9 optional skips; strict mypy (254 files), Ruff,
+formatting and Alembic drift pass. Reviewed replay, delivery/operator visibility,
+deployment provider wiring and scheduled dispatcher operation remain Phase 6 work.
 passes both jobs on exact commit 9ab5647c74e5103426b3f419934a9b1947634835. No
 Phase 6 acceptance criterion is claimed; 0/8 remain accepted.
 

@@ -68,10 +68,10 @@ endpoint versions, and a pinned-address HTTPS transport foundation are implement
 Authenticated organization/workspace endpoint administration UI is also implemented
 and passes local gates; hosted run 38065351280 passes both jobs on exact code
 f0c13473762d5452179fab58c2a90ebc326e7652. The sender contract checks the current endpoint head
-on every attempt so revocation tombstones block older rule pins; the durable worker
-must supply that fresh head when delivery is integrated.
-Delivery remains fail-closed pending a deployment secret-resolver adapter and
-durable delivery ledger/retries/replay. Automation actions now persist immutable,
+on every attempt so revocation tombstones block older rule pins; the new delivery
+worker loads both the exact pin and latest endpoint head before any send.
+Delivery remains fail-closed pending a deployment secret-resolver provider and
+reviewed replay. Automation actions now persist immutable,
 identifiers-only webhook delivery intents in the same transaction as their exact
 delegated audit event; deterministic run/action IDs make capture idempotent, and
 latest endpoint revocation is checked before intent creation. Migration
@@ -81,9 +81,12 @@ passes on 9ab5647; pinned transport hosted run 38063940999 passes both jobs on e
 commit 0bc54de5fb009fe0f7cc3765fd8b9766c8bd7f74; latest-head revocation enforcement
 passes run 38066369565 on exact commit a9843addf6484edd0aebf10a098c9b7cb273e259.
 Full local backend regression for this increment passes 307 tests with 9 documented
-optional skips; Ruff check/format, strict mypy (250 files), Alembic drift and focused
-webhook API/intent tests pass. Hosted run 38068210545 for commit 2c53eb4 was still
-in progress at this status update; its result is pending verification.
+optional skips. The delivery-ledger/worker increment raises this to 310 passed/9
+skipped. Ruff check/format, strict mypy, Alembic upgrade/drift and webhook API,
+intent and security tests pass. Hosted run 38068210545 for commit 2c53eb4 was still
+in progress at last check; hosted verification for later commits is pending.
+Migration `ee31ac92bf10` adds guarded mutable delivery state and immutable audited
+attempts, and refuses populated rollback.
 Telemetry and remaining coverage are current-phase work. 0/8
 accepted; Q-006 and Q-008 are resolved.
 Phase 5 remains accepted on d91dfce / hosted run 37454353238.
@@ -104,10 +107,11 @@ Q-004 resolved by user: shared task claimed by one eligible member.
 Legacy export absent.
 
 ## Next 5 tasks
-1. Integrate a deployment-provided tenant-isolated external secret resolver.
-2. Add bounded webhook attempts/retries and reviewed replay around persisted intents.
-3. Complete queue/run telemetry and operator failure visibility.
-4. Complete remaining Phase 6 acceptance and fault/recovery coverage; verify all gates.
+1. Inject and verify the deployment's tenant-isolated external secret resolver.
+2. Add reviewed webhook replay and operator delivery/attempt visibility.
+3. Schedule the ID-only webhook dispatcher and verify production runtime wiring.
+4. Complete queue/run telemetry and operator failure visibility.
+5. Complete remaining Phase 6 acceptance and fault/recovery coverage; verify all gates.
 
 ## Test status
 141 backend tests pass locally without skips, including separate real Keycloak PKCE

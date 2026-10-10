@@ -12,8 +12,17 @@ from operations.modules.automation.application.events import OperationalEvent
 from operations.modules.forms.application.service import FormService
 from operations.modules.identity.application.contracts import Principal, RequestContext
 from operations.modules.integrations.application.automation import WebhookAutomationActions
-from operations.modules.integrations.application.contracts import EndpointVersion
-from operations.modules.integrations.application.delivery_contracts import WebhookIntent
+from operations.modules.integrations.application.contracts import EndpointStore, EndpointVersion
+from operations.modules.integrations.application.delivery import WebhookDeliveryService
+from operations.modules.integrations.application.delivery_contracts import (
+    WebhookAttempt,
+    WebhookDeliveryState,
+    WebhookIntent,
+)
+from operations.modules.integrations.application.webhooks import (
+    TenantSecretResolver,
+    WebhookTransport,
+)
 
 
 class FormsStub:
@@ -69,6 +78,35 @@ class AuditStub:
 
     def append(self, event: AuditEvent) -> None:
         self.rows.append(event)
+
+
+class DeliveryStoreStub:
+    def __init__(self, intent: WebhookIntent, state: WebhookDeliveryState) -> None:
+        self.intent_row, self.state_row = intent, state
+        self.attempt_rows: list[WebhookAttempt] = []
+
+    def intent(self, _organization_id: UUID, _identifier: UUID) -> WebhookIntent:
+        return self.intent_row
+
+    def state(
+        self, _organization_id: UUID, _identifier: UUID, lock: bool = False
+    ) -> WebhookDeliveryState:
+        del lock
+        return self.state_row
+
+    def save_state(self, row: WebhookDeliveryState) -> None:
+        self.state_row = row
+
+    def add_attempt(self, row: WebhookAttempt) -> None:
+        self.attempt_rows.append(row)
+
+
+class SourceReaderStub:
+    def __init__(self, event: OperationalEvent) -> None:
+        self.source = event
+
+    def event(self, _organization_id: UUID, _identifier: UUID) -> OperationalEvent:
+        return self.source
 
 
 @pytest.fixture
@@ -202,3 +240,56 @@ def test_intent_rejects_endpoint_scope_mismatch_and_latest_revocation_before_wri
         service.execute(actor, rule, event, run, 0, action)
     assert audits.rows == []
     assert service.intents.get(rule.organization_id, uuid5(run.id, "webhook-delivery:0")) is None
+
+
+def test_delivery_lease_is_idempotent_and_expiry_becomes_uncertain(
+    intent_setup: tuple[
+        WebhookAutomationActions, Rule, OperationalEvent, Run, RequestContext, AuditStub
+    ],
+) -> None:
+    _actions, rule, event, run, _actor, _audits = intent_setup
+    now = datetime.now(UTC)
+    identifier = uuid7()
+    intent = WebhookIntent(
+        id=identifier,
+        audit_id=uuid7(),
+        organization_id=rule.organization_id,
+        workspace_id=rule.workspace_id,
+        project_id=rule.project_id,
+        event_id=event.id,
+        run_id=run.id,
+        rule_version_id=run.rule_version_id,
+        action_position=0,
+        endpoint_id=uuid7(),
+        endpoint_version=1,
+        requested_by_id=run.delegator_id,
+        correlation_id=event.correlation_id,
+        created_at=now,
+    )
+    pending = WebhookDeliveryState(
+        id=identifier,
+        organization_id=rule.organization_id,
+        status="pending",
+        attempts=0,
+        next_at=now,
+        updated_at=now,
+        audit_id=intent.audit_id,
+    )
+    store, audits = DeliveryStoreStub(intent, pending), AuditStub()
+    service = WebhookDeliveryService(
+        store,
+        cast(EndpointStore, object()),
+        SourceReaderStub(event),
+        audits,
+        cast(TenantSecretResolver, object()),
+        cast(WebhookTransport, object()),
+    )
+
+    claimed = service.claim(rule.organization_id, identifier)
+    assert claimed is not None and claimed.status == "sending" and claimed.attempts == 1
+    assert service.claim(rule.organization_id, identifier) is None
+
+    store.state_row = claimed.model_copy(update={"next_at": now, "updated_at": now})
+    assert service.claim(rule.organization_id, identifier) is None
+    assert store.state_row.status == "uncertain"
+    assert [row.outcome for row in store.attempt_rows] == ["uncertain"]

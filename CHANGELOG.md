@@ -2,6 +2,17 @@
 
 ## Unreleased - Phase 6 in progress (2026-10-10)
 
+- Persist each webhook intent with an audited pending state, and add immutable
+  attempt evidence guarded by exact audit linkage. A separate Dramatiq actor claims
+  leases, sends only identifiers-only signed envelopes using the pinned HTTPS
+  transport, and records bounded outcomes; expired claims become uncertain. Add
+  an ID-only due-intent publisher and an unconfigured secret resolver that fails
+  before claiming, so no attempts are consumed before deployments inject their
+  tenant-isolated secret manager. Migration ee31ac92bf10 refuses populated rollback.
+  Full backend regression passes (310 passed, 9 optional skips); Ruff, strict mypy,
+  Alembic upgrade/drift and focused webhook integration/security checks pass. Phase 6
+  remains unaccepted pending deployment provider wiring and reviewed replay.
+
 - Require webhook delivery attempts to check the current endpoint head: endpoint
   edits preserve a rule's pinned version, while a later revocation blocks that pin.
   Focused security tests verify both behaviors before secret lookup/network access.

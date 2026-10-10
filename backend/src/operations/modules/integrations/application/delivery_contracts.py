@@ -1,12 +1,13 @@
 """Immutable, identifiers-only webhook action intents."""
 
 from datetime import datetime
-from typing import Protocol
+from typing import Literal, Protocol
 from uuid import UUID
 
 from pydantic import Field, model_validator
 
 from operations.contracts import Command
+from operations.modules.automation.application.events import OperationalEvent
 
 
 class WebhookIntent(Command):
@@ -35,3 +36,39 @@ class WebhookIntent(Command):
 class WebhookIntentStore(Protocol):
     def get(self, organization_id: UUID, identifier: UUID) -> WebhookIntent | None: ...
     def add(self, row: WebhookIntent) -> None: ...
+
+
+class WebhookDeliveryState(Command):
+    id: UUID
+    organization_id: UUID
+    status: Literal["pending", "sending", "retry", "sent", "failed", "uncertain", "skipped"]
+    attempts: int = Field(ge=0, le=20)
+    next_at: datetime
+    error_code: str | None = None
+    updated_at: datetime
+    audit_id: UUID
+
+
+class WebhookAttempt(Command):
+    id: UUID
+    organization_id: UUID
+    delivery_id: UUID
+    number: int = Field(ge=1, le=20)
+    outcome: Literal["sent", "retry", "failed", "uncertain", "skipped"]
+    error_code: str | None = None
+    started_at: datetime
+    finished_at: datetime
+    audit_id: UUID
+
+
+class WebhookDeliveryStore(Protocol):
+    def intent(self, organization_id: UUID, identifier: UUID) -> WebhookIntent | None: ...
+    def state(
+        self, organization_id: UUID, identifier: UUID, lock: bool = False
+    ) -> WebhookDeliveryState | None: ...
+    def save_state(self, row: WebhookDeliveryState) -> None: ...
+    def add_attempt(self, row: WebhookAttempt) -> None: ...
+
+
+class WebhookSourceReader(Protocol):
+    def event(self, organization_id: UUID, identifier: UUID) -> OperationalEvent | None: ...

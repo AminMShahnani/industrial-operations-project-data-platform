@@ -565,3 +565,28 @@ Downgrade to 5caef6ad5721 drops only those indexes, preserving populated deliver
 attempts and audits. Disable the console/routes before rolling back application
 code. Older ledger/source downgrade guards still apply; never delete evidence to
 force rollback. Use fake transports/loopback sinks for verification.
+
+## Signed webhook delivery
+
+The automation action transaction creates an immutable intent and pending state.
+Run the due-ID dispatcher periodically with `uv run python -m
+operations.webhook_dispatcher` and the worker with
+`uv run dramatiq operations.webhook_consumer:broker --processes 1 --threads 4`.
+The queue carries only organization and delivery UUIDs. Duplicate publication is
+expected and safe: the database claim lease allows only one active attempt.
+
+The default worker intentionally has no secret provider and fails before claiming;
+it does not consume an attempt or send. Before enabling webhook delivery, wire the
+deployment's tenant-isolated `TenantSecretResolver` into `operations.webhook_consumer`
+and enforce the same outbound CIDR policy at the network boundary. Never store key
+bytes in the database, broker, audit records or logs. Keep automation action sends
+disabled until that provider has passed tenant-isolation and unknown-reference
+tests. Expired `sending` leases become `uncertain` and are not automatically resent.
+The eight-attempt retry limit is automatic; reviewed operator replay and delivery
+history UI remain unavailable until implemented. Use only fake transports or
+loopback sinks for verification, never customer endpoints.
+
+Migration `ee31ac92bf10` adds delivery state and immutable audited attempt tables.
+Pause dispatch and workers before rollback. Downgrade refuses while either table
+contains rows; restore a verified backup or apply a forward fix rather than deleting
+delivery evidence.

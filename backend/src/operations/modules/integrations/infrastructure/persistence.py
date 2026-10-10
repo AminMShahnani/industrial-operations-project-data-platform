@@ -12,11 +12,16 @@ from sqlalchemy import (
     UniqueConstraint,
     func,
     select,
+    update,
 )
 from sqlalchemy.orm import Mapped, Session, aliased, mapped_column
 
 from operations.modules.integrations.application.contracts import EndpointVersion
-from operations.modules.integrations.application.delivery_contracts import WebhookIntent
+from operations.modules.integrations.application.delivery_contracts import (
+    WebhookAttempt,
+    WebhookDeliveryState,
+    WebhookIntent,
+)
 from operations.platform.database import Base
 
 
@@ -227,4 +232,123 @@ class WebhookIntentRepository:
 
     def add(self, row: WebhookIntent) -> None:
         self.session.add(WebhookIntentRow(**row.model_dump()))
+        self.session.flush()
+        self.session.add(
+            WebhookDeliveryStateRow(
+                id=row.id,
+                organization_id=row.organization_id,
+                status="pending",
+                attempts=0,
+                next_at=row.created_at,
+                error_code=None,
+                updated_at=row.created_at,
+                audit_id=row.audit_id,
+            )
+        )
+        self.session.flush()
+
+
+class WebhookDeliveryStateRow(Base):
+    __tablename__ = "webhook_delivery_states"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["organization_id", "id"],
+            ["webhook_delivery_intents.organization_id", "webhook_delivery_intents.id"],
+        ),
+        ForeignKeyConstraint(["audit_id"], ["audit_events.id"]),
+        CheckConstraint(
+            "status IN ('pending','sending','retry','sent','failed','uncertain','skipped') "
+            "AND attempts BETWEEN 0 AND 20",
+            name="webhook_delivery_status_attempts",
+        ),
+        Index("ix_webhook_delivery_due", "status", "next_at", "id"),
+    )
+    id: Mapped[UUID] = mapped_column(primary_key=True)
+    organization_id: Mapped[UUID] = mapped_column(primary_key=True)
+    status: Mapped[str] = mapped_column(String(20))
+    attempts: Mapped[int]
+    next_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    error_code: Mapped[str | None] = mapped_column(String(100))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    audit_id: Mapped[UUID]
+
+
+class WebhookAttemptRow(Base):
+    __tablename__ = "webhook_delivery_attempts"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["organization_id", "delivery_id"],
+            ["webhook_delivery_states.organization_id", "webhook_delivery_states.id"],
+        ),
+        ForeignKeyConstraint(["audit_id"], ["audit_events.id"]),
+        UniqueConstraint("organization_id", "delivery_id", "number"),
+        CheckConstraint(
+            "number BETWEEN 1 AND 20 AND outcome IN "
+            "('sent','retry','failed','uncertain','skipped')",
+            name="webhook_attempt_values",
+        ),
+        Index("ix_webhook_attempt_cursor", "organization_id", "delivery_id", "number"),
+    )
+    id: Mapped[UUID] = mapped_column(primary_key=True)
+    organization_id: Mapped[UUID]
+    delivery_id: Mapped[UUID]
+    number: Mapped[int]
+    outcome: Mapped[str] = mapped_column(String(20))
+    error_code: Mapped[str | None] = mapped_column(String(100))
+    started_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    finished_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    audit_id: Mapped[UUID] = mapped_column(unique=True)
+
+
+class WebhookDeliveryRepository:
+    def __init__(self, session: Session) -> None:
+        self.session = session
+
+    def intent(self, organization_id: UUID, identifier: UUID) -> WebhookIntent | None:
+        return WebhookIntentRepository(self.session).get(organization_id, identifier)
+
+    def state(
+        self, organization_id: UUID, identifier: UUID, lock: bool = False
+    ) -> WebhookDeliveryState | None:
+        query = select(WebhookDeliveryStateRow).where(
+            WebhookDeliveryStateRow.organization_id == organization_id,
+            WebhookDeliveryStateRow.id == identifier,
+        )
+        row = self.session.scalar(query.with_for_update() if lock else query)
+        if row is None:
+            return None
+        return WebhookDeliveryState.model_validate(
+            {key: getattr(row, key) for key in WebhookDeliveryState.model_fields}
+        )
+
+    def due(self, now: datetime, limit: int = 100) -> list[WebhookDeliveryState]:
+        rows = self.session.scalars(
+            select(WebhookDeliveryStateRow)
+            .where(
+                WebhookDeliveryStateRow.status.in_(["pending", "retry"]),
+                WebhookDeliveryStateRow.next_at <= now,
+            )
+            .order_by(WebhookDeliveryStateRow.next_at, WebhookDeliveryStateRow.id)
+            .limit(min(max(limit, 1), 100))
+        )
+        return [
+            WebhookDeliveryState.model_validate(
+                {key: getattr(row, key) for key in WebhookDeliveryState.model_fields}
+            )
+            for row in rows
+        ]
+
+    def save_state(self, row: WebhookDeliveryState) -> None:
+        self.session.execute(
+            update(WebhookDeliveryStateRow)
+            .where(
+                WebhookDeliveryStateRow.organization_id == row.organization_id,
+                WebhookDeliveryStateRow.id == row.id,
+            )
+            .values(**row.model_dump(exclude={"id", "organization_id"}))
+        )
+        self.session.flush()
+
+    def add_attempt(self, row: WebhookAttempt) -> None:
+        self.session.add(WebhookAttemptRow(**row.model_dump()))
         self.session.flush()
