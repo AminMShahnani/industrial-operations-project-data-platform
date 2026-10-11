@@ -3,7 +3,8 @@
 Phase 7 reporting/export (2026-10-11): durable private report export jobs, text-only
 PDF, download-time authorization/integrity checks, idempotent redispatch and
 24-hour retention cleanup are implemented under accepted ADR-0034 (Q-014 resolved).
-Phase acceptance is held for exact hosted CI. Master-data imports remain explicitly bounded at 1,000
+Phase 7 is accepted 8/8; exact-code hosted CI passed on
+`fedb956386855f324fa024f52347fe710c97e6ea` (run 38130020096). Master-data imports remain explicitly bounded at 1,000
 rows and use preview-bound mappings under ADR-0032; the Phase 7 acceptance criteria
 do not require unbounded or durable import jobs. Reusable mapping templates are a
 later enhancement only if their scope is authorized.
@@ -75,8 +76,8 @@ overdue-list, status-distribution, state-count bar, metric, due-week trend and l
 widgets under ADR-0030/0031/0033. Current overdue counts by UTC due-date week are
 not historical state snapshots. Private version-pinned CSV/XLSX/PDF export jobs,
 download authorization, integrity verification and worker recovery are implemented.
-Q-010 through Q-014 are resolved in ADR-0028 through ADR-0034. Exact hosted Phase 7
-verification remains pending.
+Q-010 through Q-014 are resolved in ADR-0028 through ADR-0034. No Phase 7 acceptance
+item is deferred; bounded transfer/report limits are part of the accepted scope.
 
 Phase 1 introduces audited tenant persistence without an authentication bypass or
 industry coupling. Later phase namespaces remain planned ownership rather than

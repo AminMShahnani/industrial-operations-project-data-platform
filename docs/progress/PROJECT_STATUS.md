@@ -1,10 +1,10 @@
 # Project Status
 
-Status: PHASE 7 IN PROGRESS
-Current phase: Phase 7 - reporting, export and import wizard foundation
+Status: PHASE 7 COMPLETE - READY FOR PHASE 8
+Current phase: Phase 8 - integrations foundation (not started)
 Last updated: 2026-10-11
-Overall completion: 7/11 phases accepted. Phase 0 through Phase 6 each
-satisfy 8/8 criteria. Phase 6: P6-01 through P6-08 PASS.
+Overall completion: 8/11 phases accepted. Phase 0 through Phase 7 each
+satisfy 8/8 criteria. Phase 7: P7-01 through P7-08 PASS.
 No unsupported project-wide percentage is reported.
 
 ## Completed modules
@@ -115,7 +115,7 @@ ADR-0010 accepted on 2026-10-06.
 Q-004 resolved by user: shared task claimed by one eligible member.
 Legacy export absent.
 
-## In progress: Phase 7
+## Completed Phase 7
 P7-01 through P7-08 are defined in the Phase Log from docs/15, docs/16 and
 cross-cutting security, data, API, testing and operations requirements. The overdue
 dataset has personal and aggregate scopes. Both call the owning Tasks service and
@@ -137,21 +137,22 @@ worker redispatch/lease recovery and retention cleanup. Job status/download cont
 are in the Admin UI. Migration `92e3b0c4a7d1` refuses populated rollback; recovery
 index migration `a16c3e902bf4` is reversible.
 
-Q-014 is resolved: the owner accepted 24-hour artifact retention in ADR-0034. Exact
-hosted verification on final Phase 7 code is still pending.
-Therefore P7-01 through P7-08 remain 0/8 accepted and Phase 8 has not started.
+Q-014 is resolved: the owner accepted 24-hour artifact retention in ADR-0034. All
+P7-01 through P7-08 acceptance criteria pass locally and in exact-commit hosted CI.
+Hosted run [38130020096](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/38130020096)
+passed backend and frontend jobs on implementation commit
+`fedb956386855f324fa024f52347fe710c97e6ea`. Phase 8 may begin.
 
-## Next 5 tasks
-1. Run exact-commit hosted CI including migrations and generated contracts.
-2. Record P7-01 through P7-08 evidence and deferred items in the phase log.
-3. Update changelog/progress and make the Phase 7 completion commit.
+## Next
+Begin Phase 8 according to `docs/27_CODEX_EXECUTION_PLAN.md` after review of the
+Phase 7 completion record.
 
 Latest complete backend suite: 328 passed / 9 e2e deselected, including the
 strengthened 101-row durable-export integration test; the real PKCE browser suite
 passes 9 tests. Frontend lint/typecheck, 19 tests and
 production build pass; Ruff, strict mypy (309 files), OpenAPI/client generation and
-isolated Alembic upgrade/drift pass. Q-014 is resolved. Exact hosted verification
-remains open, so P7-01 through P7-08 are still 0/8 accepted.
+isolated Alembic upgrade/drift pass. Exact hosted verification passes on
+`fedb956386855f324fa024f52347fe710c97e6ea` (run 38130020096).
 
 Saved report definitions now also support stable task-ID ascending/descending order;
 the owning Tasks query applies matching order and cursor comparison. They support

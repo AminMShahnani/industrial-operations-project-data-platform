@@ -1574,5 +1574,39 @@ browser tests deselected; the separate isolated PKCE browser suite passed 9 test
 The strengthened 101-row PDF export test is included in the backend suite. Ruff
 check/format, strict mypy (309 files), OpenAPI drift, frontend lint/typecheck/19
 tests/production build, isolated `operations_test` Alembic drift and `git diff
---check` pass. Exact-commit hosted verification remains pending, so P7-01 through
-P7-08 remain unaccepted until that gate completes.
+--check` pass.
+
+## Phase 7 final acceptance - 2026-10-11
+
+All eight Phase 7 criteria are accepted. The owner resolved Q-014 by accepting
+24-hour private artifact retention in ADR-0034. No acceptance item is deferred;
+bounded import/export limits and supported report dimensions are the scoped product
+contract.
+
+- P7-01 PASS: governed reporting delegates row and aggregate reads to the Tasks
+  owner service, applies scope authorization, and preserves the defined current-state
+  and due-week measurement semantics.
+- P7-02 PASS: creator-private saved reports use immutable, versioned bounded
+  filters, columns, sort and grouping; arbitrary SQL is unavailable.
+- P7-03 PASS: creator-private dashboards use owned governed reports and supported
+  authorized widgets, with private layout persistence and accessible rendering.
+- P7-04 PASS: bounded CSV/XLSX/PDF exports include durable idempotent jobs,
+  version pinning, generation/download authorization, integrity checks and 24-hour
+  artifact expiry.
+- P7-05 PASS: the transfer wizard uses explicit preview-bound mappings, validates
+  and dry-runs, then performs bounded create-only apply through the owning service.
+- P7-06 PASS: scoped accessible UI supports report/dashboard editing, job status and
+  authorized downloads, plus import preview/results.
+- P7-07 PASS: guarded migrations and rollback behavior, tenant/permission negatives,
+  bounds, audits, worker recovery and operating procedures are tested/documented.
+- P7-08 PASS: full local backend/browser/frontend, lint/type, contracts and
+  migration checks pass; exact-code hosted CI passes both jobs.
+
+Local evidence: 328 backend tests pass (9 e2e deselected), the isolated PKCE browser
+suite passes 9, and frontend passes 19 tests, lint, typecheck and production build.
+Ruff check/format, strict mypy (309 files), OpenAPI drift and isolated Alembic
+upgrade/drift pass. Hosted run
+[38130020096](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/38130020096)
+passed backend and frontend jobs on implementation commit
+`fedb956386855f324fa024f52347fe710c97e6ea`. Phase 7 is accepted 8/8; Phase 8 may
+begin. No Phase 7 item is deferred.

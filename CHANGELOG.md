@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased - Phase 7 in progress (2026-10-10)
+## Phase 7 complete (2026-10-11)
 
 - Add creator-private durable report export jobs for CSV/XLSX/PDF. Jobs bind to
   immutable report versions, use current dataset authorization at generation and
@@ -12,6 +12,11 @@
   reversible recovery-index migration. PostgreSQL coverage verifies private job
   visibility, version pinning, idempotent replay, PDF bytes, download integrity and
   populated rollback refusal.
+
+- Phase 7 acceptance: 328 backend tests, 9 browser tests, 19 frontend tests, lint,
+  strict types, OpenAPI drift and isolated migration gates pass locally. Hosted run
+  [38130020096](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/38130020096)
+  passed both jobs on implementation commit `fedb956386855f324fa024f52347fe710c97e6ea`.
 
 - Add explicit master-data CSV/XLSX header mapping under ADR-0032. Imports remain
   create-only; apply binds the source file, mapping digest and immutable type
