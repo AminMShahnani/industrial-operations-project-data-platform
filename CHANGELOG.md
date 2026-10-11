@@ -19,7 +19,7 @@
   passes both jobs on `d87d3a76d46449366766a666900fff6f098206f1`; Phase 8 is accepted
   8/8.
 
-## Unreleased - Phase 9 implementation pending hosted acceptance (2026-10-11)
+## Phase 9 complete (2026-10-11)
 
 - Define P9-01..08 acceptance criteria for typed Oil & Gas pack artifacts,
   explicit workspace/project imports, draft-only workflows, governed KPIs and
@@ -43,9 +43,10 @@
   artifact-schema drift, curated package validation, and isolated migration roundtrip/
   Alembic drift pass. Hosted run [38168545470](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/38168545470)
   identified a CRLF/LF mismatch between Windows-calculated manifest hashes and Git's
-  LF pack blobs. Checksums are now computed from the canonical LF content, and all
-  three affected cases pass from a Linux ext4 archive. Full exact hosted verification
-  remains required before phase acceptance.
+  LF pack blobs. All 46 checksums now match canonical LF content. Final exact-code
+  hosted run [38169268123](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/38169268123)
+  passes backend and frontend jobs on `8ab8690b74db2f16fb792e90f961e8ab623fb558`;
+  Phase 9 is accepted 8/8.
 
 ## Phase 7 complete (2026-10-11)
 

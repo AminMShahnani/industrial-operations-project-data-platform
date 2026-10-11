@@ -1842,3 +1842,43 @@ LF bytes; curated package validation and all three failing tests now pass from a
 ext4-extracted Linux archive. The prior full Linux/Python 3.14 suite passed 383 tests
 on content-equivalent code. Trigger a fresh exact-code hosted run before accepting
 P9-08. No acceptance requirement is deferred.
+
+## Phase 9 final acceptance - 2026-10-11
+
+All Phase 9 criteria pass; no acceptance requirement is deferred.
+
+- P9-01 PASS: typed versioned artifact envelopes, stable IDs, exact reference slots,
+  generated JSON Schema, and duplicate/broken-reference/cycle/expression validation.
+- P9-02 PASS: curated Oil & Gas 1.0.0 includes 13 form templates and 16 master-data
+  types with no customer records, secrets or executable content.
+- P9-03 PASS: preview-bound workspace/project imports preserve scope, immutable
+  provenance and audit, using Forms, Master Data, Workflows and Reporting services.
+- P9-04 PASS: form/expression/reference and workflow graph validation run before
+  import; forms/workflows remain drafts until authorized publication/activation.
+- P9-05 PASS: four workflow presets import as drafts; three automation examples
+  import as inert typed templates and never create or activate automation rules.
+- P9-06 PASS: seven bounded typed KPI definitions cover completion, ROP, NPT,
+  approval, safety and downtime themes. Private saved reports pin published source
+  form versions; reads require scoped `submission.read`, omit submitter identity and
+  cover at most 366 days. Current task overdue counts remain in Core reporting.
+- P9-07 PASS: three typed internal well/site/rig/wellbore mapping profiles declare
+  source/target fields and scope/version provenance with no arbitrary transforms or
+  external-standard conformance claim.
+- P9-08 PASS: package/API authorization, tenant isolation, audit/idempotency, KPI
+  aggregation, migration rollback, browser, contracts, lint/type and all local gates
+  pass. Curated package checksums use LF-normalized bytes across Windows/Linux.
+
+Local evidence: 383 backend tests pass (9 opt-in e2e tests are deselected in that
+run); the isolated real OIDC/PKCE browser test passes. Frontend lint/typecheck, 19
+tests and production build pass. Ruff check/format, strict mypy (333 files), OpenAPI
+and artifact-schema drift, curated pack validation, isolated PostgreSQL migration
+roundtrip/drift and `git diff --check` pass. Three cases that initially failed on
+GitHub Linux were reproduced from an ext4 Git archive, fixed by normalizing the 46
+pack content checksums, and pass after the fix.
+
+Exact hosted run
+[38169268123](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/38169268123)
+passed backend and frontend jobs on commit
+`8ab8690b74db2f16fb792e90f961e8ab623fb558`, including Linux tests, real OIDC/PKCE
+browser flow, migrations and generated OpenAPI drift. Phase 9 is accepted 8/8; Phase
+10 may begin.

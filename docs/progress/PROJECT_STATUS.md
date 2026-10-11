@@ -1,18 +1,12 @@
 # Project Status
 
-Status: PHASE 9 IMPLEMENTATION IN PROGRESS
-Current phase: Phase 9 - Oil & Gas starter pack
+Status: PHASE 9 COMPLETE
+Current phase: Phase 9 accepted; Phase 10 not started
 Last updated: 2026-10-11
-Overall completion: 9/11 phases accepted. Phase 0 through Phase 8 each
-satisfy 8/8 criteria. Phase 8: P8-01 through P8-08 PASS.
-No unsupported project-wide percentage is reported. Phase 9 decisions Q-018/Q-019/Q-020
-are resolved. Hosted runs 38166147233, 38167717835 and 38168545470 passed frontend
-but failed backend tests. The diagnostic annotation identified three Domain Pack
-tests: checksums were generated from Windows CRLF files while GitHub checked out LF
-blobs. All 46 pack checksums now use canonical LF bytes; the three failures pass from
-an ext4-extracted Linux archive. Full Linux/Python 3.14 backend regression also passed
-on the prior content-equivalent source. A fresh exact hosted run is required before
-Phase 9 acceptance.
+Overall completion: 10/11 phases accepted. Phase 0 through Phase 9 each satisfy
+8/8 criteria. No unsupported project-wide percentage is reported. Q-018/Q-019/Q-020
+are resolved. Final exact-code hosted run 38169268123 passed backend and frontend jobs
+on `8ab8690b74db2f16fb792e90f961e8ab623fb558`; Phase 9 is accepted 8/8.
 
 ## Completed: Phase 8
 P8-01 through P8-08 are defined in the Phase Log. The phase delivers typed
@@ -30,23 +24,25 @@ typed pack artifact envelopes, a curated Oil & Gas 1.0.0 release, exact referenc
 and package-level validation.
 
 ## Next 5 tasks
-1. Push the LF-normalized manifest checksums and trigger a fresh hosted quality run.
-2. Review backend and frontend results on the exact implementation commit.
-3. If it fails again, use the test-ID annotation to reproduce the specific failure.
-4. Update P9-08 evidence after both hosted jobs pass.
-5. Mark Phase 9 accepted only after all eight criteria and gates pass.
+1. Begin Phase 10 security hardening from its acceptance checklist.
+2. Review production deployment trust, secrets and ingress evidence.
+3. Run performance and tenant-isolation verification at planned scale.
+4. Validate backup/restore and migration rehearsal procedures.
+5. Obtain UAT and legacy migration fixture evidence before cutover.
 
-## In progress: Phase 9 final gate
-P9-01 through P9-07 are implemented. Q-018/Q-019/Q-020 are resolved under ADR-0038
-through ADR-0040; ADR-0041 records KPI materialization as private saved reports.
-Preview-bound workspace/project imports use owning services. KPI reports pin a
-published form version and require scoped `submission.read`; aggregates omit
-submitter identity and are limited to 366 days. Automation templates remain inert;
-mapping profiles are internal typed metadata. Local API, browser, backend, frontend,
-migration, contract, lint and type checks pass. Exact hosted CI remains the sole phase
-acceptance gate: run 38168545470 identified a Windows/Linux line-ending checksum
-mismatch; LF-normalized pack content and all three affected Linux-ext4 tests now pass.
-The workflow reports failing test IDs only. Core remains industry-neutral.
+## Completed: Phase 9
+P9-01 through P9-08 pass. The curated Oil & Gas Domain Pack contains 13 forms, 16
+master-data types, workflow presets, inert automation examples, seven KPI definitions
+and three internal mapping profiles. Preview-bound workspace/project imports preserve
+source provenance and audit through owning services. KPI reports pin published form
+versions, require scoped `submission.read`, return identity-free aggregates and limit
+windows to 366 days. Automation templates remain inactive; mapping profiles make no
+external conformance claim. Core remains industry-neutral.
+
+Hosted verification corrected a Windows/Linux line-ending checksum mismatch by
+normalizing all pack content to LF and regenerating 46 checksums. Final hosted run
+[38169268123](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/38169268123)
+passed backend and frontend jobs on exact code `8ab8690b74db2f16fb792e90f961e8ab623fb558`.
 
 ## Completed modules
 - Foundation, infrastructure, observability, CI and module boundaries.

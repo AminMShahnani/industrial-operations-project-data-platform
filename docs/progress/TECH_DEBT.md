@@ -28,7 +28,9 @@ published pinned form versions through the Submissions service under scoped
 `submission.read`; aggregate results omit submitter identity and use a maximum 366-day
 window (ADR-0040/0041). Automation templates remain inert; mapping profiles remain
 internal typed metadata without arbitrary transforms or external conformance claims.
-No new Phase 9 technical debt is accepted. Exact hosted CI remains an acceptance gate.
+No new Phase 9 technical debt is accepted. Exact hosted run 38169268123 passes both
+jobs; Phase 9 is accepted 8/8. All 46 curated pack content checksums are generated
+from LF-normalized bytes, matching Git's cross-platform checkout representation.
 Imported workflow assignment resolution occurs at activation: starter role labels
 have no implicit mapping to tenant project-role grants. The draft is editable, and
 activation uses WorkflowService's full current target and recipient validation.
