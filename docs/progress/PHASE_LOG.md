@@ -109,9 +109,11 @@ The browser UI increment introduces no migration or new domain rule. Its fronten
 lint, strict typecheck, 19 tests and production build pass locally. It uses the
 existing typed API contract and does not broaden personal task visibility.
 
-The project owner accepted and confirmed verification of the delivered personal
-overdue-task slice. This acknowledgment is recorded as feature-level verification;
-it does not mark any of the eight Phase 7 completion criteria accepted.
+On 2026-10-11, the project owner confirmed, "I accepted all." This records their
+acceptance of all Phase 7 work delivered to date, including the personal overdue-task
+dataset and browser view. It does not mark the eight phase completion criteria as
+accepted: required report authoring, dashboards, transfer jobs/wizard and their
+operational guarantees remain unimplemented.
 
 ## Phase 6 webhook recovery, mounted secrets and runtime verification - 2026-10-10
 

@@ -148,9 +148,9 @@ checkpoint: DB-backed backend suite 314 passed/9 e2e deselected; dedicated PKCE 
 test passed. Frontend 19 tests, lint, typecheck and production build pass. Ruff check/
 format, strict mypy (301 files), Alembic upgrade/drift and OpenAPI drift pass. Exact
 hosted run 38083622954 passes backend and frontend jobs on `9e1db8cceff99ba3f43c35752f37f306bedf46c2`,
-including e2e, migrations and OpenAPI drift. Owner accepted and verified the delivered
-personal overdue-task slice; P7-01 through P7-08 remain 0/8 accepted because the broader
-Phase 7 features and guarantees are incomplete.
+including e2e, migrations and OpenAPI drift. On 2026-10-11, the owner accepted all
+Phase 7 work delivered to date. P7-01 through P7-08 remain 0/8 accepted because the
+broader Phase 7 features and guarantees are incomplete.
 141 backend tests pass locally without skips, including separate real Keycloak PKCE
 submitter/approver logins, concurrent approval retries, preserved corrections,
 live group/project revocation and 156-action paged history. PostgreSQL migration
