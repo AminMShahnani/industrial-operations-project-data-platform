@@ -1,4 +1,5 @@
 from datetime import UTC, datetime, timedelta
+from typing import Literal
 from uuid import UUID, uuid5, uuid7
 from zoneinfo import ZoneInfo
 
@@ -14,6 +15,9 @@ from operations.modules.tasks.application.contracts import (
     GenericTaskDefinition,
     Reminder,
     Task,
+    TaskDueWeekCount,
+    TaskQueryFilter,
+    TaskStateCount,
     TaskStore,
 )
 
@@ -504,6 +508,8 @@ class TaskService:
         mode: str,
         target: UUID | None,
         after: UUID | None,
+        filters: list[TaskQueryFilter] | None = None,
+        sort_direction: Literal["asc", "desc"] = "asc",
     ) -> tuple[list[Task], UUID | None]:
         self.schedules.require(actor, org, workspace, project)
         user = self.schedules.forms.authorization.user(actor, org)
@@ -546,10 +552,91 @@ class TaskService:
             now if view == "overdue" else today,
             tomorrow,
             after,
+            filters,
+            sort_direction,
         )
         return [self.public(actor, row) for row in rows[:100]], rows[99].id if len(
             rows
         ) > 100 else None
+
+    def inbox_state_counts(
+        self,
+        actor: RequestContext,
+        org: UUID,
+        workspace: UUID,
+        project: UUID | None,
+        mode: Literal["personal", "project"],
+        filters: list[TaskQueryFilter] | None = None,
+    ) -> list[TaskStateCount]:
+        self.schedules.require(actor, org, workspace, project)
+        user = self.schedules.forms.authorization.user(actor, org)
+        manager = "schedule.manage" in self.schedules.forms.permissions(
+            actor, org, workspace, project
+        )
+        if mode == "project":
+            if not manager:
+                raise ServiceError(403, "access_denied")
+            personal = None
+        else:
+            personal = user.id
+        now = datetime.now(UTC)
+        zone = self.schedules.forms.workspaces.organizations.active(org).settings.timezone
+        local = now.astimezone(ZoneInfo(zone))
+        tomorrow = datetime.combine(
+            local.date() + timedelta(days=1), datetime.min.time(), ZoneInfo(zone)
+        ).astimezone(UTC)
+        return self.store.task_state_counts(
+            org,
+            workspace,
+            project,
+            personal,
+            None,
+            "overdue",
+            now,
+            tomorrow,
+            filters,
+        )
+
+    def inbox_due_week_counts(
+        self,
+        actor: RequestContext,
+        org: UUID,
+        workspace: UUID,
+        project: UUID | None,
+        mode: Literal["personal", "project"],
+        as_of: datetime,
+        period_start: datetime,
+        filters: list[TaskQueryFilter] | None = None,
+    ) -> list[TaskDueWeekCount]:
+        self.schedules.require(actor, org, workspace, project)
+        user = self.schedules.forms.authorization.user(actor, org)
+        manager = "schedule.manage" in self.schedules.forms.permissions(
+            actor, org, workspace, project
+        )
+        if mode == "project":
+            if not manager:
+                raise ServiceError(403, "access_denied")
+            personal = None
+        else:
+            personal = user.id
+        now = as_of
+        zone = self.schedules.forms.workspaces.organizations.active(org).settings.timezone
+        local = now.astimezone(ZoneInfo(zone))
+        tomorrow = datetime.combine(
+            local.date() + timedelta(days=1), datetime.min.time(), ZoneInfo(zone)
+        ).astimezone(UTC)
+        return self.store.task_due_week_counts(
+            org,
+            workspace,
+            project,
+            personal,
+            None,
+            "overdue",
+            now,
+            tomorrow,
+            period_start,
+            filters,
+        )
 
     def generate_reminders(
         self,

@@ -4,6 +4,7 @@ from contextlib import asynccontextmanager
 from time import perf_counter
 from uuid import UUID, uuid4
 
+from dramatiq.brokers.redis import RedisBroker
 from fastapi import FastAPI, Request, Response
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -66,6 +67,14 @@ def create_app(
             socket_connect_timeout=2,
         )
         app.state.limiter = RequestLimiter(rate_redis, settings.api_rate_limit)
+        job_broker = RedisBroker(  # type: ignore[no-untyped-call]
+            url=settings.redis_url.get_secret_value(),
+            namespace="dramatiq",
+            socket_timeout=5,
+            socket_connect_timeout=5,
+        )
+        job_broker.declare_queue("operations")
+        app.state.job_broker = job_broker
         infrastructure: InfrastructureProbe | None = None
         try:
             if probe is None:
@@ -79,6 +88,8 @@ def create_app(
                 infrastructure.close()
             engine.dispose()
             rate_redis.close()
+            job_broker.close()
+            job_broker.client.close()
             monitoring.close()
 
     app = FastAPI(

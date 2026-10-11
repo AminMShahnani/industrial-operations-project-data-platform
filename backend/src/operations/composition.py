@@ -43,6 +43,10 @@ from operations.modules.organizations.infrastructure.persistence import Organiza
 from operations.modules.projects.application.service import ProjectService
 from operations.modules.projects.infrastructure.persistence import ProjectRepository
 from operations.modules.reporting.application.datasets import ReportingService
+from operations.modules.reporting.infrastructure.dashboards import DashboardRepository
+from operations.modules.reporting.infrastructure.export_jobs import ReportExportJobRepository
+from operations.modules.reporting.infrastructure.persistence import SavedReportRepository
+from operations.modules.reporting.infrastructure.rendering import TabularReportRenderer
 from operations.modules.scheduling.application.service import SchedulingDefaults, SchedulingService
 from operations.modules.scheduling.infrastructure.persistence import ScheduleRepository
 from operations.modules.submissions.application.service import SubmissionService
@@ -198,5 +202,15 @@ def compose(
         projects,
         master_data,
         MasterDataTransfer(master_data, TabularFiles()),
-        ReportingService(tasks),
+        ReportingService(
+            tasks,
+            SavedReportRepository(session),
+            DashboardRepository(session),
+            TabularReportRenderer(),
+            authorization,
+            workspaces,
+            projects,
+            audit,
+            ReportExportJobRepository(session),
+        ),
     )

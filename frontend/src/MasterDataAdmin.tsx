@@ -7,6 +7,7 @@ type DataType = components['schemas']['DataType'];
 type Record = components['schemas']['DataRecord'];
 type Preview = components['schemas']['ImportPreview'];
 type DataField = components['schemas']['DataField'];
+type ColumnMapping = components['schemas']['ImportColumnMapping'];
 type Client = ReturnType<typeof apiClient>;
 const typesPath = '/api/v1/organizations/{organization_id}/master-data/types' as const;
 const recordsPath = '/api/v1/organizations/{organization_id}/master-data/types/{type_id}/records' as const;
@@ -21,7 +22,8 @@ export function MasterDataAdmin({ api, organization, workspace, project, canMana
   const [typeCursor, setTypeCursor] = useState<string | null>(null);
   const [fields, setFields] = useState<DataField[]>([]);
   const [preview, setPreview] = useState<Preview>();
-  const [upload, setUpload] = useState<{ data: string; format: 'csv' | 'xlsx' }>();
+  const [upload, setUpload] = useState<{ data: string; format: 'csv' | 'xlsx'; mapping?: ColumnMapping[] }>();
+  const [mappingDraft, setMappingDraft] = useState<ColumnMapping[]>([]);
   const [message, setMessage] = useState('');
   const [busy, setBusy] = useState(false);
   const [pendingStatus, setPendingStatus] = useState<{ record: Record; status: Record['status'] }>();
@@ -40,7 +42,7 @@ export function MasterDataAdmin({ api, organization, workspace, project, canMana
   }, [api, organization, workspace, project]);
 
   useEffect(() => {
-    setRecords([]); setPreview(undefined); setUpload(undefined); setCursor(null); setPendingStatus(undefined);
+    setRecords([]); setPreview(undefined); setUpload(undefined); setMappingDraft([]); setCursor(null); setPendingStatus(undefined);
     if (!selected) return;
     let alive = true;
     void api.GET(recordsPath, { params: { path } }).then(result => {
@@ -102,7 +104,24 @@ export function MasterDataAdmin({ api, organization, workspace, project, canMana
         params: { path }, body: { content_base64: uploaded.data, format: uploaded.format, expected_type_version: definition.version, dry_run: true },
       });
       if (!result.data) throw new Error('denied');
-      setPreview(result.data); setUpload(uploaded); setMessage('Import preview ready. No records have been written.');
+      setPreview(result.data); setUpload(uploaded);
+      if (result.data.mapping_required) {
+        const allowed = new Set(['code', 'name', 'status', 'valid_from', 'valid_until', ...(definition.definition.fields ?? []).map(field => field.key)]);
+        setMappingDraft((result.data.source_headers ?? []).map(source_header => ({ source_header, target_field: allowed.has(source_header) ? source_header : '' })));
+        setMessage('Map file headers, then preview the mapped import. No records have been written.');
+      } else setMessage('Import preview ready. No records have been written.');
+    });
+  }
+
+  async function previewMappedImport() {
+    if (!preview || !upload || !definition) return;
+    const mapping = mappingDraft.filter(item => item.target_field);
+    await run(async () => {
+      const result = await api.POST('/api/v1/organizations/{organization_id}/master-data/types/{type_id}/imports', {
+        params: { path }, body: { content_base64: upload.data, format: upload.format, expected_type_version: definition.version, dry_run: true, mapping },
+      });
+      if (!result.data || result.data.mapping_required) throw new Error('invalid mapping');
+      setPreview(result.data); setUpload({ ...upload, mapping }); setMessage('Mapped import preview ready. No records have been written.');
     });
   }
 
@@ -111,7 +130,8 @@ export function MasterDataAdmin({ api, organization, workspace, project, canMana
     await run(async () => {
       const result = await api.POST('/api/v1/organizations/{organization_id}/master-data/types/{type_id}/imports', {
         params: { path }, body: { content_base64: upload.data, format: upload.format, expected_type_version: definition.version,
-          expected_sha256: preview.source_sha256, dry_run: false },
+          expected_sha256: preview.source_sha256, dry_run: false, ...(upload.mapping ? { mapping: upload.mapping } : {}),
+          ...(preview.mapping_sha256 ? { expected_mapping_sha256: preview.mapping_sha256 } : {}) },
       });
       if (!result.data) throw new Error('denied');
       const refreshed = await api.GET(recordsPath, { params: { path } });
@@ -215,8 +235,11 @@ export function MasterDataAdmin({ api, organization, workspace, project, canMana
         <input name={'value-' + field.key} type={field.kind === 'boolean' ? 'checkbox' : field.kind === 'date' ? 'date' : 'text'}
           required={field.kind !== 'boolean' && field.required} maxLength={2000} />}</label>)}<button disabled={busy}>Create record</button>
     </form><form onSubmit={event => void previewImport(event)}><h3>Import records</h3><p>CSV or XLSX; up to 1,000 rows and 4 MiB. Headers: code, name, status, valid_from, valid_until, then field keys. Imports add records and reject duplicate codes.</p>
-      <label>Import file<input type="file" name="file" accept=".csv,.xlsx" required onChange={() => { setPreview(undefined); setUpload(undefined); }} /></label><button disabled={busy}>Preview import</button>
+      <label>Import file<input type="file" name="file" accept=".csv,.xlsx" required onChange={() => { setPreview(undefined); setUpload(undefined); setMappingDraft([]); }} /></label><button disabled={busy}>Preview import</button>
     </form>{preview && <div><p>{preview.rows.length} valid rows; {preview.issues.length} issues.</p>
+      {preview.mapping_required && <fieldset><legend>Map source columns to master-data fields</legend>{mappingDraft.map((item, index) => <label key={item.source_header}>{item.source_header}<select aria-label={`Map source column ${item.source_header}`} value={item.target_field} disabled={busy} onChange={event => setMappingDraft(items => items.map((entry, current) => current === index ? { ...entry, target_field: event.target.value } : entry))}>
+        <option value="">Ignore column</option>{['code', 'name', 'status', 'valid_from', 'valid_until', ...(definition.definition.fields ?? []).map(field => field.key)].map(target => <option key={target} value={target}>{target}</option>)}
+      </select></label>)}<button disabled={busy || !['code', 'name'].every(target => mappingDraft.some(item => item.target_field === target)) || new Set(mappingDraft.filter(item => item.target_field).map(item => item.target_field)).size !== mappingDraft.filter(item => item.target_field).length} onClick={() => void previewMappedImport()}>Preview mapped import</button></fieldset>}
       <ul>{preview.issues.map((issue, index) => <li key={index}>Row {issue.row}: {issue.code.replaceAll('_', ' ')}</li>)}</ul>
       <table><thead><tr><th>Code</th><th>Name</th></tr></thead><tbody>{preview.rows.map(record => <tr key={record.id}><td>{record.code}</td><td>{record.name}</td></tr>)}</tbody></table>
       <button disabled={busy || !!preview.issues.length || !preview.rows.length} onClick={() => void applyImport()}>Apply import</button>

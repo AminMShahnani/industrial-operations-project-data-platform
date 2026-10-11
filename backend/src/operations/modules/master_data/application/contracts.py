@@ -118,10 +118,18 @@ class ImportIssue(Command):
     code: str
 
 
+class ImportColumnMapping(Command):
+    source_header: str = Field(min_length=1, max_length=120)
+    target_field: str = Field(min_length=1, max_length=120)
+
+
 class ImportPreview(Command):
     rows: list[DataRecord]
     issues: list[ImportIssue]
     source_sha256: str
+    source_headers: list[str] = Field(default_factory=list, max_length=64)
+    mapping_required: bool = False
+    mapping_sha256: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
 
 
 class MasterDataReader(Protocol):

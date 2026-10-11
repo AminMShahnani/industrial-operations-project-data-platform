@@ -106,6 +106,7 @@ def test_real_oidc_pkce_login_and_workspace_creation(monkeypatch: pytest.MonkeyP
             "IOP_OIDC_JWKS_URL": issuer + "/protocol/openid-connect/certs",
             "IOP_OIDC_AUDIENCE": "operations-api",
             "IOP_OIDC_PROFILE": "keycloak",
+            "IOP_CORS_ORIGINS": json.dumps(["http://localhost:5173", "http://127.0.0.1:5173"]),
             "VITE_API_URL": "http://127.0.0.1:8077",
             "VITE_OIDC_AUTHORITY": issuer,
             "VITE_OIDC_CLIENT_ID": "operations-web",
@@ -152,7 +153,7 @@ def test_real_oidc_pkce_login_and_workspace_creation(monkeypatch: pytest.MonkeyP
             browser = playwright.chromium.launch()
             try:
                 page = browser.new_page()
-                page.goto("http://localhost:5173/")
+                page.goto("http://127.0.0.1:5173/")
                 page.get_by_role("button", name="Sign in", exact=True).click()
                 page.locator("#username").fill("dev-platform")
                 page.locator("#password").fill(
@@ -175,7 +176,9 @@ def test_real_oidc_pkce_login_and_workspace_creation(monkeypatch: pytest.MonkeyP
                 page.get_by_label("Organization", exact=True).select_option(str(organization.id))
                 page.get_by_label("Workspace name", exact=True).fill("Browser created workspace")
                 with page.expect_response(
-                    lambda response: response.url.endswith("/reports/overdue-tasks")
+                    lambda response: response.url.split("?", maxsplit=1)[0].endswith(
+                        "/reports/overdue-tasks"
+                    )
                 ) as overdue_response:
                     page.get_by_role("button", name="Create workspace", exact=True).click()
                 assert overdue_response.value.status == 200
@@ -184,6 +187,162 @@ def test_real_oidc_pkce_login_and_workspace_creation(monkeypatch: pytest.MonkeyP
                 ).to_be_visible()
                 expect(page.get_by_role("heading", name="My overdue tasks")).to_be_visible()
                 expect(page.get_by_text("No overdue tasks.", exact=True)).to_be_visible()
+                with page.expect_response(
+                    lambda response: response.url.endswith("/reports/overdue-tasks?scope=aggregate")
+                ) as aggregate_response:
+                    page.get_by_label("Report scope", exact=True).select_option("aggregate")
+                assert aggregate_response.value.status == 200
+                expect(page.get_by_role("heading", name="Workspace overdue tasks")).to_be_visible()
+                page.get_by_label("Report name", exact=True).fill("Browser private report")
+                page.get_by_label("Task state filter", exact=True).select_option("returned")
+                page.get_by_label("Group results", exact=True).select_option("state")
+                page.locator('input[name="report_columns"][value="project_id"]').uncheck()
+                with page.expect_response(
+                    lambda response: (
+                        response.request.method == "POST"
+                        and response.url.endswith("/reports/saved")
+                    )
+                ) as saved_create:
+                    page.get_by_role(
+                        "button", name="Save current overdue report", exact=True
+                    ).click()
+                assert saved_create.value.status == 201
+                saved_definition = saved_create.value.json()["definition"]
+                assert saved_definition["scope"] == "aggregate"
+                assert saved_definition["group_by"] == "state"
+                assert saved_definition["columns"] == ["state"]
+                assert saved_definition["sort_direction"] == "asc"
+                assert "project_id" not in saved_definition["columns"]
+                assert saved_definition["filters"] == [
+                    {"field": "state", "operator": "eq", "value": "returned"}
+                ]
+                expect(
+                    page.get_by_text("Browser private report · aggregate · version 1")
+                ).to_be_visible()
+                page.get_by_role("button", name="Edit", exact=True).click()
+                page.get_by_label("Report name", exact=True).fill("Browser private report v2")
+                with page.expect_response(
+                    lambda response: (
+                        response.request.method == "PUT"
+                        and response.url.endswith(
+                            f"/reports/saved/{saved_create.value.json()['id']}"
+                        )
+                    )
+                ) as saved_update:
+                    page.get_by_role("button", name="Update saved report", exact=True).click()
+                assert saved_update.value.status == 200
+                assert saved_update.value.json()["version"] == 2
+                expect(page.get_by_role("heading", name="My export jobs")).to_be_visible()
+                expect(page.get_by_role("button", name="Export PDF", exact=True)).to_be_visible()
+                with page.expect_download() as csv_download:
+                    page.get_by_role("button", name="Export CSV", exact=True).click()
+                assert csv_download.value.suggested_filename.endswith(".csv")
+                with page.expect_response(
+                    lambda response: response.url.endswith(
+                        f"/reports/saved/{saved_create.value.json()['id']}/run"
+                    )
+                ) as saved_run:
+                    page.get_by_role("button", name="Run", exact=True).click()
+                assert saved_run.value.status == 200
+                page.get_by_label("Dashboard name", exact=True).fill("Browser private dashboard")
+                page.get_by_label("Widget title", exact=True).fill("Overdue items")
+                page.locator('select[name="dashboard_kind"]').select_option("bar")
+                with page.expect_response(
+                    lambda response: (
+                        response.request.method == "POST"
+                        and response.url.endswith("/reports/dashboards")
+                    )
+                ) as dashboard_create:
+                    page.get_by_role("button", name="Create dashboard", exact=True).click()
+                assert dashboard_create.value.status == 201
+                assert dashboard_create.value.json()["definition"]["widgets"][0]["kind"] == "bar"
+                dashboard_id = dashboard_create.value.json()["id"]
+                expect(
+                    page.get_by_text("Browser private dashboard · version 1", exact=True)
+                ).to_be_visible()
+                with page.expect_response(
+                    lambda response: response.url.endswith(
+                        f"/reports/dashboards/{dashboard_id}/run"
+                    )
+                ) as dashboard_run:
+                    page.get_by_role("button", name="Run dashboard", exact=True).click()
+                assert dashboard_run.value.status == 200
+                expect(page.get_by_role("figure", name="Overdue items")).to_be_visible()
+                with page.expect_response(
+                    lambda response: (
+                        response.request.method == "POST"
+                        and response.url.endswith(
+                            f"/reports/dashboards/{dashboard_id}/archive?expected_version=1"
+                        )
+                    )
+                ) as dashboard_archive:
+                    page.get_by_role("button", name="Archive dashboard", exact=True).click()
+                assert dashboard_archive.value.status == 204
+                with page.expect_response(
+                    lambda response: (
+                        response.request.method == "POST"
+                        and response.url.endswith(
+                            f"/reports/saved/{saved_create.value.json()['id']}/archive?expected_version=2"
+                        )
+                    )
+                ) as saved_archive:
+                    page.get_by_role("button", name="Archive", exact=True).click()
+                assert saved_archive.value.status == 204
+                expect(page.get_by_text("No saved reports.", exact=True)).to_be_visible()
+                page.get_by_label("Report name", exact=True).fill("Browser due-week report")
+                page.get_by_label("Group results", exact=True).select_option("due_week")
+                expect(page.get_by_label("Due date", exact=True)).to_be_checked()
+                with page.expect_response(
+                    lambda response: (
+                        response.request.method == "POST"
+                        and response.url.endswith("/reports/saved")
+                    )
+                ) as due_week_create:
+                    page.get_by_role(
+                        "button", name="Save current overdue report", exact=True
+                    ).click()
+                assert due_week_create.value.status == 201
+                assert due_week_create.value.json()["definition"]["group_by"] == "due_week"
+                page.get_by_label("Dashboard name", exact=True).fill("Browser trend dashboard")
+                page.get_by_label("Widget title", exact=True).fill("Browser weekly trend")
+                page.locator('select[name="dashboard_kind"]').select_option("line")
+                with page.expect_response(
+                    lambda response: (
+                        response.request.method == "POST"
+                        and response.url.endswith("/reports/dashboards")
+                    )
+                ) as trend_dashboard_create:
+                    page.get_by_role("button", name="Create dashboard", exact=True).click()
+                assert trend_dashboard_create.value.status == 201
+                trend_dashboard_id = trend_dashboard_create.value.json()["id"]
+                with page.expect_response(
+                    lambda response: response.url.endswith(
+                        f"/reports/dashboards/{trend_dashboard_id}/run"
+                    )
+                ) as trend_dashboard_run:
+                    page.get_by_role("button", name="Run dashboard", exact=True).click()
+                assert trend_dashboard_run.value.status == 200
+                expect(page.get_by_role("figure", name="Browser weekly trend")).to_be_visible()
+                with page.expect_response(
+                    lambda response: (
+                        response.request.method == "POST"
+                        and response.url.endswith(
+                            f"/reports/dashboards/{trend_dashboard_id}/archive?expected_version=1"
+                        )
+                    )
+                ) as trend_dashboard_archive:
+                    page.get_by_role("button", name="Archive dashboard", exact=True).click()
+                assert trend_dashboard_archive.value.status == 204
+                with page.expect_response(
+                    lambda response: (
+                        response.request.method == "POST"
+                        and response.url.endswith(
+                            f"/reports/saved/{due_week_create.value.json()['id']}/archive?expected_version=1"
+                        )
+                    )
+                ) as due_week_archive:
+                    page.get_by_role("button", name="Archive", exact=True).click()
+                assert due_week_archive.value.status == 204
                 page.get_by_label("Project name", exact=True).fill("Browser created project")
                 with page.expect_response(
                     lambda response: (
@@ -398,13 +557,25 @@ def test_real_oidc_pkce_login_and_workspace_creation(monkeypatch: pytest.MonkeyP
                     {
                         "name": "sites.csv",
                         "mimeType": "text/csv",
-                        "buffer": b"code,name\nSITE-2,Imported site\n",
+                        "buffer": b"Asset code,Display label\nSITE-2,Imported site\n",
                     }
                 )
                 page.get_by_role("button", name="Preview import", exact=True).click()
                 expect(
                     page.get_by_text(
-                        "Import preview ready. No records have been written.", exact=True
+                        "Map file headers, then preview the mapped import. "
+                        "No records have been written.",
+                        exact=True,
+                    )
+                ).to_be_visible()
+                page.get_by_label("Map source column Asset code", exact=True).select_option("code")
+                page.get_by_label("Map source column Display label", exact=True).select_option(
+                    "name"
+                )
+                page.get_by_role("button", name="Preview mapped import", exact=True).click()
+                expect(
+                    page.get_by_text(
+                        "Mapped import preview ready. No records have been written.", exact=True
                     )
                 ).to_be_visible()
                 page.get_by_role("button", name="Apply import", exact=True).click()
@@ -813,7 +984,7 @@ def test_real_oidc_pkce_login_and_workspace_creation(monkeypatch: pytest.MonkeyP
                 ).to_be_visible()
                 reviewer_context = browser.new_context()
                 review_page = reviewer_context.new_page()
-                review_page.goto("http://localhost:5173/")
+                review_page.goto("http://127.0.0.1:5173/")
                 review_page.get_by_role("button", name="Sign in", exact=True).click()
                 review_page.locator("#username").fill("dev-reviewer")
                 review_page.locator("#password").fill(

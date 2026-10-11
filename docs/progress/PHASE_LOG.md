@@ -57,6 +57,40 @@ Acceptance criteria before implementation:
 0/8 accepted; no Phase 8 implementation. Existing synchronous CSV master-data
 imports and paged exports remain their Phase 2 feature and are not silently replaced.
 
+## Phase 7 durable exports, PDF and job operations - 2026-10-11
+
+Implemented `POST .../reports/saved/{report_id}/export-jobs`, creator-private job
+status/list endpoints and authenticated downloads. Each job pins the saved-report
+version, definition digest, dataset scope, format and workspace/project. The worker
+uses the immutable snapshot with fresh dataset authorization, caps output at 10,000
+rows/50 MiB, writes an organization-prefixed private object, and binds download to
+current creator/access checks plus artifact size/SHA-256 verification. It sends only
+organization/job identifiers through Dramatiq, polls the durable ledger to recover
+pending or five-minute-stale work, handles duplicates idempotently and removes
+expired artifacts. Queue, completion, revocation, failure and expiry transitions are
+audited. The Admin UI shows job status and authorized download controls.
+
+Added deterministic, text-only paginated PDF output; CSV literal escaping and
+deterministic XLSX behavior remain. PostgreSQL API integration verifies a 101-row
+export spans two PDF pages without truncation, duplicate worker replay does not
+replace completed output, another member receives 404, download integrity/cache
+headers, and populated job-migration rollback refusal. Export migration
+`92e3b0c4a7d1` is additive and refuses rollback when any job evidence remains;
+recovery-index migration `a16c3e902bf4` is independently reversible. The Phase 6
+audit-key migration test now unwinds these Phase 7 dependencies in reverse order.
+
+Local verification: backend full suite 328 passed/9 e2e deselected; real PKCE browser
+suite 9 passed; strengthened 101-row export integration 1 passed separately; frontend
+lint/typecheck, 19 tests and production build pass; Ruff check/format, strict mypy on
+309 files, OpenAPI/client drift, isolated Alembic upgrade/drift and whitespace checks
+pass. The exact full backend suite preceded only the strengthened 101-row test
+fixture; that strengthened test passes independently on final code.
+
+Q-014 is open because docs/15 requires retained export jobs but defines no artifact
+retention duration. ADR-0034 proposes 24 hours and is not accepted pending owner
+selection. Exact hosted CI on the final commit also remains pending. P7-01 through
+P7-08 remain 0/8 accepted; no Phase 8 work has begun.
+
 ## Phase 7 initial governed reporting dataset - 2026-10-10
 
 Added `GET .../reports/overdue-tasks` as a read-only personal operational dataset.
@@ -114,6 +148,24 @@ acceptance of all Phase 7 work delivered to date, including the personal overdue
 dataset and browser view. It does not mark the eight phase completion criteria as
 accepted: required report authoring, dashboards, transfer jobs/wizard and their
 operational guarantees remain unimplemented.
+
+## Phase 7 aggregate overdue-task scope - 2026-10-11
+
+Resolved Q-010 under ADR-0028 after the owner selected scoped `schedule.manage` for
+cross-user task aggregates. `GET .../reports/overdue-tasks?scope=aggregate` delegates
+to the Tasks module's manager-only project queue, with workspace/project filters,
+cursor paging and the same minimal projection as personal scope. Recipient, claimant
+and submission identities remain excluded. Personal scope is the default. Added a
+scope selector to the browser UI; server-side authorization remains authoritative.
+
+The PostgreSQL API test verifies manager access, Viewer denial and personal isolation;
+the opt-in PKCE browser test verifies personal and aggregate requests. Full local
+DB-backed backend suite passes 314 tests (9 e2e deselected), and the browser test
+passes separately. Frontend lint, types, tests and build, strict mypy, Ruff/format,
+OpenAPI/client generation pass. No migration is required for this dataset increment.
+Hosted verification is pending on its implementation commit. Q-011 is resolved per
+ADR-0029: saved report definitions are private to their creator pending a future
+sharing decision. P7-01 remains incomplete; no phase criteria are accepted yet.
 
 ## Phase 6 webhook recovery, mounted secrets and runtime verification - 2026-10-10
 
@@ -1312,3 +1364,215 @@ passes backend/frontend jobs on exact code
 real PKCE email recovery, committed concurrent replay/worker delivery, migrations
 and generated contracts. Phase 6 remains 0/8 accepted; no Phase 7 work.
 Remaining handlers and telemetry are current-phase work, not Phase 7 deferrals.
+
+## Phase 7 private saved-report definitions - 2026-10-11
+
+Resolved Q-011 under ADR-0029: saved report definitions are creator-private. Added
+bounded typed definitions for the governed overdue-task dataset, immutable
+versioned/audited persistence, optimistic updates, audited archive state, and current
+authorization checks on every run. Personal definitions use `task.read`; aggregate
+definitions recheck scoped `schedule.manage`. The API and Admin browser view support
+create, list, run and archive, and saved output includes selected columns only.
+The authoring form exposes the bounded state filter and column selection; unsupported
+sort/group combinations remain unavailable.
+Migration `41a9c1d7e5b0` adds tenant/workspace/owner-bound identity and retained
+versions; populated rollback is guarded and documented in the Phase 7 runbook.
+
+P7-02 has an initial bounded vertical slice but remains incomplete: sort/group behavior
+and broader report authoring remain limited. Dashboard widgets, durable export jobs
+and the transfer-job wizard remain unimplemented. P7-01 through P7-08 remain 0/8
+accepted; no completion status or Phase 8 implementation.
+
+Focused PostgreSQL tests pass for personal versus aggregate authorization, private
+listing/detail, definition versions and conflicts, current-access execution, archive,
+and selected-column omission. Fresh Phase 7 database upgrade and `alembic check` pass.
+The Phase 6 audit-key round-trip test now unwinds Phase 7 first, then restores
+revisions in dependency order. Focused round-trip plus Phase 7 tests: 4 passed. Full
+backend regression previously reported 313 passed / 9 skipped, with one migration
+round-trip failure and one dependent setup error; the migration test has since been
+corrected and its focused rerun passes. The full backend regression then passed with
+315 passed and 9 optional skips. The focused migration plus Phase 7 suite passes four
+tests, including empty rollback/reapply and populated rollback refusal. The dedicated
+real PKCE browser flow passes saved-report create/run/archive. Frontend lint, strict
+typecheck, 19 tests and production build pass; Ruff, strict mypy on 303 files,
+OpenAPI drift, fresh migration upgrade and Alembic drift pass. Hosted verification
+remains pending. No Phase 7 criterion is accepted yet.
+
+## Phase 7 creator-private dashboards - 2026-10-11
+
+Resolved Q-012 under ADR-0030: dashboard definitions are creator-private. Added
+tenant/workspace/owner-bound immutable dashboard versions, audited updates/archive,
+optimistic version checks and populated rollback refusal in migration
+`8d77c0f21a46`. Bounded layouts contain up to six table or overdue-list widgets,
+each referencing a saved report owned by the same creator. Dashboard execution
+reuses the saved-report application service, rechecking current personal or
+aggregate dataset authority per widget. Added scoped list/create/read/update/archive/
+run APIs and Admin UI authoring/results.
+
+P7-03 now has a private bounded vertical slice but remains incomplete: metric, trend,
+bar/line and status-distribution widget contracts are not implemented. P7-01 through
+P7-08 remain 0/8 accepted. Focused PostgreSQL reporting/dashboard tests pass (6),
+including private listing, live reauthorization, versioned update/archive and empty /
+populated migration rollback. The real PKCE browser flow passes saved-report and
+dashboard creation/run/archive. Full backend regression, final whole-repository
+quality gates and hosted exact-code verification for this dashboard increment remain
+pending.
+
+## Phase 7 deterministic report sorting - 2026-10-11
+
+Extended the bounded saved-report contract to support UUIDv7 task IDs in ascending
+or descending order. The Tasks application/store query applies the same direction to
+its ID cursor predicate and SQL ordering; unrelated task inbox callers retain the
+ascending default. Saved-report execution uses the persisted sort direction, and the
+Admin authoring form exposes oldest-first/newest-first choices. No schema change or
+new architectural decision is needed. Other sort fields and grouping remain
+unavailable until their cursor and aggregate semantics are implemented.
+
+PostgreSQL integration creates two overdue tasks and verifies descending saved-report
+results; private dashboard execution sees the same two-row result. Phase 6 migration
+roundtrip plus Phase 7 PostgreSQL reporting/dashboard suite: 12 passed. Full local
+backend regression: 323 passed, 9 e2e deselected. Real PKCE browser flow: 1 passed.
+Frontend lint, typecheck, 19 tests and production build pass. Whole-repository Ruff
+lint/format, strict mypy (305 source files), OpenAPI drift pass. Fresh migration
+upgrade and Alembic drift passed before this no-migration code increment. Hosted
+exact-code verification remains pending. P7-02 remains incomplete and P7-01 through
+P7-08 remain 0/8 accepted.
+
+## Phase 7 count-based report grouping - 2026-10-11
+
+ADR-0031 records the initial grouping semantics: saved overdue reports may group by
+task state and return counts after saved filters, with the same personal/aggregate
+scope checks on each run. The Tasks service owns a grouped SQL query over the same
+authorization/filter source as row results, and the result is bounded by the finite
+TaskState enum rather than the 100-row page. Grouped results omit rows and all task,
+recipient, claimant and submission identifiers. The Admin authoring/results view
+supports this group and the real PKCE browser test covers authoring it.
+
+The Phase 6 audit-key roundtrip plus Phase 7 PostgreSQL suite passes 12 tests,
+including two-task count and filter behavior. Full backend regression passes 323
+tests with 9 e2e tests deselected; the real PKCE browser flow passes. Frontend lint,
+typecheck, 19 tests and production build, Ruff check/format, strict mypy (305 source
+files), generated OpenAPI/client drift pass. No migration was needed; fresh migration
+upgrade and Alembic drift remain green. P7-02 now has initial sorting and grouping but
+remains incomplete; P7-01 through P7-08 remain 0/8 accepted. Hosted exact-code
+verification remains pending.
+
+## Phase 7 state-distribution and overdue-count dashboard widgets - 2026-10-11
+
+Extended creator-private dashboards with `status_distribution` and `metric` widgets.
+Both require an owned saved overdue report grouped by state; invalid definitions fail
+with 422. Status distribution displays the filtered state counts. The metric is the
+sum of those counts and is exposed as a total overdue-task count. Every widget still
+executes the saved report through Reporting, rechecking its personal or aggregate
+permission. The accessible Admin UI supports both shapes; ADR-0031 records the metric
+derivation and count semantics.
+
+The PostgreSQL reporting suite passes 11 tests, covering grouped counts, private
+ownership, successful status/metric execution and refusal of an ungrouped source.
+Frontend lint, typecheck, 19 tests and production build pass; Ruff and strict mypy
+pass. The full backend regression was green (323 passed, 9 e2e deselected) immediately
+before this widget-only increment and will be rerun at the next Phase 7 checkpoint.
+The real PKCE flow covers state-distribution authoring; hosted verification is
+pending. P7-03 remains incomplete and P7-01 through P7-08 remain 0/8 accepted.
+
+## Phase 7 saved-report edit controls - 2026-10-11
+
+Connected the Admin report builder to saved-definition updates. Selecting Edit loads
+the private version's name, scope, filters, columns, ordering and grouping; saving
+sends its expected version and replaces the list item with the new immutable version.
+Cancel restores a clean create form. No schema or API contract change was needed.
+
+The real PKCE browser flow passes saved-report create, update to version 2, execution,
+status-distribution dashboard creation/run and version-2 archive. Frontend lint,
+typecheck, 19 tests and production build pass; Ruff and strict test typing pass. The
+saved-definition UI now covers create/list/edit/run/archive, while P7-02 still needs
+broader filter/sort/group choices. P7-01 through P7-08 remain 0/8 accepted.
+
+## Phase 7 bounded CSV/XLSX saved-report exports - 2026-10-11
+
+Added creator-authorized `/reports/saved/{id}/export` for CSV and XLSX. The service
+reruns the current saved definition through the governed dataset and current scope
+checks, pins the definition version for the request, and rejects multi-page output
+until durable jobs are implemented. Output is limited to selected columns or state
+counts and the 100-row page; downloads use private/no-store attachment headers. CSV
+formula-leading values are escaped; XLSX output encodes all user values as strings.
+The Admin UI offers CSV/XLSX downloads. No schema migration was needed.
+
+The Phase 7 PostgreSQL reporting suite passes 12 tests, including CSV/XLSX API output,
+literal-safe spreadsheet content, creator privacy and grouped exports. The real PKCE
+browser flow passes create/edit/run/download/dashboard/archive. Frontend lint,
+typecheck, 19 tests and production build, Ruff, strict mypy (306 files), and generated
+OpenAPI/client drift pass. The combined full backend regression passes 325 tests with
+9 e2e tests deselected; the separate real PKCE browser flow passes. Fresh migrations
+and Alembic drift remain green. Hosted verification remains pending. PDF, durable
+large exports and download-time authorization for retained artifacts remain required;
+P7-04/P7-06 stay incomplete.
+
+## Phase 7 explicit master-data import mapping - 2026-10-11
+
+Added ADR-0032 and explicit one-to-one source-header mapping to built-in and
+declared master-data fields. Unmapped columns are ignored; `code` and `name` are
+required. Noncanonical headers first return a dry-run mapping prompt. Apply binds
+the exact file digest, mapping digest and immutable type version, while record
+creation still uses the Master Data service's validation and audit path. Imports
+remain create-only and ignore source IDs. The Admin form supports mapping,
+validation preview and exact-preview apply; canonical-header API callers remain
+compatible.
+
+Focused PostgreSQL API checks pass for mapped imports, tampered mappings, legacy
+CSV/XLSX flows and create-only ID generation (3 tests). The real PKCE browser test
+passes through mapping, preview and apply. Full backend regression passes 325
+tests (9 e2e deselected). Frontend lint, typecheck, 19 tests and production build,
+Ruff check/format, strict mypy (306 files, including Linux platform check),
+OpenAPI/client drift, isolated Alembic drift and diff whitespace checks pass. No
+schema migration is required. PDF, durable transfer/export jobs, trend widgets
+and exact hosted verification remain open; P7-01 through P7-08 remain 0/8 accepted.
+
+## Phase 7 state-count bar widget - 2026-10-11
+
+Added a creator-private dashboard `bar` widget that can reference only an owned,
+state-grouped saved report. It visualizes the existing bounded state/count buckets
+with accessible native meter elements and retains the grouped report result as its
+source data. It introduces no new measure or schema change. The PostgreSQL reporting
+suite passes 12 tests and the real PKCE browser flow now creates/runs the bar widget;
+frontend lint/typecheck/tests/build and generated client typecheck pass. Historical
+trend/line semantics remain unresolved because tasks have no retained state-transition
+timestamps; no historical series is inferred from current state.
+
+## Phase 7 current overdue due-week trend - 2026-10-11
+
+The project owner selected current overdue counts grouped by due-date week. ADR-0033
+defines 12 UTC Monday-start weeks (current and prior 11), all returned including
+zero-count buckets, plus one older bucket. The reporting service pins the as-of
+instant/window per query; the Tasks service applies current overdue eligibility,
+personal or scoped aggregate authorization, filters, and computes the buckets in
+one SQL aggregate. Results contain no task/person identifiers. `trend` and `line`
+dashboard widgets require a due-week saved report, and the Admin report builder can
+author and display these with an accessible SVG and exact weekly table. Saved report
+CSV/XLSX exports include the fixed buckets. This is not historical state-at-time
+reporting.
+
+Focused PostgreSQL reporting tests pass (12), including 13 bucket bounds, empty
+weeks, total counts, grouped export and widget validation. The real PKCE browser
+flow passes due-week authoring and line-chart display. Full backend regression
+passes (325 passed, 9 e2e deselected); frontend lint, typecheck, 19 tests and
+production build pass. Ruff, strict mypy on both configured platforms, generated
+OpenAPI/client drift, isolated Alembic drift and whitespace checks pass. Hosted
+verification remains pending; no schema migration is required. Phase 7 remains
+0/8 accepted.
+
+## Phase 7 retention decision and local acceptance checkpoint - 2026-10-11
+
+The project owner resolved Q-014 by accepting 24-hour private export-artifact
+retention. ADR-0034 is accepted; expiry cleanup remains idempotent and access is
+rechecked at generation and download. No Phase 7 acceptance item is deferred; the
+1,000-row create-only import limit and bounded report contracts are product scope,
+not deferred requirements.
+
+Final local verification on this implementation: 328 backend tests passed with 9
+browser tests deselected; the separate isolated PKCE browser suite passed 9 tests.
+The strengthened 101-row PDF export test is included in the backend suite. Ruff
+check/format, strict mypy (309 files), OpenAPI drift, frontend lint/typecheck/19
+tests/production build, isolated `operations_test` Alembic drift and `git diff
+--check` pass. Exact-commit hosted verification remains pending, so P7-01 through
+P7-08 remain unaccepted until that gate completes.

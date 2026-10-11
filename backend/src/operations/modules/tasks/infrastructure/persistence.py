@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Literal, cast
 from uuid import UUID
 
 from sqlalchemy import (
@@ -8,16 +9,27 @@ from sqlalchemy import (
     Index,
     String,
     UniqueConstraint,
+    case,
     exists,
+    func,
     or_,
     select,
     update,
 )
 from sqlalchemy.dialects.postgresql import JSONB, insert
 from sqlalchemy.orm import Mapped, Session, mapped_column
+from sqlalchemy.sql import Select
 from sqlalchemy.sql.elements import ColumnElement
 
-from operations.modules.tasks.application.contracts import DeadlineEvent, Reminder, Task
+from operations.modules.tasks.application.contracts import (
+    DeadlineEvent,
+    Reminder,
+    Task,
+    TaskDueWeekCount,
+    TaskQueryFilter,
+    TaskState,
+    TaskStateCount,
+)
 from operations.platform.database import Base
 
 
@@ -365,7 +377,85 @@ class TaskRepository:
         start: datetime,
         end: datetime,
         after: UUID | None,
+        filters: list[TaskQueryFilter] | None = None,
+        sort_direction: Literal["asc", "desc"] = "asc",
     ) -> list[Task]:
+        query = self._task_query(
+            org, workspace, project, user, assignment, view, start, end, filters
+        )
+        if after:
+            cursor_predicate = TaskRow.id > after if sort_direction == "asc" else TaskRow.id < after
+            query = query.where(cursor_predicate)
+        ordering = TaskRow.id.asc() if sort_direction == "asc" else TaskRow.id.desc()
+        return [
+            task_contract(row) for row in self.session.scalars(query.order_by(ordering).limit(101))
+        ]
+
+    def task_state_counts(
+        self,
+        org: UUID,
+        workspace: UUID,
+        project: UUID | None,
+        user: UUID | None,
+        assignment: str | None,
+        view: str,
+        start: datetime,
+        end: datetime,
+        filters: list[TaskQueryFilter] | None = None,
+    ) -> list[TaskStateCount]:
+        query = self._task_query(
+            org, workspace, project, user, assignment, view, start, end, filters
+        )
+        grouped = query.with_only_columns(TaskRow.state, func.count(TaskRow.id))
+        grouped = grouped.group_by(TaskRow.state).order_by(TaskRow.state)
+        return [
+            TaskStateCount(state=cast(TaskState, state), count=count)
+            for state, count in self.session.execute(grouped)
+        ]
+
+    def task_due_week_counts(
+        self,
+        org: UUID,
+        workspace: UUID,
+        project: UUID | None,
+        user: UUID | None,
+        assignment: str | None,
+        view: str,
+        start: datetime,
+        end: datetime,
+        period_start: datetime,
+        filters: list[TaskQueryFilter] | None = None,
+    ) -> list[TaskDueWeekCount]:
+        query = self._task_query(
+            org, workspace, project, user, assignment, view, start, end, filters
+        )
+        week_start = func.date_trunc("week", func.timezone("UTC", TaskRow.due_at))
+        bucket = case((TaskRow.due_at < period_start, None), else_=week_start)
+        grouped = query.with_only_columns(bucket, func.count(TaskRow.id))
+        grouped = grouped.group_by(bucket).order_by(bucket)
+        results: list[TaskDueWeekCount] = []
+        for week_value, count_value in self.session.execute(grouped):
+            week = cast(datetime | None, week_value)
+            results.append(
+                TaskDueWeekCount(
+                    week_start=week.date() if week is not None else None,
+                    count=cast(int, count_value),
+                )
+            )
+        return results
+
+    def _task_query(
+        self,
+        org: UUID,
+        workspace: UUID,
+        project: UUID | None,
+        user: UUID | None,
+        assignment: str | None,
+        view: str,
+        start: datetime,
+        end: datetime,
+        filters: list[TaskQueryFilter] | None,
+    ) -> Select[TaskRow]:
         query = select(TaskRow).where(
             TaskRow.organization_id == org,
             TaskRow.workspace_id == workspace,
@@ -391,12 +481,20 @@ class TaskRepository:
             query = query.where(TaskRow.occurs_at >= end, TaskRow.state == "open")
         elif view in {"returned", "awaiting_review"}:
             query = query.where(TaskRow.state == view)
-        if after:
-            query = query.where(TaskRow.id > after)
-        return [
-            task_contract(row)
-            for row in self.session.scalars(query.order_by(TaskRow.id).limit(101))
-        ]
+        for item in filters or []:
+            if item.field == "state":
+                query = query.where(TaskRow.state == str(item.value))
+            elif item.field == "kind":
+                query = query.where(TaskRow.kind == str(item.value))
+            elif item.field == "name":
+                query = query.where(TaskRow.name.ilike(f"%{str(item.value)}%"))
+            elif item.field == "due_at" and item.operator == "before":
+                query = query.where(TaskRow.due_at < item.value)
+            elif item.field == "due_at" and item.operator == "after":
+                query = query.where(TaskRow.due_at > item.value)
+            elif item.field == "project_id":
+                query = query.where(TaskRow.project_id == item.value)
+        return query
 
     def future_open(
         self, org: UUID, workspace: UUID, schedule: UUID, before_number: int, now: datetime

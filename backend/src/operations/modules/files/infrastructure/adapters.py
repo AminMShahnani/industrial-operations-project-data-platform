@@ -85,6 +85,21 @@ class S3Storage:
         except (BotoCoreError, ClientError) as error:
             raise ServiceError(503, "storage_cleanup_unavailable") from error
 
+    def get(self, key: str) -> bytes:
+        try:
+            with closing(self.client()) as client:
+                response = client.get_object(Bucket=self.settings.s3_bucket, Key=key)
+                body = response["Body"]
+                try:
+                    content = body.read(50_000_001)
+                finally:
+                    body.close()
+                if len(content) > 50_000_000:
+                    raise ServiceError(413, "report_export_size_limit")
+                return content
+        except (BotoCoreError, ClientError) as error:
+            raise ServiceError(503, "storage_unavailable") from error
+
     def signed_download(self, key: str, name: str, content_type: str) -> str:
         try:
             with closing(self.client()) as client:

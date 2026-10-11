@@ -1,5 +1,13 @@
 # Technical Debt Register
 
+Phase 7 reporting/export (2026-10-11): durable private report export jobs, text-only
+PDF, download-time authorization/integrity checks, idempotent redispatch and
+24-hour retention cleanup are implemented under accepted ADR-0034 (Q-014 resolved).
+Phase acceptance is held for exact hosted CI. Master-data imports remain explicitly bounded at 1,000
+rows and use preview-bound mappings under ADR-0032; the Phase 7 acceptance criteria
+do not require unbounded or durable import jobs. Reusable mapping templates are a
+later enhancement only if their scope is authorized.
+
 Webhook delivery (2026-10-10): Q-009 is resolved under accepted ADR-0026. Typed
 identifiers-only envelope, HMAC signing, destination policy checks and audited
 scoped endpoint versions/API, and pinned HTTPS transport foundation are implemented.
@@ -60,15 +68,25 @@ Empty at project start. Every intentional compromise must include owner/context,
 
 | TD-005 (resolved) | Files/operations; DB and object storage have separate transactions | Reconciliation verified locally and hosted on adea461 / run 37480916988 | Phase 6: bounded inventory, explicit grace, fresh references/authority, upload locks, conditional deletion and audited replay implemented (ADR-0012); Phase 10 retains retention/quota/backup verification |
 
+Phase 7 checkpoint (2026-10-11): no implementation compromise is being accepted as
+technical debt. Saved report history has a populated-rollback-guarded migration and
+is creator-private under ADR-0029. Creator-private dashboard layouts support table,
+overdue-list, status-distribution, state-count bar, metric, due-week trend and line
+widgets under ADR-0030/0031/0033. Current overdue counts by UTC due-date week are
+not historical state snapshots. Private version-pinned CSV/XLSX/PDF export jobs,
+download authorization, integrity verification and worker recovery are implemented.
+Q-010 through Q-014 are resolved in ADR-0028 through ADR-0034. Exact hosted Phase 7
+verification remains pending.
+
 Phase 1 introduces audited tenant persistence without an authentication bypass or
 industry coupling. Later phase namespaces remain planned ownership rather than
 completed implementations. Provider-level logout and automated invitation delivery
 remain documented provider responsibilities and Phase 6 work respectively.
 
 Phase 2 resolves Q-003 in ADR-0007. Transfers are deliberately bounded to
-1000 rows per synchronous import and 100 records per export page. Large background
-transfers belong to Phase 7; queue idempotency and load acceptance remain required
-in their owning phases. No legacy data was deleted or migrated.
+1000 rows per synchronous import and 100 records per export page. A larger durable
+master-data transfer is not part of the current Phase 7 acceptance scope and would
+need a separately bounded design. No legacy data was deleted or migrated.
 
 Phase 3 supplies trusted default-context ports. Scheduling/workflow providers are
 owning-phase dependencies, without inferring an approved state. Scanner provisioning

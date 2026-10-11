@@ -45,6 +45,24 @@ from operations.modules.projects.infrastructure.persistence import (
 from operations.modules.projects.infrastructure.persistence import (
     ProjectRow as ProjectRow,
 )
+from operations.modules.reporting.infrastructure.dashboards import (
+    DashboardStateRow as DashboardStateRow,
+)
+from operations.modules.reporting.infrastructure.dashboards import (
+    DashboardVersionRow as DashboardVersionRow,
+)
+from operations.modules.reporting.infrastructure.export_jobs import (
+    ReportExportJobRow as ReportExportJobRow,
+)
+from operations.modules.reporting.infrastructure.persistence import (
+    SavedReportIdentityRow as SavedReportIdentityRow,
+)
+from operations.modules.reporting.infrastructure.persistence import (
+    SavedReportStateRow as SavedReportStateRow,
+)
+from operations.modules.reporting.infrastructure.persistence import (
+    SavedReportVersionRow as SavedReportVersionRow,
+)
 from operations.modules.scheduling.infrastructure.persistence import ScheduleRow as ScheduleRow
 from operations.modules.scheduling.infrastructure.persistence import (
     ScheduleVersionRow as ScheduleVersionRow,

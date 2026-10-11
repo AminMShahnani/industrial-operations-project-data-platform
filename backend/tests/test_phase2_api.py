@@ -378,6 +378,50 @@ def test_xlsx_import_rejects_formulas_and_accepts_typed_values(api: Api) -> None
             assert not response.json()["issues"]
 
 
+def test_master_data_import_mapping_is_preview_bound_and_create_only(api: Api) -> None:
+    organization = api.organization()
+    workspace = api.workspace(organization)
+    type_id = type_definition(api, organization, workspace)
+    route = f"/api/v1/organizations/{organization}/master-data/types/{type_id}/imports"
+    data = b"Asset Code,Display label,Latitude,unused\nMAP-1,Mapping site,12.5,ignored\n"
+    request = {
+        "content_base64": base64.b64encode(data).decode(),
+        "format": "csv",
+        "expected_type_version": 1,
+    }
+    requested = api.client.post(route, headers=api.headers("admin"), json=request)
+    assert requested.status_code == 200
+    assert requested.json()["mapping_required"] is True
+    assert requested.json()["source_headers"] == [
+        "Asset Code",
+        "Display label",
+        "Latitude",
+        "unused",
+    ]
+    assert requested.json()["rows"] == []
+
+    mapping = [
+        {"source_header": "Asset Code", "target_field": "code"},
+        {"source_header": "Display label", "target_field": "name"},
+        {"source_header": "Latitude", "target_field": "latitude"},
+    ]
+    request["mapping"] = mapping
+    preview = api.client.post(route, headers=api.headers("admin"), json=request)
+    assert preview.status_code == 200 and len(preview.json()["rows"]) == 1
+    assert preview.json()["mapping_sha256"]
+    request.update({"dry_run": False, "expected_sha256": preview.json()["source_sha256"]})
+    changed_mapping = [*mapping, {"source_header": "unused", "target_field": "latitude"}]
+    request["mapping"] = changed_mapping
+    request["expected_mapping_sha256"] = preview.json()["mapping_sha256"]
+    assert api.client.post(route, headers=api.headers("admin"), json=request).status_code == 422
+
+    request["mapping"] = mapping
+    applied = api.client.post(route, headers=api.headers("admin"), json=request)
+    assert applied.status_code == 200, applied.text
+    assert applied.json()["rows"][0]["code"] == "MAP-1"
+    assert applied.json()["rows"][0]["id"] != "MAP-1"
+
+
 def test_global_reference_is_operator_published_and_tenant_read_only(api: Api) -> None:
     organization = api.organization()
     platform = Principal("https://identity.example.test", "platform")

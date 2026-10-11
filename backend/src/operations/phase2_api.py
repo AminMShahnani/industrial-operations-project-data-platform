@@ -16,6 +16,7 @@ from operations.modules.master_data.application.contracts import (
     DataSchema,
     DataScope,
     DataType,
+    ImportColumnMapping,
     ImportPreview,
     RecordStatus,
     RecordValues,
@@ -480,6 +481,8 @@ class ImportRequest(Command):
     dry_run: bool = True
     expected_sha256: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
     expected_type_version: int = Field(ge=1)
+    mapping: list[ImportColumnMapping] | None = Field(default=None, max_length=64)
+    expected_mapping_sha256: str | None = Field(default=None, pattern=r"^[0-9a-f]{64}$")
 
 
 @router.post("/master-data/types", response_model=DataType, status_code=201)
@@ -586,6 +589,8 @@ def import_records(
         body.dry_run,
         body.expected_sha256,
         body.expected_type_version,
+        body.mapping,
+        body.expected_mapping_sha256,
     )
 
 

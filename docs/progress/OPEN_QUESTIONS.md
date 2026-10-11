@@ -1,6 +1,21 @@
 # Open Questions
 
-## Phase 7 cross-user reporting authority (open)
+## Phase 7 import mapping boundary - 2026-10-11
+
+Resolved by ADR-0032: map source headers one-to-one to declared fields, require
+`code` and `name`, ignore unmapped columns, keep imports create-only, and bind
+application to the previewed file, mapping and type version. No unresolved decision.
+
+## Q-013: overdue trend time semantics - resolved (2026-10-11)
+
+The Tasks module retains current task state and due timestamps, but no timestamped
+state-transition history. A historical trend cannot be derived accurately from the
+current rows. The project owner selected current overdue counts by due-date week.
+ADR-0033 defines a bounded UTC 12-week axis plus an older bucket; this is not a
+historical state snapshot. Trend and line widgets consume only that governed
+aggregate. Bar charts continue to show current state counts.
+
+## Phase 7 cross-user reporting authority (resolved)
 
 - Q-010 (2026-10-10): Which current permission should authorize reports that
   aggregate operational rows across users in a workspace/project? `task.read` is
@@ -11,17 +26,27 @@
   `schedule.manage` at the selected scope or define a new `report.read` permission;
   define its role grants and subject/claimant privacy together. Recommended safe
   default: reuse existing scoped `schedule.manage` for aggregate task reporting and
-  omit recipient/claimant identity unless separately authorized. No cross-user
-  reporting implementation may proceed until resolved.
+  omit recipient/claimant identity unless separately authorized. The owner selected
+  this recommendation on 2026-10-11; ADR-0028 records the resolution.
+
+## Phase 7 saved report visibility (resolved)
+
+- Q-011 (2026-10-11): The owner selected creator-only private report definitions.
+  ADR-0029 requires owner checks on read, update, execution and delete, alongside
+  current governed-dataset permissions. No report/dashboard sharing is implied.
+
+## Phase 7 dashboard visibility (resolved)
+
+- Q-012 (2026-10-11): The owner selected creator-private dashboards. ADR-0030 requires
+  owner-only list/read/update/run/archive behavior; each widget can reference only a
+  saved report owned by that creator. Widget execution rechecks the report's current
+  governed-dataset permission.
 
 ## Phase 7 reporting/export/import foundation
 
-No unresolved domain or security decision blocks Phase 7 preparation. The reporting
-and transfer capabilities must use governed datasets and owning application
-services, with server-side authorization and bounded durable jobs as defined in
-P7-01 through P7-08 in `PHASE_LOG.md`. Any later ambiguity about historical metric
-semantics, dataset scope, or import overwrite behavior must be resolved before its
-affected implementation slice; do not infer behavior from the legacy MVP.
+Q-014 (resolved 2026-10-11): The project owner selected 24-hour private artifact
+retention. ADR-0034 records the accepted rule, with creator-only jobs, immutable
+report-version pinning, and current permission checks at generation and download.
 
 ## Phase 6 webhook deployment verification (reported complete)
 

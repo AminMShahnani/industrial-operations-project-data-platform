@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import date, datetime
 from typing import Literal, Protocol
 from uuid import UUID
 
@@ -114,6 +114,22 @@ class DeadlineTick(Command):
     cursor: UUID | None = None
 
 
+class TaskQueryFilter(Command):
+    field: Literal["state", "kind", "name", "due_at", "project_id"]
+    operator: Literal["eq", "contains", "before", "after"]
+    value: str | datetime | UUID
+
+
+class TaskStateCount(Command):
+    state: TaskState
+    count: int = Field(ge=1)
+
+
+class TaskDueWeekCount(Command):
+    week_start: date | None
+    count: int = Field(ge=0)
+
+
 class TaskStore(Protocol):
     def reminder_intents(
         self, org: UUID, workspace: UUID, after: UUID | None
@@ -144,7 +160,34 @@ class TaskStore(Protocol):
         start: datetime,
         end: datetime,
         after: UUID | None,
+        filters: list[TaskQueryFilter] | None = None,
+        sort_direction: Literal["asc", "desc"] = "asc",
     ) -> list[Task]: ...
+    def task_state_counts(
+        self,
+        org: UUID,
+        workspace: UUID,
+        project: UUID | None,
+        user: UUID | None,
+        assignment: str | None,
+        view: str,
+        start: datetime,
+        end: datetime,
+        filters: list[TaskQueryFilter] | None = None,
+    ) -> list[TaskStateCount]: ...
+    def task_due_week_counts(
+        self,
+        org: UUID,
+        workspace: UUID,
+        project: UUID | None,
+        user: UUID | None,
+        assignment: str | None,
+        view: str,
+        start: datetime,
+        end: datetime,
+        period_start: datetime,
+        filters: list[TaskQueryFilter] | None = None,
+    ) -> list[TaskDueWeekCount]: ...
     def future_open(
         self, org: UUID, workspace: UUID, schedule: UUID, before_number: int, now: datetime
     ) -> list[Task]: ...

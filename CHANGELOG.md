@@ -2,6 +2,74 @@
 
 ## Unreleased - Phase 7 in progress (2026-10-10)
 
+- Add creator-private durable report export jobs for CSV/XLSX/PDF. Jobs bind to
+  immutable report versions, use current dataset authorization at generation and
+  authenticated download, verify artifact size/digest, and recover pending/stale work
+  through an ID-only worker dispatcher. Private artifacts are cleaned up after the
+  24-hour retention window accepted in ADR-0034 (Q-014 resolved).
+  Add paginated text-only PDF output and export-job status/download UI.
+- Guard export-job rollback when retained job history exists and add a separate
+  reversible recovery-index migration. PostgreSQL coverage verifies private job
+  visibility, version pinning, idempotent replay, PDF bytes, download integrity and
+  populated rollback refusal.
+
+- Add explicit master-data CSV/XLSX header mapping under ADR-0032. Imports remain
+  create-only; apply binds the source file, mapping digest and immutable type
+  version, while unused columns can be skipped. The Admin flow now previews mapped
+  values and issues before applying. Legacy canonical-header imports remain
+  supported. API regressions and the real PKCE browser flow pass.
+- Add a creator-private state-count bar dashboard widget sourced from the existing
+  bounded state-grouped report. The accessible UI uses labeled native meters and
+  introduces no new measure. Normalize XLSX document and ZIP timestamps for
+  byte-stable repeated exports.
+- Add creator-private trend and line widgets over a governed current-overdue count
+  by UTC due-date week, under ADR-0033. Results contain the prior 12 week buckets
+  (including zeros) and a bounded older bucket, computed by the Tasks service in a
+  single query and exported as grouped CSV/XLSX. This is not historical state
+  snapshot reporting.
+
+- Add creator-private dashboard definitions under ADR-0030. Bounded layouts reference
+  up to six of the owner's saved reports; table and overdue-list widgets recheck live
+  dataset permissions at execution. Add audited immutable versions, archive state,
+  scoped API and Admin UI, with guarded migration `8d77c0f21a46`. Focused PostgreSQL
+  reporting/dashboard tests and the real PKCE browser create/run/archive flow pass.
+  This is an initial widget slice; the full backend regression and hosted exact-code
+  verification remain pending, and P7-03 is not yet accepted.
+- Add stable ascending/descending task-ID sorting to saved reports, with matching
+  cursor predicates in the Tasks query and browser authoring controls. Full local
+  backend regression passes (323 tests; 9 e2e tests excluded), with frontend tests,
+  lint, types and production build passing. P7-02 remains incomplete.
+- Add filtered overdue-task counts grouped by state under ADR-0031. The Tasks module
+  computes bounded-cardinality aggregates independently of the row page; grouped
+  output excludes task identities and is rendered in saved-report and dashboard
+  results. PostgreSQL and PKCE browser coverage pass; P7-02 remains incomplete.
+- Add status-distribution and total overdue-count dashboard widgets. Both require a
+  state-grouped saved report and recheck its current access; API tests cover bounded
+  results and incompatible definitions. Trend/bar/line shapes remain Phase 7 work.
+- Connect the saved-report editor to versioned updates. Owners can load, change and
+  save bounded definitions using expected-version concurrency; the PKCE browser flow
+  covers create, update, run, dashboard status view and archive.
+- Add creator-authorized CSV/XLSX saved-report downloads. Each request rechecks current
+  dataset access, exports only selected fields, caps output at one 100-row page and
+  prevents user text from becoming spreadsheet formulas. PDF and durable large exports
+  remain Phase 7 work.
+- Add creator-private, bounded saved report definitions for overdue tasks with
+  immutable audited versions, optimistic updates, archive state, current permission
+  checks on each run, and create/list/run/archive controls in the browser. The authoring
+  form selects bounded state filters and output columns. Add guarded
+  migration `41a9c1d7e5b0`, empty rollback/reapply and populated rollback tests, and
+  update the Phase 6 audit-key round-trip order for Phase 7 tenant-linked FKs. The
+  full backend regression passes (315 passed, 9 optional skips); the added migration
+  cases pass in the focused database suite, and the real PKCE browser flow passes
+  through saved report create/run/archive. Ruff, strict mypy, OpenAPI drift and
+  frontend lint/types/tests/build pass. Dashboards, durable exports and transfer jobs
+  remain active Phase 7 work; no phase criteria are accepted yet.
+- Add an authorized aggregate overdue-task scope using current `schedule.manage`
+  permissions (ADR-0028); keep recipient/claimant identifiers out of the projection.
+  The browser offers personal and workspace views, and API/browser tests cover manager
+  success and Viewer denial. Resolve saved-report ownership as creator-private under
+  ADR-0029 (Q-011). Local DB suite (314 tests), browser flow, frontend checks, types,
+  lint and contract generation pass; hosted verification is pending.
 - Add the first Phase 7 governed dataset endpoint for a caller's overdue tasks,
   delegated to the task service's existing scoped personal query and returning a
   100-row-capped minimal projection. Add a PostgreSQL integration test for assignment

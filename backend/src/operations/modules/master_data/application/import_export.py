@@ -1,4 +1,5 @@
 import hashlib
+import json
 from datetime import date
 from typing import Literal
 from uuid import UUID, uuid7
@@ -10,6 +11,7 @@ from operations.modules.identity.application.contracts import RequestContext
 from operations.modules.master_data.application.contracts import (
     DataRecord,
     FieldKind,
+    ImportColumnMapping,
     ImportIssue,
     ImportPreview,
     RecordStatus,
@@ -46,6 +48,8 @@ class MasterDataTransfer:
         dry_run: bool,
         expected_sha256: str | None,
         expected_type_version: int,
+        mapping: list[ImportColumnMapping] | None = None,
+        expected_mapping_sha256: str | None = None,
     ) -> ImportPreview:
         definition = self.service.definition(context, organization_id, type_id, True)
         if definition.version != expected_type_version:
@@ -59,12 +63,45 @@ class MasterDataTransfer:
         header = rows[0]
         base_headers = {"id", "code", "name", "status", "valid_from", "valid_until"}
         fields = {field.key: field for field in definition.definition.fields}
-        if (
-            len(set(header)) != len(header)
-            or not {"code", "name"} <= set(header)
-            or set(header) - base_headers - fields.keys()
-        ):
+        allowed = base_headers | fields.keys()
+        if len(set(header)) != len(header) or len(header) > 64:
             raise ServiceError(422, "invalid_import_headers")
+        explicit_mapping = mapping is not None
+        if mapping is None:
+            if not {"code", "name"} <= set(header) or set(header) - allowed:
+                if not dry_run:
+                    raise ServiceError(422, "import_mapping_required")
+                return ImportPreview(
+                    rows=[],
+                    issues=[],
+                    source_sha256=digest,
+                    source_headers=header,
+                    mapping_required=True,
+                )
+            mapping = [
+                ImportColumnMapping(source_header=item, target_field=item) for item in header
+            ]
+        sources = [item.source_header for item in mapping]
+        targets = [item.target_field for item in mapping]
+        if (
+            len(set(sources)) != len(sources)
+            or len(set(targets)) != len(targets)
+            or not set(sources) <= set(header)
+            or not set(targets) <= allowed
+            or not {"code", "name"} <= set(targets)
+        ):
+            raise ServiceError(422, "invalid_import_mapping")
+        mapping_json = json.dumps(
+            [item.model_dump(mode="json") for item in mapping],
+            sort_keys=True,
+            separators=(",", ":"),
+        )
+        mapping_digest = hashlib.sha256(mapping_json.encode()).hexdigest()
+        if not dry_run and explicit_mapping and mapping_digest != expected_mapping_sha256:
+            raise ServiceError(409, "import_preview_required")
+        if expected_mapping_sha256 is not None and mapping_digest != expected_mapping_sha256:
+            raise ServiceError(409, "import_preview_required")
+        source_to_target = {item.source_header: item.target_field for item in mapping}
         issues: list[ImportIssue] = []
         records: list[DataRecord] = []
         seen: set[str] = set()
@@ -74,7 +111,8 @@ class MasterDataTransfer:
             try:
                 if len(cells) != len(header):
                     raise ServiceError(422, "import_column_count")
-                values = dict(zip(header, cells, strict=True))
+                raw = dict(zip(header, cells, strict=True))
+                values = {target: raw[source] for source, target in source_to_target.items()}
                 code = values["code"]
                 if code in seen or self.service.store.by_code(organization_id, type_id, code):
                     raise ServiceError(409, "duplicate_master_data_code")
@@ -114,7 +152,13 @@ class MasterDataTransfer:
                 issues.append(ImportIssue(row=number, code=error.code))
             except ValueError, ValidationError:
                 issues.append(ImportIssue(row=number, code="invalid_master_data_value"))
-        preview = ImportPreview(rows=records, issues=issues, source_sha256=digest)
+        preview = ImportPreview(
+            rows=records,
+            issues=issues,
+            source_sha256=digest,
+            source_headers=header,
+            mapping_sha256=mapping_digest,
+        )
         if dry_run:
             return preview
         if issues or not records:
