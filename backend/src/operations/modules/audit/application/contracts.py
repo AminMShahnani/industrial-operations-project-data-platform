@@ -42,6 +42,8 @@ class AuditDetails(Command):
     source_created_at: datetime | None = None
     pack_id: str | None = None
     pack_version: str | None = None
+    pack_artifact_id: str | None = Field(default=None, max_length=120)
+    pack_artifact_version: int | None = Field(default=None, ge=1)
     package_sha256: str | None = None
 
 

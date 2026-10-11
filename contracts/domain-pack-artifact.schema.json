@@ -1,0 +1,2130 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "oneOf": [
+    {
+      "$defs": {
+        "Component": {
+          "additionalProperties": false,
+          "properties": {
+            "children": {
+              "items": {
+                "$ref": "#/$defs/Component"
+              },
+              "maxItems": 30,
+              "title": "Children",
+              "type": "array"
+            },
+            "choices": {
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 100,
+              "title": "Choices",
+              "type": "array"
+            },
+            "default": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Expression"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "formula": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Expression"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "key": {
+              "pattern": "^[a-z][a-z0-9_]{0,59}$",
+              "title": "Key",
+              "type": "string"
+            },
+            "kind": {
+              "$ref": "#/$defs/Kind"
+            },
+            "label": {
+              "maxLength": 120,
+              "minLength": 1,
+              "title": "Label",
+              "type": "string"
+            },
+            "permissions": {
+              "$ref": "#/$defs/FieldPermissions"
+            },
+            "presentation": {
+              "$ref": "#/$defs/Presentation"
+            },
+            "required": {
+              "default": false,
+              "title": "Required",
+              "type": "boolean"
+            },
+            "required_when": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Expression"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "source": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/DataSource"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "validation": {
+              "$ref": "#/$defs/Validation"
+            },
+            "visible_when": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Expression"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            }
+          },
+          "required": [
+            "key",
+            "kind",
+            "label"
+          ],
+          "title": "Component",
+          "type": "object"
+        },
+        "DataSource": {
+          "additionalProperties": false,
+          "properties": {
+            "previous_approved_key": {
+              "anyOf": [
+                {
+                  "maxLength": 60,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Previous Approved Key"
+            },
+            "record_id": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Record Id"
+            },
+            "type_id": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Type Id"
+            }
+          },
+          "title": "DataSource",
+          "type": "object"
+        },
+        "Expression": {
+          "additionalProperties": false,
+          "properties": {
+            "args": {
+              "items": {
+                "$ref": "#/$defs/Expression"
+              },
+              "maxItems": 20,
+              "title": "Args",
+              "type": "array"
+            },
+            "key": {
+              "anyOf": [
+                {
+                  "maxLength": 60,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Key"
+            },
+            "op": {
+              "enum": [
+                "literal",
+                "field",
+                "context",
+                "add",
+                "subtract",
+                "multiply",
+                "divide",
+                "eq",
+                "ne",
+                "lt",
+                "lte",
+                "gt",
+                "gte",
+                "and",
+                "or",
+                "not",
+                "if",
+                "coalesce",
+                "concat",
+                "length",
+                "round"
+              ],
+              "title": "Op",
+              "type": "string"
+            },
+            "value": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Value"
+            }
+          },
+          "required": [
+            "op"
+          ],
+          "title": "Expression",
+          "type": "object"
+        },
+        "FieldPermissions": {
+          "additionalProperties": false,
+          "properties": {
+            "read": {
+              "default": "all",
+              "enum": [
+                "all",
+                "owner",
+                "manager"
+              ],
+              "title": "Read",
+              "type": "string"
+            },
+            "write": {
+              "default": "all",
+              "enum": [
+                "all",
+                "owner",
+                "manager"
+              ],
+              "title": "Write",
+              "type": "string"
+            }
+          },
+          "title": "FieldPermissions",
+          "type": "object"
+        },
+        "FormDefinition": {
+          "additionalProperties": false,
+          "properties": {
+            "schema_version": {
+              "const": 1,
+              "default": 1,
+              "title": "Schema Version",
+              "type": "integer"
+            },
+            "sections": {
+              "items": {
+                "$ref": "#/$defs/Section"
+              },
+              "maxItems": 30,
+              "minItems": 1,
+              "title": "Sections",
+              "type": "array"
+            }
+          },
+          "required": [
+            "sections"
+          ],
+          "title": "FormDefinition",
+          "type": "object"
+        },
+        "Kind": {
+          "enum": [
+            "text",
+            "textarea",
+            "integer",
+            "decimal",
+            "boolean",
+            "date",
+            "datetime",
+            "time",
+            "select",
+            "multi_select",
+            "radio",
+            "user",
+            "department",
+            "project",
+            "master_data",
+            "file",
+            "image",
+            "signature",
+            "calculated",
+            "table",
+            "repeating_group",
+            "display"
+          ],
+          "type": "string"
+        },
+        "LibraryPin": {
+          "additionalProperties": false,
+          "properties": {
+            "artifact_id": {
+              "format": "uuid",
+              "title": "Artifact Id",
+              "type": "string"
+            },
+            "version": {
+              "minimum": 1,
+              "title": "Version",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "artifact_id",
+            "version"
+          ],
+          "title": "LibraryPin",
+          "type": "object"
+        },
+        "PackArtifactEnvelope": {
+          "additionalProperties": false,
+          "properties": {
+            "artifact_id": {
+              "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+              "title": "Artifact Id",
+              "type": "string"
+            },
+            "artifact_version": {
+              "minimum": 1,
+              "title": "Artifact Version",
+              "type": "integer"
+            },
+            "definition": {
+              "$ref": "#/$defs/PackJsonObject"
+            },
+            "description": {
+              "default": "",
+              "maxLength": 2000,
+              "title": "Description",
+              "type": "string"
+            },
+            "kind": {
+              "$ref": "#/$defs/PackArtifactKind"
+            },
+            "name": {
+              "maxLength": 120,
+              "minLength": 1,
+              "title": "Name",
+              "type": "string"
+            },
+            "schema_version": {
+              "const": 1,
+              "default": 1,
+              "title": "Schema Version",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "artifact_id",
+            "artifact_version",
+            "kind",
+            "name",
+            "definition"
+          ],
+          "title": "PackArtifactEnvelope",
+          "type": "object"
+        },
+        "PackArtifactKind": {
+          "enum": [
+            "form",
+            "master_data_type",
+            "workflow",
+            "automation_template",
+            "kpi",
+            "mapping_profile"
+          ],
+          "title": "PackArtifactKind",
+          "type": "string"
+        },
+        "PackArtifactReference": {
+          "additionalProperties": false,
+          "description": "Exact immutable target; references never follow a floating version.",
+          "properties": {
+            "artifact_id": {
+              "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+              "title": "Artifact Id",
+              "type": "string"
+            },
+            "kind": {
+              "$ref": "#/$defs/PackArtifactKind"
+            },
+            "pack_id": {
+              "maxLength": 180,
+              "minLength": 3,
+              "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$",
+              "title": "Pack Id",
+              "type": "string"
+            },
+            "pack_version": {
+              "maxLength": 128,
+              "minLength": 5,
+              "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-([0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*))?(?:\\+([0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*))?$",
+              "title": "Pack Version",
+              "type": "string"
+            },
+            "version": {
+              "minimum": 1,
+              "title": "Version",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "pack_id",
+            "pack_version",
+            "kind",
+            "artifact_id",
+            "version"
+          ],
+          "title": "PackArtifactReference",
+          "type": "object"
+        },
+        "PackJsonObject": {
+          "additionalProperties": {
+            "$ref": "#/$defs/PackJsonValue"
+          },
+          "type": "object"
+        },
+        "PackJsonValue": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "items": {
+                "$ref": "#/$defs/PackJsonValue"
+              },
+              "type": "array"
+            },
+            {
+              "additionalProperties": {
+                "$ref": "#/$defs/PackJsonValue"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "Presentation": {
+          "additionalProperties": false,
+          "properties": {
+            "help_text": {
+              "default": "",
+              "maxLength": 2000,
+              "title": "Help Text",
+              "type": "string"
+            },
+            "placeholder": {
+              "default": "",
+              "maxLength": 120,
+              "title": "Placeholder",
+              "type": "string"
+            },
+            "width": {
+              "default": "full",
+              "enum": [
+                "full",
+                "half"
+              ],
+              "title": "Width",
+              "type": "string"
+            }
+          },
+          "title": "Presentation",
+          "type": "object"
+        },
+        "Section": {
+          "additionalProperties": false,
+          "properties": {
+            "components": {
+              "items": {
+                "$ref": "#/$defs/Component"
+              },
+              "maxItems": 100,
+              "title": "Components",
+              "type": "array"
+            },
+            "key": {
+              "pattern": "^[a-z][a-z0-9_]{0,59}$",
+              "title": "Key",
+              "type": "string"
+            },
+            "label": {
+              "maxLength": 120,
+              "minLength": 1,
+              "title": "Label",
+              "type": "string"
+            },
+            "references": {
+              "items": {
+                "$ref": "#/$defs/LibraryPin"
+              },
+              "maxItems": 30,
+              "title": "References",
+              "type": "array"
+            }
+          },
+          "required": [
+            "key",
+            "label"
+          ],
+          "title": "Section",
+          "type": "object"
+        },
+        "Validation": {
+          "additionalProperties": false,
+          "properties": {
+            "condition": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Expression"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "max_length": {
+              "default": 2000,
+              "maximum": 2000,
+              "minimum": 1,
+              "title": "Max Length",
+              "type": "integer"
+            },
+            "max_rows": {
+              "default": 100,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Max Rows",
+              "type": "integer"
+            },
+            "maximum": {
+              "anyOf": [
+                {
+                  "pattern": "^-?[0-9]{1,18}(\\.[0-9]{1,6})?$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Maximum"
+            },
+            "min_length": {
+              "anyOf": [
+                {
+                  "maximum": 2000,
+                  "minimum": 0,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Min Length"
+            },
+            "minimum": {
+              "anyOf": [
+                {
+                  "pattern": "^-?[0-9]{1,18}(\\.[0-9]{1,6})?$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Minimum"
+            }
+          },
+          "title": "Validation",
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "properties": {
+        "definition": {
+          "$ref": "#/$defs/FormDefinition"
+        },
+        "envelope": {
+          "$ref": "#/$defs/PackArtifactEnvelope"
+        },
+        "references": {
+          "items": {
+            "$ref": "#/$defs/PackArtifactReference"
+          },
+          "maxItems": 100,
+          "title": "References",
+          "type": "array"
+        }
+      },
+      "required": [
+        "envelope",
+        "definition",
+        "references"
+      ],
+      "title": "PackFormArtifact",
+      "type": "object"
+    },
+    {
+      "$defs": {
+        "DataField": {
+          "additionalProperties": false,
+          "properties": {
+            "choices": {
+              "items": {
+                "type": "string"
+              },
+              "maxItems": 100,
+              "title": "Choices",
+              "type": "array"
+            },
+            "key": {
+              "pattern": "^[a-z][a-z0-9_]{0,39}$",
+              "title": "Key",
+              "type": "string"
+            },
+            "kind": {
+              "$ref": "#/$defs/FieldKind"
+            },
+            "reference_type_id": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Reference Type Id"
+            },
+            "required": {
+              "default": false,
+              "title": "Required",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "key",
+            "kind"
+          ],
+          "title": "DataField",
+          "type": "object"
+        },
+        "DataSchema": {
+          "additionalProperties": false,
+          "properties": {
+            "fields": {
+              "items": {
+                "$ref": "#/$defs/DataField"
+              },
+              "maxItems": 50,
+              "title": "Fields",
+              "type": "array"
+            }
+          },
+          "title": "DataSchema",
+          "type": "object"
+        },
+        "FieldKind": {
+          "enum": [
+            "text",
+            "integer",
+            "decimal",
+            "boolean",
+            "date",
+            "enum",
+            "reference"
+          ],
+          "title": "FieldKind",
+          "type": "string"
+        },
+        "PackArtifactEnvelope": {
+          "additionalProperties": false,
+          "properties": {
+            "artifact_id": {
+              "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+              "title": "Artifact Id",
+              "type": "string"
+            },
+            "artifact_version": {
+              "minimum": 1,
+              "title": "Artifact Version",
+              "type": "integer"
+            },
+            "definition": {
+              "$ref": "#/$defs/PackJsonObject"
+            },
+            "description": {
+              "default": "",
+              "maxLength": 2000,
+              "title": "Description",
+              "type": "string"
+            },
+            "kind": {
+              "$ref": "#/$defs/PackArtifactKind"
+            },
+            "name": {
+              "maxLength": 120,
+              "minLength": 1,
+              "title": "Name",
+              "type": "string"
+            },
+            "schema_version": {
+              "const": 1,
+              "default": 1,
+              "title": "Schema Version",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "artifact_id",
+            "artifact_version",
+            "kind",
+            "name",
+            "definition"
+          ],
+          "title": "PackArtifactEnvelope",
+          "type": "object"
+        },
+        "PackArtifactKind": {
+          "enum": [
+            "form",
+            "master_data_type",
+            "workflow",
+            "automation_template",
+            "kpi",
+            "mapping_profile"
+          ],
+          "title": "PackArtifactKind",
+          "type": "string"
+        },
+        "PackArtifactReference": {
+          "additionalProperties": false,
+          "description": "Exact immutable target; references never follow a floating version.",
+          "properties": {
+            "artifact_id": {
+              "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+              "title": "Artifact Id",
+              "type": "string"
+            },
+            "kind": {
+              "$ref": "#/$defs/PackArtifactKind"
+            },
+            "pack_id": {
+              "maxLength": 180,
+              "minLength": 3,
+              "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$",
+              "title": "Pack Id",
+              "type": "string"
+            },
+            "pack_version": {
+              "maxLength": 128,
+              "minLength": 5,
+              "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-([0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*))?(?:\\+([0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*))?$",
+              "title": "Pack Version",
+              "type": "string"
+            },
+            "version": {
+              "minimum": 1,
+              "title": "Version",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "pack_id",
+            "pack_version",
+            "kind",
+            "artifact_id",
+            "version"
+          ],
+          "title": "PackArtifactReference",
+          "type": "object"
+        },
+        "PackJsonObject": {
+          "additionalProperties": {
+            "$ref": "#/$defs/PackJsonValue"
+          },
+          "type": "object"
+        },
+        "PackJsonValue": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "items": {
+                "$ref": "#/$defs/PackJsonValue"
+              },
+              "type": "array"
+            },
+            {
+              "additionalProperties": {
+                "$ref": "#/$defs/PackJsonValue"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "PackMasterDataTypeDefinition": {
+          "additionalProperties": false,
+          "properties": {
+            "code": {
+              "pattern": "^[A-Za-z0-9][A-Za-z0-9_.-]{0,59}$",
+              "title": "Code",
+              "type": "string"
+            },
+            "definition": {
+              "$ref": "#/$defs/DataSchema"
+            },
+            "name": {
+              "maxLength": 120,
+              "minLength": 1,
+              "title": "Name",
+              "type": "string"
+            },
+            "registry": {
+              "$ref": "#/$defs/RegistryKind",
+              "default": "custom"
+            }
+          },
+          "required": [
+            "code",
+            "name",
+            "definition"
+          ],
+          "title": "PackMasterDataTypeDefinition",
+          "type": "object"
+        },
+        "RegistryKind": {
+          "enum": [
+            "custom",
+            "location",
+            "asset",
+            "unit",
+            "currency",
+            "shift"
+          ],
+          "title": "RegistryKind",
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "properties": {
+        "definition": {
+          "$ref": "#/$defs/PackMasterDataTypeDefinition"
+        },
+        "envelope": {
+          "$ref": "#/$defs/PackArtifactEnvelope"
+        },
+        "references": {
+          "items": {
+            "$ref": "#/$defs/PackArtifactReference"
+          },
+          "maxItems": 100,
+          "title": "References",
+          "type": "array"
+        }
+      },
+      "required": [
+        "envelope",
+        "definition",
+        "references"
+      ],
+      "title": "PackMasterDataTypeArtifact",
+      "type": "object"
+    },
+    {
+      "$defs": {
+        "ApprovalMode": {
+          "enum": [
+            "one",
+            "all",
+            "quorum",
+            "sequential"
+          ],
+          "type": "string"
+        },
+        "ApprovalPolicy": {
+          "additionalProperties": false,
+          "properties": {
+            "mode": {
+              "$ref": "#/$defs/ApprovalMode",
+              "default": "one"
+            },
+            "quorum": {
+              "anyOf": [
+                {
+                  "maximum": 1000,
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Quorum"
+            }
+          },
+          "title": "ApprovalPolicy",
+          "type": "object"
+        },
+        "Expression": {
+          "additionalProperties": false,
+          "properties": {
+            "args": {
+              "items": {
+                "$ref": "#/$defs/Expression"
+              },
+              "maxItems": 20,
+              "title": "Args",
+              "type": "array"
+            },
+            "key": {
+              "anyOf": [
+                {
+                  "maxLength": 60,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Key"
+            },
+            "op": {
+              "enum": [
+                "literal",
+                "field",
+                "context",
+                "add",
+                "subtract",
+                "multiply",
+                "divide",
+                "eq",
+                "ne",
+                "lt",
+                "lte",
+                "gt",
+                "gte",
+                "and",
+                "or",
+                "not",
+                "if",
+                "coalesce",
+                "concat",
+                "length",
+                "round"
+              ],
+              "title": "Op",
+              "type": "string"
+            },
+            "value": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Value"
+            }
+          },
+          "required": [
+            "op"
+          ],
+          "title": "Expression",
+          "type": "object"
+        },
+        "NodeKind": {
+          "enum": [
+            "start",
+            "review",
+            "approval",
+            "decision",
+            "notify",
+            "end"
+          ],
+          "type": "string"
+        },
+        "PackArtifactEnvelope": {
+          "additionalProperties": false,
+          "properties": {
+            "artifact_id": {
+              "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+              "title": "Artifact Id",
+              "type": "string"
+            },
+            "artifact_version": {
+              "minimum": 1,
+              "title": "Artifact Version",
+              "type": "integer"
+            },
+            "definition": {
+              "$ref": "#/$defs/PackJsonObject"
+            },
+            "description": {
+              "default": "",
+              "maxLength": 2000,
+              "title": "Description",
+              "type": "string"
+            },
+            "kind": {
+              "$ref": "#/$defs/PackArtifactKind"
+            },
+            "name": {
+              "maxLength": 120,
+              "minLength": 1,
+              "title": "Name",
+              "type": "string"
+            },
+            "schema_version": {
+              "const": 1,
+              "default": 1,
+              "title": "Schema Version",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "artifact_id",
+            "artifact_version",
+            "kind",
+            "name",
+            "definition"
+          ],
+          "title": "PackArtifactEnvelope",
+          "type": "object"
+        },
+        "PackArtifactKind": {
+          "enum": [
+            "form",
+            "master_data_type",
+            "workflow",
+            "automation_template",
+            "kpi",
+            "mapping_profile"
+          ],
+          "title": "PackArtifactKind",
+          "type": "string"
+        },
+        "PackArtifactReference": {
+          "additionalProperties": false,
+          "description": "Exact immutable target; references never follow a floating version.",
+          "properties": {
+            "artifact_id": {
+              "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+              "title": "Artifact Id",
+              "type": "string"
+            },
+            "kind": {
+              "$ref": "#/$defs/PackArtifactKind"
+            },
+            "pack_id": {
+              "maxLength": 180,
+              "minLength": 3,
+              "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$",
+              "title": "Pack Id",
+              "type": "string"
+            },
+            "pack_version": {
+              "maxLength": 128,
+              "minLength": 5,
+              "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-([0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*))?(?:\\+([0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*))?$",
+              "title": "Pack Version",
+              "type": "string"
+            },
+            "version": {
+              "minimum": 1,
+              "title": "Version",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "pack_id",
+            "pack_version",
+            "kind",
+            "artifact_id",
+            "version"
+          ],
+          "title": "PackArtifactReference",
+          "type": "object"
+        },
+        "PackJsonObject": {
+          "additionalProperties": {
+            "$ref": "#/$defs/PackJsonValue"
+          },
+          "type": "object"
+        },
+        "PackJsonValue": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "items": {
+                "$ref": "#/$defs/PackJsonValue"
+              },
+              "type": "array"
+            },
+            {
+              "additionalProperties": {
+                "$ref": "#/$defs/PackJsonValue"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "WorkflowAssignment": {
+          "additionalProperties": false,
+          "properties": {
+            "field_key": {
+              "anyOf": [
+                {
+                  "pattern": "^[a-z][a-z0-9_]{0,59}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Field Key"
+            },
+            "kind": {
+              "enum": [
+                "user",
+                "project_role",
+                "department_role",
+                "team",
+                "submission_field",
+                "manager_of"
+              ],
+              "title": "Kind",
+              "type": "string"
+            },
+            "role": {
+              "anyOf": [
+                {
+                  "maxLength": 60,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Role"
+            },
+            "target_id": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Target Id"
+            }
+          },
+          "required": [
+            "kind"
+          ],
+          "title": "WorkflowAssignment",
+          "type": "object"
+        },
+        "WorkflowDefinition": {
+          "additionalProperties": false,
+          "properties": {
+            "form_id": {
+              "format": "uuid",
+              "title": "Form Id",
+              "type": "string"
+            },
+            "form_number": {
+              "minimum": 1,
+              "title": "Form Number",
+              "type": "integer"
+            },
+            "nodes": {
+              "items": {
+                "$ref": "#/$defs/WorkflowNode"
+              },
+              "maxItems": 100,
+              "minItems": 2,
+              "title": "Nodes",
+              "type": "array"
+            },
+            "transitions": {
+              "items": {
+                "$ref": "#/$defs/WorkflowTransition"
+              },
+              "maxItems": 200,
+              "minItems": 1,
+              "title": "Transitions",
+              "type": "array"
+            }
+          },
+          "required": [
+            "form_id",
+            "form_number",
+            "nodes",
+            "transitions"
+          ],
+          "title": "WorkflowDefinition",
+          "type": "object"
+        },
+        "WorkflowNode": {
+          "additionalProperties": false,
+          "properties": {
+            "assignments": {
+              "items": {
+                "$ref": "#/$defs/WorkflowAssignment"
+              },
+              "maxItems": 20,
+              "title": "Assignments",
+              "type": "array"
+            },
+            "condition": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/Expression"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "key": {
+              "pattern": "^[a-z][a-z0-9_]{0,59}$",
+              "title": "Key",
+              "type": "string"
+            },
+            "kind": {
+              "$ref": "#/$defs/NodeKind"
+            },
+            "name": {
+              "maxLength": 120,
+              "minLength": 1,
+              "title": "Name",
+              "type": "string"
+            },
+            "policy": {
+              "anyOf": [
+                {
+                  "$ref": "#/$defs/ApprovalPolicy"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null
+            },
+            "return_to": {
+              "anyOf": [
+                {
+                  "maxLength": 60,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Return To"
+            }
+          },
+          "required": [
+            "key",
+            "name",
+            "kind"
+          ],
+          "title": "WorkflowNode",
+          "type": "object"
+        },
+        "WorkflowTransition": {
+          "additionalProperties": false,
+          "properties": {
+            "outcome": {
+              "default": "continue",
+              "enum": [
+                "continue",
+                "true",
+                "false"
+              ],
+              "title": "Outcome",
+              "type": "string"
+            },
+            "source": {
+              "maxLength": 60,
+              "title": "Source",
+              "type": "string"
+            },
+            "target": {
+              "maxLength": 60,
+              "title": "Target",
+              "type": "string"
+            }
+          },
+          "required": [
+            "source",
+            "target"
+          ],
+          "title": "WorkflowTransition",
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "properties": {
+        "definition": {
+          "$ref": "#/$defs/WorkflowDefinition"
+        },
+        "envelope": {
+          "$ref": "#/$defs/PackArtifactEnvelope"
+        },
+        "references": {
+          "items": {
+            "$ref": "#/$defs/PackArtifactReference"
+          },
+          "maxItems": 1,
+          "minItems": 1,
+          "title": "References",
+          "type": "array"
+        }
+      },
+      "required": [
+        "envelope",
+        "definition",
+        "references"
+      ],
+      "title": "PackWorkflowArtifact",
+      "type": "object"
+    },
+    {
+      "$defs": {
+        "PackArtifactEnvelope": {
+          "additionalProperties": false,
+          "properties": {
+            "artifact_id": {
+              "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+              "title": "Artifact Id",
+              "type": "string"
+            },
+            "artifact_version": {
+              "minimum": 1,
+              "title": "Artifact Version",
+              "type": "integer"
+            },
+            "definition": {
+              "$ref": "#/$defs/PackJsonObject"
+            },
+            "description": {
+              "default": "",
+              "maxLength": 2000,
+              "title": "Description",
+              "type": "string"
+            },
+            "kind": {
+              "$ref": "#/$defs/PackArtifactKind"
+            },
+            "name": {
+              "maxLength": 120,
+              "minLength": 1,
+              "title": "Name",
+              "type": "string"
+            },
+            "schema_version": {
+              "const": 1,
+              "default": 1,
+              "title": "Schema Version",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "artifact_id",
+            "artifact_version",
+            "kind",
+            "name",
+            "definition"
+          ],
+          "title": "PackArtifactEnvelope",
+          "type": "object"
+        },
+        "PackArtifactKind": {
+          "enum": [
+            "form",
+            "master_data_type",
+            "workflow",
+            "automation_template",
+            "kpi",
+            "mapping_profile"
+          ],
+          "title": "PackArtifactKind",
+          "type": "string"
+        },
+        "PackArtifactReference": {
+          "additionalProperties": false,
+          "description": "Exact immutable target; references never follow a floating version.",
+          "properties": {
+            "artifact_id": {
+              "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+              "title": "Artifact Id",
+              "type": "string"
+            },
+            "kind": {
+              "$ref": "#/$defs/PackArtifactKind"
+            },
+            "pack_id": {
+              "maxLength": 180,
+              "minLength": 3,
+              "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$",
+              "title": "Pack Id",
+              "type": "string"
+            },
+            "pack_version": {
+              "maxLength": 128,
+              "minLength": 5,
+              "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-([0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*))?(?:\\+([0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*))?$",
+              "title": "Pack Version",
+              "type": "string"
+            },
+            "version": {
+              "minimum": 1,
+              "title": "Version",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "pack_id",
+            "pack_version",
+            "kind",
+            "artifact_id",
+            "version"
+          ],
+          "title": "PackArtifactReference",
+          "type": "object"
+        },
+        "PackAutomationTemplateDefinition": {
+          "additionalProperties": false,
+          "properties": {
+            "action": {
+              "enum": [
+                "notify_manager",
+                "create_investigation_task"
+              ],
+              "title": "Action",
+              "type": "string"
+            },
+            "condition_equals": {
+              "anyOf": [
+                {
+                  "maxLength": 120,
+                  "minLength": 1,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Condition Equals"
+            },
+            "condition_field": {
+              "anyOf": [
+                {
+                  "pattern": "^[a-z][a-z0-9_]{0,59}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Condition Field"
+            },
+            "source_form": {
+              "anyOf": [
+                {
+                  "format": "uuid",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Source Form"
+            },
+            "threshold_hours": {
+              "anyOf": [
+                {
+                  "maximum": 720,
+                  "minimum": 1,
+                  "type": "integer"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Threshold Hours"
+            },
+            "trigger": {
+              "enum": [
+                "task.overdue",
+                "submission.submitted"
+              ],
+              "title": "Trigger",
+              "type": "string"
+            }
+          },
+          "required": [
+            "trigger",
+            "action"
+          ],
+          "title": "PackAutomationTemplateDefinition",
+          "type": "object"
+        },
+        "PackJsonObject": {
+          "additionalProperties": {
+            "$ref": "#/$defs/PackJsonValue"
+          },
+          "type": "object"
+        },
+        "PackJsonValue": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "items": {
+                "$ref": "#/$defs/PackJsonValue"
+              },
+              "type": "array"
+            },
+            {
+              "additionalProperties": {
+                "$ref": "#/$defs/PackJsonValue"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        }
+      },
+      "additionalProperties": false,
+      "properties": {
+        "definition": {
+          "$ref": "#/$defs/PackAutomationTemplateDefinition"
+        },
+        "envelope": {
+          "$ref": "#/$defs/PackArtifactEnvelope"
+        },
+        "references": {
+          "items": {
+            "$ref": "#/$defs/PackArtifactReference"
+          },
+          "maxItems": 1,
+          "title": "References",
+          "type": "array"
+        }
+      },
+      "required": [
+        "envelope",
+        "definition"
+      ],
+      "title": "PackAutomationTemplateArtifact",
+      "type": "object"
+    },
+    {
+      "$defs": {
+        "PackArtifactEnvelope": {
+          "additionalProperties": false,
+          "properties": {
+            "artifact_id": {
+              "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+              "title": "Artifact Id",
+              "type": "string"
+            },
+            "artifact_version": {
+              "minimum": 1,
+              "title": "Artifact Version",
+              "type": "integer"
+            },
+            "definition": {
+              "$ref": "#/$defs/PackJsonObject"
+            },
+            "description": {
+              "default": "",
+              "maxLength": 2000,
+              "title": "Description",
+              "type": "string"
+            },
+            "kind": {
+              "$ref": "#/$defs/PackArtifactKind"
+            },
+            "name": {
+              "maxLength": 120,
+              "minLength": 1,
+              "title": "Name",
+              "type": "string"
+            },
+            "schema_version": {
+              "const": 1,
+              "default": 1,
+              "title": "Schema Version",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "artifact_id",
+            "artifact_version",
+            "kind",
+            "name",
+            "definition"
+          ],
+          "title": "PackArtifactEnvelope",
+          "type": "object"
+        },
+        "PackArtifactKind": {
+          "enum": [
+            "form",
+            "master_data_type",
+            "workflow",
+            "automation_template",
+            "kpi",
+            "mapping_profile"
+          ],
+          "title": "PackArtifactKind",
+          "type": "string"
+        },
+        "PackArtifactReference": {
+          "additionalProperties": false,
+          "description": "Exact immutable target; references never follow a floating version.",
+          "properties": {
+            "artifact_id": {
+              "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+              "title": "Artifact Id",
+              "type": "string"
+            },
+            "kind": {
+              "$ref": "#/$defs/PackArtifactKind"
+            },
+            "pack_id": {
+              "maxLength": 180,
+              "minLength": 3,
+              "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$",
+              "title": "Pack Id",
+              "type": "string"
+            },
+            "pack_version": {
+              "maxLength": 128,
+              "minLength": 5,
+              "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-([0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*))?(?:\\+([0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*))?$",
+              "title": "Pack Version",
+              "type": "string"
+            },
+            "version": {
+              "minimum": 1,
+              "title": "Version",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "pack_id",
+            "pack_version",
+            "kind",
+            "artifact_id",
+            "version"
+          ],
+          "title": "PackArtifactReference",
+          "type": "object"
+        },
+        "PackJsonObject": {
+          "additionalProperties": {
+            "$ref": "#/$defs/PackJsonValue"
+          },
+          "type": "object"
+        },
+        "PackJsonValue": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "items": {
+                "$ref": "#/$defs/PackJsonValue"
+              },
+              "type": "array"
+            },
+            {
+              "additionalProperties": {
+                "$ref": "#/$defs/PackJsonValue"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "PackKpiDefinition": {
+          "additionalProperties": false,
+          "properties": {
+            "group_field": {
+              "anyOf": [
+                {
+                  "pattern": "^[a-z][a-z0-9_]{0,59}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Group Field"
+            },
+            "metric": {
+              "enum": [
+                "count",
+                "sum",
+                "average"
+              ],
+              "title": "Metric",
+              "type": "string"
+            },
+            "source_field": {
+              "anyOf": [
+                {
+                  "pattern": "^[a-z][a-z0-9_]{0,59}$",
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "default": null,
+              "title": "Source Field"
+            },
+            "source_form": {
+              "format": "uuid",
+              "title": "Source Form",
+              "type": "string"
+            },
+            "time_field": {
+              "pattern": "^[a-z][a-z0-9_]{0,59}$",
+              "title": "Time Field",
+              "type": "string"
+            },
+            "unit": {
+              "maxLength": 40,
+              "minLength": 1,
+              "title": "Unit",
+              "type": "string"
+            },
+            "window_days": {
+              "maximum": 366,
+              "minimum": 1,
+              "title": "Window Days",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "metric",
+            "source_form",
+            "unit",
+            "time_field",
+            "window_days"
+          ],
+          "title": "PackKpiDefinition",
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "properties": {
+        "definition": {
+          "$ref": "#/$defs/PackKpiDefinition"
+        },
+        "envelope": {
+          "$ref": "#/$defs/PackArtifactEnvelope"
+        },
+        "references": {
+          "items": {
+            "$ref": "#/$defs/PackArtifactReference"
+          },
+          "maxItems": 1,
+          "minItems": 1,
+          "title": "References",
+          "type": "array"
+        }
+      },
+      "required": [
+        "envelope",
+        "definition",
+        "references"
+      ],
+      "title": "PackKpiArtifact",
+      "type": "object"
+    },
+    {
+      "$defs": {
+        "PackArtifactEnvelope": {
+          "additionalProperties": false,
+          "properties": {
+            "artifact_id": {
+              "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+              "title": "Artifact Id",
+              "type": "string"
+            },
+            "artifact_version": {
+              "minimum": 1,
+              "title": "Artifact Version",
+              "type": "integer"
+            },
+            "definition": {
+              "$ref": "#/$defs/PackJsonObject"
+            },
+            "description": {
+              "default": "",
+              "maxLength": 2000,
+              "title": "Description",
+              "type": "string"
+            },
+            "kind": {
+              "$ref": "#/$defs/PackArtifactKind"
+            },
+            "name": {
+              "maxLength": 120,
+              "minLength": 1,
+              "title": "Name",
+              "type": "string"
+            },
+            "schema_version": {
+              "const": 1,
+              "default": 1,
+              "title": "Schema Version",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "artifact_id",
+            "artifact_version",
+            "kind",
+            "name",
+            "definition"
+          ],
+          "title": "PackArtifactEnvelope",
+          "type": "object"
+        },
+        "PackArtifactKind": {
+          "enum": [
+            "form",
+            "master_data_type",
+            "workflow",
+            "automation_template",
+            "kpi",
+            "mapping_profile"
+          ],
+          "title": "PackArtifactKind",
+          "type": "string"
+        },
+        "PackArtifactReference": {
+          "additionalProperties": false,
+          "description": "Exact immutable target; references never follow a floating version.",
+          "properties": {
+            "artifact_id": {
+              "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+              "title": "Artifact Id",
+              "type": "string"
+            },
+            "kind": {
+              "$ref": "#/$defs/PackArtifactKind"
+            },
+            "pack_id": {
+              "maxLength": 180,
+              "minLength": 3,
+              "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$",
+              "title": "Pack Id",
+              "type": "string"
+            },
+            "pack_version": {
+              "maxLength": 128,
+              "minLength": 5,
+              "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-([0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*))?(?:\\+([0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*))?$",
+              "title": "Pack Version",
+              "type": "string"
+            },
+            "version": {
+              "minimum": 1,
+              "title": "Version",
+              "type": "integer"
+            }
+          },
+          "required": [
+            "pack_id",
+            "pack_version",
+            "kind",
+            "artifact_id",
+            "version"
+          ],
+          "title": "PackArtifactReference",
+          "type": "object"
+        },
+        "PackJsonObject": {
+          "additionalProperties": {
+            "$ref": "#/$defs/PackJsonValue"
+          },
+          "type": "object"
+        },
+        "PackJsonValue": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "integer"
+            },
+            {
+              "type": "number"
+            },
+            {
+              "type": "string"
+            },
+            {
+              "items": {
+                "$ref": "#/$defs/PackJsonValue"
+              },
+              "type": "array"
+            },
+            {
+              "additionalProperties": {
+                "$ref": "#/$defs/PackJsonValue"
+              },
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ]
+        },
+        "PackMappingField": {
+          "additionalProperties": false,
+          "properties": {
+            "required": {
+              "default": false,
+              "title": "Required",
+              "type": "boolean"
+            },
+            "source_key": {
+              "pattern": "^[a-z][a-z0-9_]{0,59}$",
+              "title": "Source Key",
+              "type": "string"
+            },
+            "target_key": {
+              "pattern": "^[a-z][a-z0-9_]{0,59}$",
+              "title": "Target Key",
+              "type": "string"
+            }
+          },
+          "required": [
+            "source_key",
+            "target_key"
+          ],
+          "title": "PackMappingField",
+          "type": "object"
+        },
+        "PackMappingProfileDefinition": {
+          "additionalProperties": false,
+          "properties": {
+            "fields": {
+              "items": {
+                "$ref": "#/$defs/PackMappingField"
+              },
+              "maxItems": 100,
+              "minItems": 1,
+              "title": "Fields",
+              "type": "array"
+            },
+            "source_kind": {
+              "maxLength": 80,
+              "minLength": 1,
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "title": "Source Kind",
+              "type": "string"
+            },
+            "target_kind": {
+              "maxLength": 80,
+              "minLength": 1,
+              "pattern": "^[a-z][a-z0-9_.-]*$",
+              "title": "Target Kind",
+              "type": "string"
+            }
+          },
+          "required": [
+            "source_kind",
+            "target_kind",
+            "fields"
+          ],
+          "title": "PackMappingProfileDefinition",
+          "type": "object"
+        }
+      },
+      "additionalProperties": false,
+      "properties": {
+        "definition": {
+          "$ref": "#/$defs/PackMappingProfileDefinition"
+        },
+        "envelope": {
+          "$ref": "#/$defs/PackArtifactEnvelope"
+        },
+        "references": {
+          "items": {
+            "$ref": "#/$defs/PackArtifactReference"
+          },
+          "maxItems": 100,
+          "title": "References",
+          "type": "array"
+        }
+      },
+      "required": [
+        "envelope",
+        "definition"
+      ],
+      "title": "PackMappingProfileArtifact",
+      "type": "object"
+    }
+  ]
+}

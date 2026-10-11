@@ -1,5 +1,36 @@
 # Open Questions
 
+## Q-018: Phase 9 organization-pack content materialization (resolved)
+
+Phase 8 authorizes organization-scoped pack installs. Forms/workflows are
+workspace/project scoped and dashboards/reports are creator-private. The starter
+pack must not bypass those owning-module boundaries. Recommended: keep pack content
+in the organization catalog; let an authorized user preview and explicitly import
+selected artifacts into one workspace/project through the owning application
+service, creating drafts with pack/artifact/version provenance and immutable audit.
+Do not auto-publish or activate imported content. The owner selected this on
+2026-10-11; ADR-0038 records the decision.
+
+## Q-019: Phase 9 external mapping conformance (resolved)
+
+The Oil & Gas starter brief reserves mappings for WITSML-compatible well/site data
+and drilling-report standards but does not select a standard version, profile or
+conformance level. Recommended: ship version-neutral declarative internal mapping
+profiles and make no external standards-conformance claim until a target/version is
+selected. The owner selected internal profiles only on 2026-10-11; ADR-0039 records
+the decision.
+
+## Q-020: Phase 9 cross-user form KPI authorization (resolved)
+
+Oil & Gas KPI artifacts aggregate values from submitted forms across submitters.
+The prior reporting authorization decision ADR-0028 applies scoped `schedule.manage`
+to aggregate task data; it does not decide access to form-submission data. The
+submissions API uses scoped `submission.read` for cross-user reads. On 2026-10-11,
+the owner selected scoped `submission.read`, with identity-free aggregate results and
+a maximum 366-day window. ADR-0040 records the accepted boundary. KPI fields must be
+validated against the imported published form version and authorization is rechecked
+at every execution.
+
 ## Q-015: Phase 8 package trust, migration execution and install scope (resolved)
 
 The Domain Pack architecture requires publisher metadata, checksums, a constrained

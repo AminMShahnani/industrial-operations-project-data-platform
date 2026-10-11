@@ -1,0 +1,13 @@
+{
+  "artifact_id": "npt-investigation-task",
+  "artifact_version": 1,
+  "definition": {
+    "action": "create_investigation_task",
+    "threshold_hours": 4,
+    "trigger": "task.overdue"
+  },
+  "description": "Inactive declarative example; importing never creates or activates a rule.",
+  "kind": "automation_template",
+  "name": "NPT investigation task example",
+  "schema_version": 1
+}

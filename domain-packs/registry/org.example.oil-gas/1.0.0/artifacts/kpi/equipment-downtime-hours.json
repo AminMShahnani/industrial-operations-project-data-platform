@@ -1,0 +1,25 @@
+{
+  "artifact_id": "equipment-downtime-hours",
+  "artifact_version": 1,
+  "definition": {
+    "group_field": "equipment_name",
+    "metric": "sum",
+    "source_field": "downtime_hours",
+    "source_form": {
+      "$artifact_ref": {
+        "artifact_id": "maintenance-report",
+        "kind": "form",
+        "pack_id": "org.example.oil-gas",
+        "pack_version": "1.0.0",
+        "version": 1
+      }
+    },
+    "time_field": "maintenance_date",
+    "unit": "hours",
+    "window_days": 30
+  },
+  "description": "Declarative template only; review and configure before use.",
+  "kind": "kpi",
+  "name": "Equipment downtime hours",
+  "schema_version": 1
+}

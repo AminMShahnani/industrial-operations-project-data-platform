@@ -1,0 +1,42 @@
+{
+  "artifact_id": "material-consumption",
+  "artifact_version": 1,
+  "definition": {
+    "sections": [
+      {
+        "components": [
+          {
+            "key": "report_date",
+            "kind": "date",
+            "label": "Report date",
+            "required": true
+          },
+          {
+            "key": "well_name",
+            "kind": "text",
+            "label": "Well name",
+            "required": true
+          },
+          {
+            "key": "material",
+            "kind": "text",
+            "label": "Material",
+            "required": true
+          },
+          {
+            "key": "quantity",
+            "kind": "decimal",
+            "label": "Quantity",
+            "required": true
+          }
+        ],
+        "key": "operations",
+        "label": "Operations"
+      }
+    ]
+  },
+  "description": "Curated Oil & Gas starter template; review before use.",
+  "kind": "form",
+  "name": "Material Consumption",
+  "schema_version": 1
+}

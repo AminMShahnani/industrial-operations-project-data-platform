@@ -1,0 +1,204 @@
+{
+  "capabilities": [
+    "forms",
+    "master-data",
+    "workflows",
+    "reports",
+    "dashboards",
+    "import-mappings"
+  ],
+  "content_checksums": [
+    {
+      "path": "artifacts/automation_template/high-severity-incident-escalation.json",
+      "sha256": "d673eb1be2e16fa09167b4509fa2c52d22a368504d48956d524aea8f08f45890"
+    },
+    {
+      "path": "artifacts/automation_template/npt-investigation-task.json",
+      "sha256": "c993f88c8df82aa0db74558075708841be5841074618925aadec0d3fca0be508"
+    },
+    {
+      "path": "artifacts/automation_template/overdue-daily-report-escalation.json",
+      "sha256": "74f35785c8173b6cd4aa6d18d687210c85b2844351b7a65421c1944dba6ee13e"
+    },
+    {
+      "path": "artifacts/form/bha-report.json",
+      "sha256": "555e0a3f375afc867c33fe5cd5f30817685a700e7807f099a3fea1fc6147f933"
+    },
+    {
+      "path": "artifacts/form/bit-report.json",
+      "sha256": "88e5977f2c6c5fc2876f63cf7b7de66e45cdaa1be73aa04f30efc9bb79197a85"
+    },
+    {
+      "path": "artifacts/form/daily-cost-report.json",
+      "sha256": "d0c46e4c8602eb768a8679e0caeabe9307237304a9fdc7556694998b70b34177"
+    },
+    {
+      "path": "artifacts/form/daily-drilling-report.json",
+      "sha256": "713b3baca96b735cda5050bb72140f58c00e110facfa735bc3ad0144a06d3092"
+    },
+    {
+      "path": "artifacts/form/daily-operations-report.json",
+      "sha256": "bb07a11a001540900790094e272b9f7edc856cc3dd14ef99486840a09c6347b6"
+    },
+    {
+      "path": "artifacts/form/equipment-inspection.json",
+      "sha256": "b16b75cdf8d5bf879602cbba8b2155c3d89a10bea79cd72b4989d3cca9bf2821"
+    },
+    {
+      "path": "artifacts/form/hse-incident-report.json",
+      "sha256": "b810c5a4a32e414e958562b797ce06c2d467dc47f3fbe005b754359fc1791889"
+    },
+    {
+      "path": "artifacts/form/maintenance-report.json",
+      "sha256": "6258cb503ddadc9032242227daaa06e7229880d0d2923920a76125fc4838ceac"
+    },
+    {
+      "path": "artifacts/form/material-consumption.json",
+      "sha256": "ed1419d4f898cd3c9e06338e8a908bc31b10d51169feda131a7bf1df778d5a43"
+    },
+    {
+      "path": "artifacts/form/mud-report.json",
+      "sha256": "d9e135af17392e556de02abcc18a1014f76c36dfbb424b1b449858bf5387c3cc"
+    },
+    {
+      "path": "artifacts/form/npt-report.json",
+      "sha256": "cdad738caebee2ef08dd176c6843a9795850a3c5758bb9a06e97a52506071765"
+    },
+    {
+      "path": "artifacts/form/personnel-shift-report.json",
+      "sha256": "ffec8350be75ab0cfcd08255fd7155e68122be19132e8bb4f35d93cfcd4459cd"
+    },
+    {
+      "path": "artifacts/form/shift-handover.json",
+      "sha256": "d4d36151d67b45aeedf5cd66e3aa6db65a2376533e926333307fbee07efe088f"
+    },
+    {
+      "path": "artifacts/kpi/approval-delay-hours.json",
+      "sha256": "cd976152ea7cc1845d7db1c81c78efcfc6fa76c661cd0c77917efaf4a212761f"
+    },
+    {
+      "path": "artifacts/kpi/completion-count.json",
+      "sha256": "841d04e528dff8e49e16e3fb69bf3d56202126e6076e8538ff7d1e63f8c75126"
+    },
+    {
+      "path": "artifacts/kpi/daily-operations-submission-count.json",
+      "sha256": "c024b1d2a715e5021353fe14e7e20a565396c93d0fc4d84e2ed4f0e51c04654e"
+    },
+    {
+      "path": "artifacts/kpi/equipment-downtime-hours.json",
+      "sha256": "3ab5e5e51d1047059acf6caafed0a082c1e87f3d9791fa5d2cb5128676882333"
+    },
+    {
+      "path": "artifacts/kpi/npt-hours-by-category.json",
+      "sha256": "5739850656a13e7e15026d873f40fbb146411f1cc5a5d796c00fe0ccba531da7"
+    },
+    {
+      "path": "artifacts/kpi/rop-average.json",
+      "sha256": "118fb4c52571e1ec46b2922bbfb9fc1630637d0ecd656b6e21d57e0d62b3f8bf"
+    },
+    {
+      "path": "artifacts/kpi/safety-incident-count.json",
+      "sha256": "441448bda32b7192d41db34b70e1856dfb8f0fb12a62838791ade3e11e2ae447"
+    },
+    {
+      "path": "artifacts/mapping_profile/rig-to-internal-rig.json",
+      "sha256": "034817462b8ca140c2f4a2bfd4800d5d39a9f435880fdad2fce028078a49ac74"
+    },
+    {
+      "path": "artifacts/mapping_profile/well-to-site.json",
+      "sha256": "874632d0d7def7bee4acc94c855de2f0bb9e56192e34b91f970a14bfefb5d011"
+    },
+    {
+      "path": "artifacts/mapping_profile/wellbore-to-internal-wellbore.json",
+      "sha256": "bb37cfff083551cd7ffec8063439135b5dd9b731eb386dfd36234c5036224b29"
+    },
+    {
+      "path": "artifacts/master_data_type/bha-component-type.json",
+      "sha256": "c273335fa5266dce520c26a4e04fd04c3d18ef7b59ae403ad0d5baf6a4a99d3c"
+    },
+    {
+      "path": "artifacts/master_data_type/bit-type.json",
+      "sha256": "49e6727c96e12a789162632ccd91c76445add935e65746f4f2798b1dec02116e"
+    },
+    {
+      "path": "artifacts/master_data_type/company.json",
+      "sha256": "60bb42de3b4cd60c5c51b2e0b1f1c05a62b8dd7d5628d68fe009dc4ca33f3634"
+    },
+    {
+      "path": "artifacts/master_data_type/contractor.json",
+      "sha256": "7a0adb4afaa3c4e85b80ead3123c4485a1de8ce014061b98c30a664e020ae502"
+    },
+    {
+      "path": "artifacts/master_data_type/equipment.json",
+      "sha256": "9ecf8a8dd3db4dd336ef280e209bed4f11e14631a8575dc1b7b08c0a3de35ba4"
+    },
+    {
+      "path": "artifacts/master_data_type/field.json",
+      "sha256": "0447f99ed3bcbe48810f4b7e3e3902420b3a54ed1b6dd6dbd16c732f142ef527"
+    },
+    {
+      "path": "artifacts/master_data_type/hole-section.json",
+      "sha256": "6454f724e5396b93edc3ea2d291516dd11ef9a78bd89fe543e9bf2fd617dcc1a"
+    },
+    {
+      "path": "artifacts/master_data_type/incident-category.json",
+      "sha256": "029fd532081eb3634860e100c7d80e6599db6813347391b4dc27d682bbd24d81"
+    },
+    {
+      "path": "artifacts/master_data_type/mud-system.json",
+      "sha256": "55f1e66c64baf20f85b6467ade835af99b59c3db362870082c7e2d1ad3c43152"
+    },
+    {
+      "path": "artifacts/master_data_type/npt-category.json",
+      "sha256": "b8b84aba9af5eaf387379107253572cd1f578fa0fe16697f08c09380c9b6f535"
+    },
+    {
+      "path": "artifacts/master_data_type/operation-code.json",
+      "sha256": "d1f5472a4528f08ed62148bcc8a94bb4cf24906574daa1571be833b32eeb1abc"
+    },
+    {
+      "path": "artifacts/master_data_type/rig.json",
+      "sha256": "657a70797c49685b6acd6845565d10242544cfa6d674e17e367ade883699ecf9"
+    },
+    {
+      "path": "artifacts/master_data_type/shift.json",
+      "sha256": "ea38ced4e5b7f405974e114265a76fb0088bcbf73fd901025b2c1769a0c47913"
+    },
+    {
+      "path": "artifacts/master_data_type/unit.json",
+      "sha256": "a141ebd7b8a5edac07daabbd6c73162853132e14b7816ee48a54fee9a94ccc44"
+    },
+    {
+      "path": "artifacts/master_data_type/well.json",
+      "sha256": "97440707c229db0c862afc16a59807f64699e5ab2289a386a8635cd7b6d19bae"
+    },
+    {
+      "path": "artifacts/master_data_type/wellbore.json",
+      "sha256": "33b4e5d3806e4035bee069e6cecc95f88184de0e3922e2b491d8e52bdf5e050f"
+    },
+    {
+      "path": "artifacts/workflow/client-sequential-approval.json",
+      "sha256": "639c3c06dcbf1b38504a7aa8b963b9bf9cd2dd9063082b2ef13ba90321c30c1f"
+    },
+    {
+      "path": "artifacts/workflow/hse-incident-escalation.json",
+      "sha256": "686844b6caeceab80f333a867845ed9a6a28b81d9111187bfea4e7bd6f82b690"
+    },
+    {
+      "path": "artifacts/workflow/operator-review.json",
+      "sha256": "07202ff8fce9519cfe2a47e9794bd2866b5d93e4477745309977d12c4a20df96"
+    },
+    {
+      "path": "artifacts/workflow/supervisor-approval.json",
+      "sha256": "154d888e0ed07851e905bb55ea5a202539620993c8c097b714978b98a037c066"
+    }
+  ],
+  "core_version_range": ">=0.1.0 <1.0.0",
+  "dependencies": [],
+  "id": "org.example.oil-gas",
+  "name": "Oil & Gas Drilling and Operations Starter",
+  "pack_type": "industry",
+  "publisher": "Platform Curators",
+  "schema_version": "1",
+  "version": "1.0.0"
+}

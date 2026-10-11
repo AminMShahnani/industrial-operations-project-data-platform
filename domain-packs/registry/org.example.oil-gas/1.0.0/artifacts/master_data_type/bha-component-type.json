@@ -1,0 +1,16 @@
+{
+  "artifact_id": "bha-component-type",
+  "artifact_version": 1,
+  "definition": {
+    "code": "og_bha_component_type",
+    "definition": {
+      "fields": []
+    },
+    "name": "Bha Component Type",
+    "registry": "custom"
+  },
+  "description": "Suggested type definition; no customer records included.",
+  "kind": "master_data_type",
+  "name": "Bha Component Type",
+  "schema_version": 1
+}

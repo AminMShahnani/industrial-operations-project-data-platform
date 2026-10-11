@@ -1,0 +1,16 @@
+{
+  "artifact_id": "hole-section",
+  "artifact_version": 1,
+  "definition": {
+    "code": "og_hole_section",
+    "definition": {
+      "fields": []
+    },
+    "name": "Hole Section",
+    "registry": "custom"
+  },
+  "description": "Suggested type definition; no customer records included.",
+  "kind": "master_data_type",
+  "name": "Hole Section",
+  "schema_version": 1
+}

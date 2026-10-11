@@ -86,6 +86,7 @@ class FormService:
         reason: str | None = None,
         *,
         form_number: int | None = None,
+        provenance: AuditDetails | None = None,
     ) -> None:
         user = self.authorization.user(actor, form.organization_id)
         self.audit.append(
@@ -120,7 +121,7 @@ class FormService:
                     form_number=form_number,
                     submission_id=identifier if action.startswith("submission.") else None,
                     subject_user_id=user.id if action.startswith("submission.") else None,
-                ),
+                ).model_copy(update=provenance.model_dump(exclude_none=True) if provenance else {}),
             )
         )
 
@@ -148,6 +149,7 @@ class FormService:
         project: UUID | None,
         name: str,
         definition: FormDefinition,
+        provenance: AuditDetails | None = None,
     ) -> Form:
         self.require(actor, org, workspace, project, "form.manage", True)
         form = Form(
@@ -164,7 +166,7 @@ class FormService:
                 definition=definition,
             )
         )
-        self.event(actor, form, "form.created", form.id, 1)
+        self.event(actor, form, "form.created", form.id, 1, provenance=provenance)
         return form
 
     def list_forms(
@@ -229,6 +231,28 @@ class FormService:
         return version.model_copy(
             update={"definition": version.definition.model_copy(update={"sections": sections})}
         )
+
+    def workflow_template_version(
+        self,
+        actor: RequestContext,
+        org: UUID,
+        workspace: UUID,
+        project: UUID | None,
+        form_id: UUID,
+        number: int,
+    ) -> tuple[Form, FormVersion]:
+        """Resolve an exact form pin for an authorized workflow template draft."""
+        self.require(actor, org, workspace, project, "workflow.manage")
+        form = self.store.get(org, workspace, form_id)
+        version = self.store.version(org, form_id, number)
+        if (
+            form is None
+            or form.project_id != project
+            or version is None
+            or version.state not in {"draft", "published"}
+        ):
+            raise ServiceError(422, "workflow_form_scope_or_state")
+        return form, version
 
     def save(
         self,

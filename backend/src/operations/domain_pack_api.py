@@ -11,6 +11,13 @@ from operations.modules.domain_packs.application.contracts import (
     LifecyclePlan,
     LifecyclePlanRequest,
 )
+from operations.modules.domain_packs.application.imports import (
+    ArtifactImportResult,
+    ImportApplyRequest,
+    ImportPreview,
+    ImportPreviewRequest,
+    PackArtifactCatalogPage,
+)
 from operations.modules.domain_packs.application.registry import RegistrySnapshot
 
 router = APIRouter(
@@ -50,3 +57,34 @@ def apply(
     service: ServiceDependency,
 ) -> InstallationPage:
     return service.domain_packs.apply(actor, organization_id, body)
+
+
+@router.post("/imports/preview", response_model=ImportPreview)
+def preview_import(
+    organization_id: UUID,
+    body: ImportPreviewRequest,
+    actor: Context,
+    service: ServiceDependency,
+) -> ImportPreview:
+    return service.domain_pack_imports.preview(actor, organization_id, body)
+
+
+@router.post("/imports", response_model=ArtifactImportResult)
+def import_artifact(
+    organization_id: UUID,
+    body: ImportApplyRequest,
+    actor: Context,
+    service: ServiceDependency,
+) -> ArtifactImportResult:
+    return service.domain_pack_imports.apply(actor, organization_id, body)
+
+
+@router.get("/catalog/{pack_id}/{version}/artifacts", response_model=PackArtifactCatalogPage)
+def catalog_artifacts(
+    organization_id: UUID,
+    pack_id: str,
+    version: str,
+    actor: Context,
+    service: ServiceDependency,
+) -> PackArtifactCatalogPage:
+    return service.domain_pack_imports.catalog_artifacts(actor, organization_id, pack_id, version)

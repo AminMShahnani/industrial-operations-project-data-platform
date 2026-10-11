@@ -1,4 +1,7 @@
 from datetime import datetime
+from decimal import Decimal
+from typing import Any
+from typing import cast as typing_cast
 from uuid import UUID
 
 from sqlalchemy import (
@@ -6,15 +9,24 @@ from sqlalchemy import (
     DateTime,
     ForeignKeyConstraint,
     Index,
+    Numeric,
     String,
     UniqueConstraint,
+    case,
+    cast,
+    func,
     select,
     update,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import Mapped, Session, mapped_column
+from sqlalchemy.sql.elements import ColumnElement
 
-from operations.modules.submissions.application.contracts import Submission
+from operations.modules.submissions.application.contracts import (
+    Submission,
+    SubmissionAggregateGroup,
+    SubmissionAggregateQuery,
+)
 from operations.platform.database import Base
 
 
@@ -167,4 +179,76 @@ class SubmissionRepository:
         return [
             contract(row)
             for row in self.session.scalars(query.order_by(SubmissionRow.id).limit(101))
+        ]
+
+    def aggregate(
+        self,
+        org: UUID,
+        workspace: UUID,
+        query: SubmissionAggregateQuery,
+    ) -> list[SubmissionAggregateGroup]:
+        """Aggregate only selected JSON fields; never load or return row identities."""
+        when = SubmissionRow.values["fields"][query.time_field].as_string()
+        # Form date and datetime values are canonical ISO strings. A fixed-width
+        # ISO date prefix remains lexically ordered; the supported KPI window is
+        # calendar-date based, including for datetime values.
+        date_value = func.left(when, 10)
+        filters = (
+            SubmissionRow.organization_id == org,
+            SubmissionRow.workspace_id == workspace,
+            SubmissionRow.form_id == query.form_id,
+            SubmissionRow.form_number == query.form_number,
+            SubmissionRow.state == "submitted",
+            date_value >= query.start_date.isoformat(),
+            date_value <= query.end_date.isoformat(),
+        )
+        grouped = (
+            SubmissionRow.values["fields"][query.group_field].as_string()
+            if query.group_field
+            else None
+        )
+        metric: ColumnElement[Any]
+        if query.metric == "count":
+            metric = func.count(SubmissionRow.id)
+        else:
+            raw_number = SubmissionRow.values["fields"][query.source_field].as_string()
+            numeric_text = case(
+                (raw_number.op("~")(r"^-?[0-9]+(\.[0-9]+)?$"), raw_number),
+                else_=None,
+            )
+            number = cast(numeric_text, Numeric())
+            metric = func.sum(number) if query.metric == "sum" else func.avg(number)
+        statement = select(metric.label("metric_value")).where(*filters)
+        if grouped is not None:
+            statement = (
+                select(grouped.label("group_value"), metric.label("metric_value"))
+                .where(*filters)
+                .group_by(grouped)
+                .order_by(grouped)
+                .limit(101)
+            )
+        rows = self.session.execute(statement).all()
+        if grouped is not None and len(rows) > 100:
+            raise ValueError("submission_aggregate_group_limit_exceeded")
+        if grouped is None:
+            value = typing_cast(Any, rows[0][0]) if rows else None
+            if value is None:
+                return []
+            return [
+                SubmissionAggregateGroup(
+                    group=None,
+                    value=int(value) if query.metric == "count" else float(Decimal(value)),
+                )
+            ]
+        return [
+            SubmissionAggregateGroup(
+                group=(str(group_value) if query.group_field and group_value is not None else None),
+                value=(
+                    int(typing_cast(Any, metric_value))
+                    if query.metric == "count"
+                    else float(Decimal(typing_cast(Any, metric_value)))
+                ),
+            )
+            for group_value, metric_value in rows
+            if metric_value is not None
         ]

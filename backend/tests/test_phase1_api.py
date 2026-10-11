@@ -166,7 +166,10 @@ def test_domain_pack_api_enforces_tenant_scope_and_install_permission(api: Api) 
 
     catalog = api.client.get(f"{base}/catalog", headers=api.headers("pack-admin"))
     assert catalog.status_code == 200
-    assert catalog.json() == {"valid": True, "releases": [], "issues": []}
+    assert catalog.json()["valid"] is True
+    assert [item["manifest"]["id"] for item in catalog.json()["releases"]] == [
+        "org.example.oil-gas"
+    ]
     installations = api.client.get(f"{base}/installations", headers=api.headers("pack-admin"))
     assert installations.status_code == 200
     assert installations.json() == {"items": []}
@@ -533,6 +536,367 @@ def test_expired_and_revoked_inviter_tokens_fail(api: Api) -> None:
         json={"token": pending},
     )
     assert response.status_code == 403
+
+
+def test_domain_pack_artifact_import_is_preview_bound_audited_and_idempotent(api: Api) -> None:
+    organization = api.organization("phase9-pack-admin")
+    workspace = api.workspace(organization, "phase9-pack-admin")
+    base = f"/api/v1/organizations/{organization}/domain-packs"
+    headers = api.headers("phase9-pack-admin")
+
+    plan = api.client.post(
+        f"{base}/plans",
+        headers=headers,
+        json={"operation": "install", "pack_id": "org.example.oil-gas", "version_range": "=1.0.0"},
+    )
+    assert plan.status_code == 200, plan.text
+    applied = api.client.post(
+        f"{base}/apply",
+        headers=headers,
+        json={
+            "operation": "install",
+            "pack_id": "org.example.oil-gas",
+            "version_range": "=1.0.0",
+            "expected_plan_sha256": plan.json()["plan_sha256"],
+            "reason": "Review the curated starter templates",
+            "confirm_breaking_change": False,
+        },
+    )
+    assert applied.status_code == 200, applied.text
+
+    artifacts = api.client.get(
+        f"{base}/catalog/org.example.oil-gas/1.0.0/artifacts", headers=headers
+    )
+    assert artifacts.status_code == 200, artifacts.text
+    form_artifact = next(
+        item for item in artifacts.json()["items"] if item["artifact_id"] == "daily-drilling-report"
+    )
+    request = {
+        "pack_id": "org.example.oil-gas",
+        "pack_version": "1.0.0",
+        "artifact_id": form_artifact["artifact_id"],
+        "artifact_version": form_artifact["artifact_version"],
+        "workspace_id": str(workspace),
+        "idempotency_key": str(uuid7()),
+    }
+    preview = api.client.post(f"{base}/imports/preview", headers=headers, json=request)
+    assert preview.status_code == 200, preview.text
+    assert preview.json()["valid"] is True
+
+    apply_body = {**request, "expected_preview_sha256": preview.json()["preview_sha256"]}
+    imported = api.client.post(f"{base}/imports", headers=headers, json=apply_body)
+    assert imported.status_code == 200, imported.text
+    replay = api.client.post(f"{base}/imports", headers=headers, json=apply_body)
+    assert replay.status_code == 200, replay.text
+    assert replay.json()["id"] == imported.json()["id"]
+
+    forms = api.client.get(
+        f"/api/v1/organizations/{organization}/workspaces/{workspace}/forms", headers=headers
+    )
+    assert forms.status_code == 200
+    created = next(
+        item for item in forms.json()["items"] if item["id"] == imported.json()["target_id"]
+    )
+    version = api.client.get(
+        f"/api/v1/organizations/{organization}/workspaces/{workspace}/forms/{created['id']}/versions/1",
+        headers=headers,
+    )
+    assert version.status_code == 200
+    assert version.json()["state"] == "draft"
+    audit = api.session.scalar(
+        select(AuditRow).where(
+            AuditRow.organization_id == organization,
+            AuditRow.aggregate_id == UUID(created["id"]),
+            AuditRow.type == "form.created",
+        )
+    )
+    assert audit is not None
+    assert audit.payload["pack_id"] == "org.example.oil-gas"
+    assert audit.payload["pack_artifact_id"] == "daily-drilling-report"
+    assert audit.payload["package_sha256"] == applied.json()["items"][0]["content_sha256"]
+
+    # Workspace imports cross the owning module services and remain drafts.
+    master_data_artifact = next(
+        item
+        for item in artifacts.json()["items"]
+        if item["artifact_id"] == "rig" and item["kind"] == "master_data_type"
+    )
+    master_data_request = {
+        **request,
+        "artifact_id": master_data_artifact["artifact_id"],
+        "artifact_version": master_data_artifact["artifact_version"],
+        "idempotency_key": str(uuid7()),
+    }
+    md_preview = api.client.post(
+        f"{base}/imports/preview", headers=headers, json=master_data_request
+    )
+    assert md_preview.status_code == 200, md_preview.text
+    md_import = api.client.post(
+        f"{base}/imports",
+        headers=headers,
+        json={
+            **master_data_request,
+            "expected_preview_sha256": md_preview.json()["preview_sha256"],
+        },
+    )
+    assert md_import.status_code == 200, md_import.text
+    assert md_import.json()["artifact_kind"] == "master_data_type"
+
+    project_response = api.client.post(
+        f"/api/v1/organizations/{organization}/workspaces/{workspace}/projects",
+        headers=headers,
+        json={"name": "Pack import project"},
+    )
+    assert project_response.status_code == 201, project_response.text
+    project_id = project_response.json()["id"]
+    project_request = {
+        **master_data_request,
+        "project_id": project_id,
+        "idempotency_key": str(uuid7()),
+    }
+    project_preview = api.client.post(
+        f"{base}/imports/preview", headers=headers, json=project_request
+    )
+    assert project_preview.status_code == 200, project_preview.text
+    project_import = api.client.post(
+        f"{base}/imports",
+        headers=headers,
+        json={
+            **project_request,
+            "expected_preview_sha256": project_preview.json()["preview_sha256"],
+        },
+    )
+    assert project_import.status_code == 200, project_import.text
+    assert project_import.json()["project_id"] == project_id
+
+    operations_form = next(
+        item
+        for item in artifacts.json()["items"]
+        if item["artifact_id"] == "daily-operations-report" and item["kind"] == "form"
+    )
+    operations_form_request = {
+        **request,
+        "artifact_id": operations_form["artifact_id"],
+        "artifact_version": operations_form["artifact_version"],
+        "idempotency_key": str(uuid7()),
+    }
+    operations_form_preview = api.client.post(
+        f"{base}/imports/preview", headers=headers, json=operations_form_request
+    )
+    assert operations_form_preview.status_code == 200, operations_form_preview.text
+    operations_form_import = api.client.post(
+        f"{base}/imports",
+        headers=headers,
+        json={
+            **operations_form_request,
+            "expected_preview_sha256": operations_form_preview.json()["preview_sha256"],
+        },
+    )
+    assert operations_form_import.status_code == 200, operations_form_import.text
+
+    workflow_artifact = next(
+        item
+        for item in artifacts.json()["items"]
+        if item["artifact_id"] == "supervisor-approval" and item["kind"] == "workflow"
+    )
+    workflow_request = {
+        **request,
+        "artifact_id": workflow_artifact["artifact_id"],
+        "artifact_version": workflow_artifact["artifact_version"],
+        "idempotency_key": str(uuid7()),
+    }
+    workflow_preview = api.client.post(
+        f"{base}/imports/preview", headers=headers, json=workflow_request
+    )
+    assert workflow_preview.status_code == 200, workflow_preview.text
+    workflow_import = api.client.post(
+        f"{base}/imports",
+        headers=headers,
+        json={
+            **workflow_request,
+            "expected_preview_sha256": workflow_preview.json()["preview_sha256"],
+        },
+    )
+    assert workflow_import.status_code == 200, workflow_import.text
+    workflows = api.client.get(
+        f"/api/v1/organizations/{organization}/workspaces/{workspace}/workflows", headers=headers
+    )
+    assert workflows.status_code == 200
+    workflow_id = workflow_import.json()["target_id"]
+    created_workflow = next(item for item in workflows.json()["items"] if item["id"] == workflow_id)
+    workflow_versions = api.client.get(
+        f"/api/v1/organizations/{organization}/workspaces/{workspace}/workflows/{created_workflow['id']}/versions",
+        headers=headers,
+    )
+    assert workflow_versions.status_code == 200
+    assert workflow_versions.json()["items"][0]["state"] == "draft"
+
+    publish_url = (
+        f"/api/v1/organizations/{organization}/workspaces/{workspace}"
+        f"/forms/{created['id']}/versions/1/publish"
+    )
+    publication_preview = api.client.post(
+        publish_url, headers=headers, json={"expected_revision": 1}
+    )
+    assert publication_preview.status_code == 200, publication_preview.text
+    published = api.client.post(
+        publish_url,
+        headers=headers,
+        json={
+            "expected_revision": 1,
+            "dry_run": False,
+            "expected_sha256": publication_preview.json()["content_sha256"],
+        },
+    )
+    assert published.status_code == 200, published.text
+
+    submission_created = api.client.post(
+        f"/api/v1/organizations/{organization}/workspaces/{workspace}/submissions",
+        headers=headers,
+        json={"form_id": created["id"], "number": 1},
+    )
+    assert submission_created.status_code == 201, submission_created.text
+    submission_id = submission_created.json()["id"]
+    submission_url = (
+        f"/api/v1/organizations/{organization}/workspaces/{workspace}/submissions/{submission_id}"
+    )
+    saved_submission = api.client.put(
+        submission_url,
+        headers=headers,
+        json={
+            "expected_revision": 1,
+            "values": {
+                "fields": {
+                    "report_date": datetime.now(UTC).date().isoformat(),
+                    "well_name": "well-a",
+                    "rop": "4.5",
+                }
+            },
+        },
+    )
+    assert saved_submission.status_code == 200, saved_submission.text
+    submitted = api.client.post(
+        f"{submission_url}/submit",
+        headers=headers,
+        json={"expected_revision": 2, "idempotency_key": str(uuid7()), "reason": "Reviewed"},
+    )
+    assert submitted.status_code == 200, submitted.text
+
+    kpi_artifact = next(
+        item
+        for item in artifacts.json()["items"]
+        if item["artifact_id"] == "rop-average" and item["kind"] == "kpi"
+    )
+    kpi_request = {
+        **request,
+        "artifact_id": kpi_artifact["artifact_id"],
+        "artifact_version": kpi_artifact["artifact_version"],
+        "idempotency_key": str(uuid7()),
+    }
+    kpi_preview = api.client.post(f"{base}/imports/preview", headers=headers, json=kpi_request)
+    assert kpi_preview.status_code == 200, kpi_preview.text
+    kpi_import = api.client.post(
+        f"{base}/imports",
+        headers=headers,
+        json={
+            **kpi_request,
+            "expected_preview_sha256": kpi_preview.json()["preview_sha256"],
+        },
+    )
+    assert kpi_import.status_code == 200, kpi_import.text
+    reports_url = f"/api/v1/organizations/{organization}/workspaces/{workspace}/reports"
+    kpi_report_id = kpi_import.json()["target_id"]
+    kpi_definition = api.client.get(f"{reports_url}/saved/{kpi_report_id}", headers=headers)
+    assert kpi_definition.status_code == 200, kpi_definition.text
+    saved_kpi = kpi_definition.json()["definition"]["kpi"]
+    assert saved_kpi["source_form"] == created["id"]
+    assert saved_kpi["source_form_number"] == 1
+    kpi_run = api.client.get(f"{reports_url}/saved/{kpi_report_id}/run", headers=headers)
+    assert kpi_run.status_code == 200, kpi_run.text
+    assert kpi_run.json()["kpi_result"]["unit"] == "length/hour"
+    assert kpi_run.json()["kpi_result"]["groups"] == [{"group": "well-a", "value": 4.5}]
+    dashboard = api.client.post(
+        f"{reports_url}/dashboards",
+        headers=headers,
+        json={
+            "name": "Private drilling KPIs",
+            "definition": {
+                "widgets": [{"report_id": kpi_report_id, "kind": "bar", "title": "ROP by well"}]
+            },
+        },
+    )
+    assert dashboard.status_code == 201, dashboard.text
+    dashboard_run = api.client.get(
+        f"{reports_url}/dashboards/{dashboard.json()['id']}/run", headers=headers
+    )
+    assert dashboard_run.status_code == 200, dashboard_run.text
+    assert dashboard_run.json()["widgets"][0]["report"]["kpi_result"]["unit"] == "length/hour"
+    assert dashboard_run.json()["widgets"][0]["report"]["kpi_result"]["groups"][0]["value"] == 4.5
+
+    inert_artifact = next(
+        item
+        for item in artifacts.json()["items"]
+        if item["artifact_id"] == "npt-investigation-task" and item["kind"] == "automation_template"
+    )
+    inert_request = {
+        **request,
+        "artifact_id": inert_artifact["artifact_id"],
+        "artifact_version": inert_artifact["artifact_version"],
+        "idempotency_key": str(uuid7()),
+    }
+    inert_preview = api.client.post(f"{base}/imports/preview", headers=headers, json=inert_request)
+    assert inert_preview.status_code == 200, inert_preview.text
+    inert_import = api.client.post(
+        f"{base}/imports",
+        headers=headers,
+        json={
+            **inert_request,
+            "expected_preview_sha256": inert_preview.json()["preview_sha256"],
+        },
+    )
+    assert inert_import.status_code == 200, inert_import.text
+    assert inert_import.json()["inert_definition"]["trigger"] == "task.overdue"
+    rules = api.client.get(
+        f"/api/v1/organizations/{organization}/workspaces/{workspace}/automation-rules",
+        headers=headers,
+    )
+    assert rules.status_code == 200, rules.text
+    assert rules.json()["items"] == []
+
+    mapping_artifact = next(
+        item
+        for item in artifacts.json()["items"]
+        if item["artifact_id"] == "well-to-site" and item["kind"] == "mapping_profile"
+    )
+    mapping_request = {
+        **request,
+        "artifact_id": mapping_artifact["artifact_id"],
+        "artifact_version": mapping_artifact["artifact_version"],
+        "idempotency_key": str(uuid7()),
+    }
+    mapping_preview = api.client.post(
+        f"{base}/imports/preview", headers=headers, json=mapping_request
+    )
+    assert mapping_preview.status_code == 200, mapping_preview.text
+    mapping_import = api.client.post(
+        f"{base}/imports",
+        headers=headers,
+        json={
+            **mapping_request,
+            "expected_preview_sha256": mapping_preview.json()["preview_sha256"],
+        },
+    )
+    assert mapping_import.status_code == 200, mapping_import.text
+    assert mapping_import.json()["inert_definition"]["target_kind"] == "internal.site.v1"
+
+    revision = ScriptDirectory.from_config(Config("alembic.ini")).get_revision("b6c712a9f3e1")
+    assert revision is not None
+    with (
+        pytest.raises(DBAPIError, match="Pack import history prevents rollback"),
+        api.session.begin_nested(),
+        Operations.context(MigrationContext.configure(api.session.connection())),
+    ):
+        revision.module.downgrade()
 
 
 def test_database_composite_fk_rejects_cross_tenant_grants(api: Api) -> None:

@@ -32,11 +32,24 @@ class DueWeekGroup(Command):
     count: int = Field(ge=0)
 
 
+class KpiAggregateGroup(Command):
+    group: str | None
+    value: float
+
+
+class KpiAggregateResult(Command):
+    unit: str = Field(min_length=1, max_length=40)
+    start_date: date
+    end_date: date
+    groups: list[KpiAggregateGroup] = Field(max_length=100)
+
+
 class OverdueTaskPage(Command):
     items: list[OverdueTaskRow] = Field(max_length=100)
     next_cursor: UUID | None
     groups: list[TaskStateGroup] = Field(max_length=9)
     due_week_groups: list[DueWeekGroup] = Field(max_length=13)
+    kpi_result: KpiAggregateResult | None = None
 
 
 class StateFilter(Command):
@@ -75,19 +88,43 @@ OverdueFilter = Annotated[
 ]
 
 
+class SavedKpiDefinition(Command):
+    metric: Literal["count", "sum", "average"]
+    source_form: UUID
+    source_form_number: int = Field(default=1, ge=1)
+    source_field: str | None = Field(default=None, pattern=r"^[a-z][a-z0-9_]{0,59}$")
+    unit: str = Field(min_length=1, max_length=40)
+    time_field: str = Field(pattern=r"^[a-z][a-z0-9_]{0,59}$")
+    group_field: str | None = Field(default=None, pattern=r"^[a-z][a-z0-9_]{0,59}$")
+    window_days: int = Field(ge=1, le=366)
+
+
 class SavedReportDefinition(Command):
-    dataset: Literal["overdue_tasks"]
+    dataset: Literal["overdue_tasks", "pack_form_kpi"]
     scope: Literal["personal", "aggregate"] = "personal"
     columns: list[Literal["id", "project_id", "kind", "name", "state", "due_at"]] = Field(
-        min_length=1, max_length=6
+        default_factory=list, max_length=6
     )
     filters: list[OverdueFilter] = Field(default_factory=list, max_length=10)
     sort_by: Literal["id"] = "id"
     sort_direction: Literal["asc", "desc"] = "asc"
     group_by: Literal["none", "state", "due_week"] = "none"
+    kpi: SavedKpiDefinition | None = None
 
     @model_validator(mode="after")
     def coherent(self) -> SavedReportDefinition:
+        if self.dataset == "pack_form_kpi":
+            if (
+                self.kpi is None
+                or self.scope != "aggregate"
+                or self.columns
+                or self.filters
+                or self.group_by != "none"
+            ):
+                raise ValueError("invalid_pack_kpi_report_definition")
+            return self
+        if self.kpi is not None or not self.columns:
+            raise ValueError("invalid_overdue_report_definition")
         if len(set(self.columns)) != len(self.columns):
             raise ValueError("duplicate_report_column")
         if self.group_by == "state" and self.columns != ["state"]:
@@ -247,7 +284,7 @@ class DashboardWidgetResult(Command):
     title: str
     kind: Literal["table", "overdue_list", "status_distribution", "bar", "metric", "trend", "line"]
     report: OverdueTaskPage
-    metric_value: int | None = Field(default=None, ge=0)
+    metric_value: int | float | None = None
 
 
 class DashboardResult(Command):

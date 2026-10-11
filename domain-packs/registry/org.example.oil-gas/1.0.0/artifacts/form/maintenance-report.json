@@ -1,0 +1,42 @@
+{
+  "artifact_id": "maintenance-report",
+  "artifact_version": 1,
+  "definition": {
+    "sections": [
+      {
+        "components": [
+          {
+            "key": "maintenance_date",
+            "kind": "date",
+            "label": "Maintenance date",
+            "required": true
+          },
+          {
+            "key": "equipment_name",
+            "kind": "text",
+            "label": "Equipment",
+            "required": true
+          },
+          {
+            "key": "downtime_hours",
+            "kind": "decimal",
+            "label": "Downtime hours",
+            "required": false
+          },
+          {
+            "key": "work_summary",
+            "kind": "textarea",
+            "label": "Work summary",
+            "required": false
+          }
+        ],
+        "key": "operations",
+        "label": "Operations"
+      }
+    ]
+  },
+  "description": "Curated Oil & Gas starter template; review before use.",
+  "kind": "form",
+  "name": "Maintenance Report",
+  "schema_version": 1
+}

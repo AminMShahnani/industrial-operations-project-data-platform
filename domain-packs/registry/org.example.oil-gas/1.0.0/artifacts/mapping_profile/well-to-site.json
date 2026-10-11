@@ -1,0 +1,29 @@
+{
+  "artifact_id": "well-to-site",
+  "artifact_version": 1,
+  "definition": {
+    "fields": [
+      {
+        "required": true,
+        "source_key": "name",
+        "target_key": "name"
+      },
+      {
+        "required": false,
+        "source_key": "code",
+        "target_key": "code"
+      },
+      {
+        "required": false,
+        "source_key": "field_code",
+        "target_key": "field_code"
+      }
+    ],
+    "source_kind": "internal.well.v1",
+    "target_kind": "internal.site.v1"
+  },
+  "description": "Declarative template only; review and configure before use.",
+  "kind": "mapping_profile",
+  "name": "Well To Site",
+  "schema_version": 1
+}

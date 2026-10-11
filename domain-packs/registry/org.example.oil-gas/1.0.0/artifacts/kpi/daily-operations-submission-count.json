@@ -1,0 +1,25 @@
+{
+  "artifact_id": "daily-operations-submission-count",
+  "artifact_version": 1,
+  "definition": {
+    "group_field": null,
+    "metric": "count",
+    "source_field": null,
+    "source_form": {
+      "$artifact_ref": {
+        "artifact_id": "daily-operations-report",
+        "kind": "form",
+        "pack_id": "org.example.oil-gas",
+        "pack_version": "1.0.0",
+        "version": 1
+      }
+    },
+    "time_field": "report_date",
+    "unit": "submissions",
+    "window_days": 30
+  },
+  "description": "Counts submitted daily operations reports; overdue work uses the Core task dataset.",
+  "kind": "kpi",
+  "name": "Daily operations submission count",
+  "schema_version": 1
+}

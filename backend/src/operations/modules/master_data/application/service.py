@@ -144,6 +144,7 @@ class MasterDataService:
         workspace_id: UUID | None = None,
         project_id: UUID | None = None,
         source: EventContext | None = None,
+        provenance: AuditDetails | None = None,
     ) -> None:
         actor_id = self.authorization.user(context, organization_id).id if organization_id else None
         self.audit.append(
@@ -163,7 +164,7 @@ class MasterDataService:
                     workspace_id=workspace_id,
                     project_id=project_id,
                     **(source.model_dump() if source else {}),
-                ),
+                ).model_copy(update=provenance.model_dump(exclude_none=True) if provenance else {}),
             )
         )
 
@@ -196,6 +197,7 @@ class MasterDataService:
         name: str,
         registry: RegistryKind,
         schema: DataSchema,
+        provenance: AuditDetails | None = None,
     ) -> DataType:
         if scope == DataScope.GLOBAL:
             raise ServiceError(403, "global_reference_read_only")
@@ -218,7 +220,12 @@ class MasterDataService:
         self.schema_references(definition)
         self.store.create_type(definition)
         self.event(
-            context, organization_id, "master_data.type.created", definition.id, definition.version
+            context,
+            organization_id,
+            "master_data.type.created",
+            definition.id,
+            definition.version,
+            provenance=provenance,
         )
         return definition
 

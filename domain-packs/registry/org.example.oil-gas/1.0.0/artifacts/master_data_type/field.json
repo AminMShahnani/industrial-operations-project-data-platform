@@ -1,0 +1,16 @@
+{
+  "artifact_id": "field",
+  "artifact_version": 1,
+  "definition": {
+    "code": "og_field",
+    "definition": {
+      "fields": []
+    },
+    "name": "Field",
+    "registry": "custom"
+  },
+  "description": "Suggested type definition; no customer records included.",
+  "kind": "master_data_type",
+  "name": "Field",
+  "schema_version": 1
+}

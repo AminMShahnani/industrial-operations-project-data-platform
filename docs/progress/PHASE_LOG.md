@@ -94,6 +94,110 @@ Phase 8 acceptance evidence (2026-10-11):
 Overall Phase 8: 8/8 accepted. Phase 9 may begin; no Phase 9 implementation is
 included in this phase.
 
+## Phase 9 preparation - Oil & Gas starter Domain Pack - 2026-10-11
+
+Source requirements: docs/02 V1, docs/03 FR-020..026, FR-060..063 and FR-070..074,
+docs/09, docs/13..16, docs/19..23, docs/25 and
+`docs/domain-packs/OIL_GAS_STARTER_PACK.md`. The starter pack must remain curated,
+declarative and separate from Core. Phase 8's accepted ADR-0037 assigns stable pack
+artifact schemas and cross-artifact reference conventions to this phase.
+
+Acceptance criteria before feature implementation:
+- P9-01: define versioned, typed pack artifact envelopes with stable pack-local IDs,
+  artifact kinds/versions and an explicit reference format; export schemas and reject
+  duplicate IDs, unknown artifact kinds, broken references and cycles.
+- P9-02: publish a curated Oil & Gas drilling/operations starter release with typed
+  form templates and master-data type definitions from the documented starter scope;
+  no customer records, secrets or executable content are included.
+- P9-03: support a reviewable, authorized path from organization-installed pack
+  content to workspace/project artifacts using owning-module application services,
+  preserving source pack/artifact/version provenance and immutable audit.
+- P9-04: validate form definitions, bounded expressions, field/master-data/workflow
+  references and workflow graphs against existing typed Core contracts before any
+  import or activation; imported forms/workflows remain drafts until separately
+  authorized publication/activation.
+- P9-05: provide documented workflow presets and any automation examples as
+  declarative inactive templates; no pack import activates safety or governance
+  actions, and all activation uses existing scoped permission/audit paths.
+- P9-06: provide governed, bounded Oil & Gas KPI/report/dashboard definitions for
+  the documented completion, overdue, ROP, NPT, approval, safety and downtime themes;
+  data reads must use authorized reporting/owning-module services and state their
+  units, time basis and limits.
+- P9-07: provide declarative import/mapping profiles with typed source/target fields,
+  explicit version/scope metadata and no arbitrary transforms. External-standard
+  conformance is limited to the target/version accepted in the open mapping decision.
+- P9-08: test package schemas, references/expressions, install/import authorization,
+  tenant isolation, immutable versions/audit, KPI scope, migration rollback and
+  idempotency; pass backend/frontend/browser, lint, type, contract and exact-hosted CI.
+
+The project owner resolved Q-018 and Q-019 on 2026-10-11. ADR-0038 establishes an
+organization catalog with explicit, preview-bound imports through owning-module
+services, preserving provenance/audit and creating drafts only. ADR-0039 limits the
+starter release to version-neutral internal declarative mapping profiles; no external
+standards-conformance claim is made. Phase 9 feature implementation may proceed.
+
+Phase 9 implementation checkpoint (2026-10-11):
+- P9-01 PASS: typed versioned envelopes and per-kind contracts are implemented with
+  stable pack-local IDs, exact pack-release/artifact-version references, explicit
+  reference slots, generated JSON Schema and bounded package validation. The
+  validator rejects duplicate IDs, wrong paths/kinds, unresolved exact references,
+  undeclared/incompatible pack dependencies, cycles, unsafe reference locations,
+  invalid expressions and malformed typed definitions.
+- P9-02 PASS: curated `org.example.oil-gas` 1.0.0 contains 13 form templates and 16
+  suggested master-data type definitions from the starter brief; it includes no
+  operational/customer records or executable content. Curated package checksums
+  are regenerated and the registry release validates against Core 0.1.0.
+- P9-03 PARTIAL: organization catalog APIs support preview-bound imports into a
+  workspace/project through Forms, Master Data and Workflow services. The import
+  ledger binds idempotency keys, target scope, immutable release digest and source
+  artifact. Owning writes include provenance in immutable audit events. API
+  integration covers workspace and project master-data type imports plus form and
+  workflow imports; forms and workflows remain drafts. Browser coverage imports a
+  form into a workspace.
+- P9-04 PARTIAL: typed form schemas/expressions, exact references and workflow graph
+  validation run before import. Workflow form dependencies must be imported in the
+  same scope first; activation keeps using full owning-service checks. Role target and
+  recipient resolution is deferred until activation under ADR-0038 draft semantics.
+  KPI field validation is now available in the submissions application service for
+  published source forms; KPI artifact import/wiring remains outstanding.
+- P9-05 PARTIAL: workflow presets can be explicitly imported as drafts and use the
+  existing scoped activation path. Automation examples remain declarative and inactive;
+  their import/activation through the existing automation service is outstanding.
+- P9-06 IN PROGRESS: seven bounded, typed KPI definitions ship in the pack. ADR-0040
+  resolves Q-020: execution requires scoped `submission.read`, omits submitter identity,
+  and limits the window to 366 days. The submissions application service now checks
+  scope, published form version, field types and owner-only/user-reference field restrictions; its
+  repository returns aggregate groups only and caps group cardinality at 100. Typed
+  window/source contract tests pass. KPI artifact import, reporting/dashboard
+  integration and PostgreSQL query tests remain outstanding.
+- P9-07 PARTIAL: three typed, version-neutral internal mapping profiles ship with
+  no external conformance claim. Mapping application/export integration and tests are
+  outstanding.
+- P9-08 IN PROGRESS: 374 backend tests pass and 9 opt-in concurrency/browser tests
+  skip in the full backend run. A focused DB-backed import API run passes with
+  workspace/project scope and populated-history rollback refusal. The real OIDC
+  browser run passes with pack install, catalog load, preview and form import.
+  Frontend has 19 passing tests, lint/type checks and production build; OpenAPI and
+  artifact-schema drift checks pass. The Phase 9 migration passed upgrade, drift check,
+  downgrade and re-upgrade on isolated PostgreSQL, and the backend migration roundtrip
+  test passes. Exact hosted CI remains.
+
+Additional KPI foundation check (2026-10-11): 146 non-integration backend tests pass;
+Ruff, formatting and mypy pass for the submissions module. The focused integration
+module is skipped without `IOP_TEST_DATABASE_URL`, so SQL aggregate behavior still
+requires isolated PostgreSQL verification. The aggregate service is internal only and
+does not yet expose a user-facing KPI route.
+
+Phase 9 remains open. At this checkpoint, no acceptance criterion is complete beyond
+P9-01/P9-02. Do not advance to Phase 10 until every criterion and required hosted gate
+passes. Current work implements the organization catalog import boundary and the
+authorized aggregate service foundation; no user-facing KPI execution path is enabled.
+The local default
+`.env` database was accidentally targeted by an initial migration command; it was
+restored to its prior `8d77c0f21a46` revision. A full-head upgrade there is blocked by
+pre-existing schema drift (`saved_report_identities` is absent); no further migration
+commands target that database. Migration acceptance evidence uses the isolated test DB.
+
 ## Phase 6 final acceptance - 2026-10-10
 
 The user confirmed the deployment secret mount and webhook CIDR egress controls
@@ -1704,3 +1808,28 @@ upgrade/drift pass. Hosted run
 passed backend and frontend jobs on implementation commit
 `fedb956386855f324fa024f52347fe710c97e6ea`. Phase 7 is accepted 8/8; Phase 8 may
 begin. No Phase 7 item is deferred.
+
+## Phase 9 final local acceptance checkpoint - 2026-10-11
+
+Implementation now covers all eight scoped criteria locally. P9-01 passes typed,
+versioned artifact envelopes, generated JSON Schema, exact references and package
+validation. P9-02 passes the curated 1.0.0 starter pack with 13 forms, 16 master-data
+types, workflow presets, inert automation examples, seven KPIs and internal mapping
+profiles. P9-03/04 pass preview-bound workspace/project imports through owning
+services, exact provenance and immutable audit, reference validation, and draft-only
+forms/workflows. P9-05 passes inert automation imports with no rule creation or
+activation. P9-06 passes private saved-report materialization, published source-form
+pinning, scoped `submission.read`, identity-free PostgreSQL aggregation and the
+366-day bound. P9-07 passes typed internal-only mapping profiles without executable
+transforms or external conformance claims. P9-08 local coverage includes import
+authorization/idempotency/tenant isolation, API reporting/dashboard execution,
+rollback guards, browser import, contracts and quality gates.
+
+Local verification: 383 backend tests pass, 9 opt-in browser/concurrency tests are
+skipped in the non-browser suite, and the dedicated real OIDC/PKCE browser test passes.
+Frontend lint, typecheck, 19 tests and production build pass. Ruff check/format and
+strict mypy across 333 files pass. OpenAPI and artifact-schema drift, curated pack
+validation, isolated PostgreSQL migration roundtrip/drift, and `git diff --check` pass.
+Repeated XLSX output is byte-identical after normalizing workbook modified metadata.
+Exact-code hosted CI is still required; Phase 9 remains unaccepted until both hosted
+jobs pass. No acceptance requirement is deferred.

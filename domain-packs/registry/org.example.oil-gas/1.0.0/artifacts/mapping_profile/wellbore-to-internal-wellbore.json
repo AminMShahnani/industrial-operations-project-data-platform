@@ -1,0 +1,24 @@
+{
+  "artifact_id": "wellbore-to-internal-wellbore",
+  "artifact_version": 1,
+  "definition": {
+    "fields": [
+      {
+        "required": true,
+        "source_key": "name",
+        "target_key": "name"
+      },
+      {
+        "required": false,
+        "source_key": "well_code",
+        "target_key": "well_code"
+      }
+    ],
+    "source_kind": "internal.wellbore.v1",
+    "target_kind": "internal.wellbore.v1"
+  },
+  "description": "Declarative template only; review and configure before use.",
+  "kind": "mapping_profile",
+  "name": "Wellbore To Internal Wellbore",
+  "schema_version": 1
+}

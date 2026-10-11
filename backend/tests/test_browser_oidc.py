@@ -187,6 +187,66 @@ def test_real_oidc_pkce_login_and_workspace_creation(monkeypatch: pytest.MonkeyP
                 ).to_be_visible()
                 expect(page.get_by_role("heading", name="My overdue tasks")).to_be_visible()
                 expect(page.get_by_text("No overdue tasks.", exact=True)).to_be_visible()
+                expect(page.get_by_role("heading", name="Domain Packs")).to_be_visible()
+                with page.expect_response(
+                    lambda response: (
+                        response.request.method == "POST"
+                        and response.url.endswith("/domain-packs/plans")
+                    )
+                ) as pack_plan:
+                    page.get_by_role("button", name="Preview plan", exact=True).click()
+                assert pack_plan.value.status == 200
+                expect(page.get_by_role("heading", name="Plan ready for review")).to_be_visible()
+                page.get_by_label("Reason for change", exact=True).fill(
+                    "Browser review of curated starter pack"
+                )
+                with page.expect_response(
+                    lambda response: (
+                        response.request.method == "POST"
+                        and response.url.endswith("/domain-packs/apply")
+                    )
+                ) as pack_install:
+                    page.get_by_role("button", name="Apply reviewed plan", exact=True).click()
+                assert pack_install.value.status == 200
+                with page.expect_response(
+                    lambda response: (
+                        response.request.method == "GET"
+                        and response.url.endswith(
+                            "/domain-packs/catalog/org.example.oil-gas/1.0.0/artifacts"
+                        )
+                    )
+                ) as artifact_list:
+                    page.get_by_role("button", name="Load installed artifacts", exact=True).click()
+                assert artifact_list.value.status == 200
+                assert any(
+                    item["artifact_id"] == "daily-drilling-report"
+                    for item in artifact_list.value.json()["items"]
+                )
+                expect(page.get_by_role("combobox", name="Artifact")).to_be_visible()
+                page.get_by_label("Artifact", exact=True).select_option("daily-drilling-report")
+                with page.expect_response(
+                    lambda response: (
+                        response.request.method == "POST"
+                        and response.url.endswith("/domain-packs/imports/preview")
+                    )
+                ) as artifact_preview:
+                    page.get_by_role("button", name="Preview artifact import", exact=True).click()
+                assert artifact_preview.value.status == 200
+                expect(page.get_by_role("heading", name="Review import")).to_be_visible()
+                with page.expect_response(
+                    lambda response: (
+                        response.request.method == "POST"
+                        and response.url.endswith("/domain-packs/imports")
+                    )
+                ) as artifact_import:
+                    page.get_by_role("button", name="Import reviewed artifact", exact=True).click()
+                assert artifact_import.value.status == 200
+                assert artifact_import.value.json()["artifact_kind"] == "form"
+                expect(
+                    page.get_by_role("status").filter(
+                        has_text="Imported daily-drilling-report as form"
+                    )
+                ).to_be_visible()
                 with page.expect_response(
                     lambda response: response.url.endswith("/reports/overdue-tasks?scope=aggregate")
                 ) as aggregate_response:

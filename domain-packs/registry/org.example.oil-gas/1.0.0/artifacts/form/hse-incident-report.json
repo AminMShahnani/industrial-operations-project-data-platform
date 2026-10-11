@@ -1,0 +1,54 @@
+{
+  "artifact_id": "hse-incident-report",
+  "artifact_version": 1,
+  "definition": {
+    "sections": [
+      {
+        "components": [
+          {
+            "key": "incident_date",
+            "kind": "date",
+            "label": "Incident date",
+            "required": true
+          },
+          {
+            "key": "well_name",
+            "kind": "text",
+            "label": "Well name",
+            "required": true
+          },
+          {
+            "key": "incident_category",
+            "kind": "text",
+            "label": "Incident category",
+            "required": true
+          },
+          {
+            "choices": [
+              "planned",
+              "drilling",
+              "completion",
+              "other"
+            ],
+            "key": "severity",
+            "kind": "select",
+            "label": "Severity",
+            "required": true
+          },
+          {
+            "key": "description",
+            "kind": "textarea",
+            "label": "Description",
+            "required": true
+          }
+        ],
+        "key": "operations",
+        "label": "Operations"
+      }
+    ]
+  },
+  "description": "Curated Oil & Gas starter template; review before use.",
+  "kind": "form",
+  "name": "HSE Incident Report",
+  "schema_version": 1
+}

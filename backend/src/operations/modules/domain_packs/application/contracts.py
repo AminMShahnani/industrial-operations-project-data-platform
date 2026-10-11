@@ -54,6 +54,23 @@ class PackInstallation(Command):
     installed_by: UUID
 
 
+class PackArtifactImport(Command):
+    id: UUID
+    organization_id: UUID
+    workspace_id: UUID
+    project_id: UUID | None
+    idempotency_key: UUID
+    pack_id: str
+    pack_version: str
+    package_sha256: str
+    artifact_id: str
+    artifact_version: int
+    artifact_kind: str
+    target_id: UUID
+    imported_by: UUID
+    created_at: datetime
+
+
 class InstallationPage(Command):
     items: list[PackInstallation]
 
@@ -148,6 +165,21 @@ class PackInstallationStore(Protocol):
     ) -> None: ...
     def registry_release(self, pack_id: str, version: str) -> PackRelease | None: ...
     def has_materialized_artifacts(self, organization_id: UUID, pack_id: str) -> bool: ...
+
+
+class PackArtifactImportStore(Protocol):
+    def get_by_key(self, organization_id: UUID, key: UUID) -> PackArtifactImport | None: ...
+    def get_source(
+        self,
+        organization_id: UUID,
+        workspace_id: UUID,
+        project_id: UUID | None,
+        pack_id: str,
+        pack_version: str,
+        artifact_id: str,
+        artifact_version: int,
+    ) -> PackArtifactImport | None: ...
+    def create(self, result: PackArtifactImport) -> None: ...
 
 
 class AuthorizationService(Protocol):

@@ -1,0 +1,25 @@
+{
+  "artifact_id": "rop-average",
+  "artifact_version": 1,
+  "definition": {
+    "group_field": "well_name",
+    "metric": "average",
+    "source_field": "rop",
+    "source_form": {
+      "$artifact_ref": {
+        "artifact_id": "daily-drilling-report",
+        "kind": "form",
+        "pack_id": "org.example.oil-gas",
+        "pack_version": "1.0.0",
+        "version": 1
+      }
+    },
+    "time_field": "report_date",
+    "unit": "length/hour",
+    "window_days": 30
+  },
+  "description": "Declarative template only; review and configure before use.",
+  "kind": "kpi",
+  "name": "Average rate of penetration",
+  "schema_version": 1
+}

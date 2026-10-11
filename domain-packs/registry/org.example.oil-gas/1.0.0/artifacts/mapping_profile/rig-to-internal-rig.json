@@ -1,0 +1,24 @@
+{
+  "artifact_id": "rig-to-internal-rig",
+  "artifact_version": 1,
+  "definition": {
+    "fields": [
+      {
+        "required": true,
+        "source_key": "name",
+        "target_key": "name"
+      },
+      {
+        "required": false,
+        "source_key": "contractor_code",
+        "target_key": "contractor_code"
+      }
+    ],
+    "source_kind": "internal.rig.v1",
+    "target_kind": "internal.rig.v1"
+  },
+  "description": "Declarative template only; review and configure before use.",
+  "kind": "mapping_profile",
+  "name": "Rig To Internal Rig",
+  "schema_version": 1
+}

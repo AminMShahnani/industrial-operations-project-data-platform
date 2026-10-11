@@ -1,0 +1,42 @@
+{
+  "artifact_id": "personnel-shift-report",
+  "artifact_version": 1,
+  "definition": {
+    "sections": [
+      {
+        "components": [
+          {
+            "key": "report_date",
+            "kind": "date",
+            "label": "Report date",
+            "required": true
+          },
+          {
+            "key": "well_name",
+            "kind": "text",
+            "label": "Well name",
+            "required": true
+          },
+          {
+            "key": "shift",
+            "kind": "text",
+            "label": "Shift",
+            "required": true
+          },
+          {
+            "key": "personnel_count",
+            "kind": "integer",
+            "label": "Personnel count",
+            "required": false
+          }
+        ],
+        "key": "operations",
+        "label": "Operations"
+      }
+    ]
+  },
+  "description": "Curated Oil & Gas starter template; review before use.",
+  "kind": "form",
+  "name": "Personnel and Shift Report",
+  "schema_version": 1
+}

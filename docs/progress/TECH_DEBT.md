@@ -13,11 +13,25 @@ operational data or provenance is deleted. Define and migrate complete artifact
 provenance before enabling safe uninstall. This is a documented Phase 8 deferral,
 not a bypass of the history-preservation requirement.
 
-Phase 8 validation scope: Q-017 / ADR-0037 is resolved and accepted. Pack-local artifact schemas,
-stable IDs and reference conventions are not defined, so template-specific semantic
-expression and cross-artifact reference validation is not claimed. Define stable
-artifact schemas/references and corresponding validation with the Phase 9 starter
-pack before materializing template content.
+Phase 8 validation scope: Q-017 / ADR-0037 was resolved and accepted. Phase 9 now
+defines typed pack-local artifact schemas, stable IDs and exact reference conventions;
+bounded expression and cross-reference validation is implemented for curated package
+content. Workspace materialization still requires preview-bound owning-service
+imports, provenance and audit under ADR-0038. Do not enable uninstall until persisted
+artifact ownership links can prove removal is safe.
+
+Phase 9 verification checkpoint: workspace/project imports use owning application
+services and persist release/artifact provenance with scoped authorization,
+idempotency and audit. The additive import-ledger migration has a populated-history
+rollback guard. KPI artifacts materialize as creator-private saved reports and read
+published pinned form versions through the Submissions service under scoped
+`submission.read`; aggregate results omit submitter identity and use a maximum 366-day
+window (ADR-0040/0041). Automation templates remain inert; mapping profiles remain
+internal typed metadata without arbitrary transforms or external conformance claims.
+No new Phase 9 technical debt is accepted. Exact hosted CI remains an acceptance gate.
+Imported workflow assignment resolution occurs at activation: starter role labels
+have no implicit mapping to tenant project-role grants. The draft is editable, and
+activation uses WorkflowService's full current target and recipient validation.
 
 Phase 7 reporting/export (2026-10-11): durable private report export jobs, text-only
 PDF, download-time authorization/integrity checks, idempotent redispatch and

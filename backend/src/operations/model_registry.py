@@ -6,6 +6,9 @@ from operations.modules.automation.infrastructure.timers import (
     TimerOccurrenceRow as TimerOccurrenceRow,
 )
 from operations.modules.domain_packs.infrastructure.persistence import (
+    PackArtifactImportRow as PackArtifactImportRow,
+)
+from operations.modules.domain_packs.infrastructure.persistence import (
     PackInstallationRow as PackInstallationRow,
 )
 from operations.modules.domain_packs.infrastructure.persistence import (

@@ -55,6 +55,7 @@ class WorkflowService:
         reason: str | None = None,
         *,
         source: EventContext | None = None,
+        provenance: AuditDetails | None = None,
     ) -> None:
         user = self.forms.authorization.user(actor, row.organization_id)
         self.forms.audit.append(
@@ -76,7 +77,7 @@ class WorkflowService:
                     workspace_id=row.workspace_id,
                     project_id=row.project_id,
                     **(source.model_dump() if source else {}),
-                ),
+                ).model_copy(update=provenance.model_dump(exclude_none=True) if provenance else {}),
             )
         )
 
@@ -101,11 +102,34 @@ class WorkflowService:
             row = locked
         return row
 
-    def check(self, actor: RequestContext, row: Workflow, definition: WorkflowDefinition) -> UUID:
-        form, version = self.forms.version(
-            actor, row.organization_id, row.workspace_id, definition.form_id, definition.form_number
-        )
-        if form.project_id != row.project_id or version.state != "published":
+    def check(
+        self,
+        actor: RequestContext,
+        row: Workflow,
+        definition: WorkflowDefinition,
+        *,
+        allow_draft_form: bool = False,
+    ) -> UUID:
+        if allow_draft_form:
+            form, version = self.forms.workflow_template_version(
+                actor,
+                row.organization_id,
+                row.workspace_id,
+                row.project_id,
+                definition.form_id,
+                definition.form_number,
+            )
+        else:
+            form, version = self.forms.version(
+                actor,
+                row.organization_id,
+                row.workspace_id,
+                definition.form_id,
+                definition.form_number,
+            )
+        if form.project_id != row.project_id or (
+            version.state != "published" and not (allow_draft_form and version.state == "draft")
+        ):
             raise ServiceError(422, "workflow_form_scope_or_state")
         fields = components(version.definition)
         keys = {
@@ -117,22 +141,23 @@ class WorkflowService:
         for node in definition.nodes:
             if node.condition:
                 validate_condition(node.condition, keys)
-            for target in node.assignments:
-                self.assignments.check_target(row, target, user_fields)
-            if node.assignments and not any(
-                target.kind == "submission_field" for target in node.assignments
-            ):
-                recipients = self.assignments.resolve(
-                    actor,
-                    row,
-                    node.assignments,
-                    node.kind == "approval",
-                    notification=node.kind == "notify",
-                )
-                if not recipients:
-                    raise ServiceError(422, "workflow_assignment_has_no_eligible_recipients")
-                if node.policy and node.policy.quorum and node.policy.quorum > len(recipients):
-                    raise ServiceError(422, "workflow_quorum_exceeds_recipients")
+            if not allow_draft_form:
+                for target in node.assignments:
+                    self.assignments.check_target(row, target, user_fields)
+                if node.assignments and not any(
+                    target.kind == "submission_field" for target in node.assignments
+                ):
+                    recipients = self.assignments.resolve(
+                        actor,
+                        row,
+                        node.assignments,
+                        node.kind == "approval",
+                        notification=node.kind == "notify",
+                    )
+                    if not recipients:
+                        raise ServiceError(422, "workflow_assignment_has_no_eligible_recipients")
+                    if node.policy and node.policy.quorum and node.policy.quorum > len(recipients):
+                        raise ServiceError(422, "workflow_quorum_exceeds_recipients")
         return version.id
 
     def create(
@@ -160,6 +185,36 @@ class WorkflowService:
         )
         self.store.add_version(version)
         self.event(actor, row, row.id, "workflow.created", 1)
+        return row
+
+    def create_template_draft(
+        self,
+        actor: RequestContext,
+        org: UUID,
+        workspace: UUID,
+        project: UUID | None,
+        name: str,
+        definition: WorkflowDefinition,
+        provenance: AuditDetails,
+    ) -> Workflow:
+        """Create an imported workflow draft pinned to an exact draft or published form."""
+        self.require(actor, org, workspace, project, True)
+        row = Workflow(
+            id=uuid7(), organization_id=org, workspace_id=workspace, project_id=project, name=name
+        )
+        self.check(actor, row, definition, allow_draft_form=True)
+        self.store.create(row)
+        self.store.add_version(
+            WorkflowVersion(
+                id=uuid7(),
+                organization_id=org,
+                workspace_id=workspace,
+                workflow_id=row.id,
+                number=1,
+                definition=definition,
+            )
+        )
+        self.event(actor, row, row.id, "workflow.template_imported", 1, provenance=provenance)
         return row
 
     def version(

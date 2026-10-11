@@ -18,6 +18,8 @@ from operations.modules.submissions.application.contracts import (
     DraftCreated,
     SignatureEvidence,
     Submission,
+    SubmissionAggregateQuery,
+    SubmissionAggregateResult,
     SubmissionStore,
 )
 
@@ -128,6 +130,66 @@ class SubmissionService:
                 "signatures": [item for item in row.signatures if item.key in visible],
             }
         )
+
+    def aggregate(
+        self,
+        actor: RequestContext,
+        org: UUID,
+        workspace: UUID,
+        query: SubmissionAggregateQuery,
+    ) -> SubmissionAggregateResult:
+        """Authorize and validate a bounded aggregate without exposing row data."""
+        self.validate_aggregate(actor, org, workspace, query)
+        groups = self.store.aggregate(org, workspace, query)
+        return SubmissionAggregateResult(
+            start_date=query.start_date, end_date=query.end_date, groups=groups
+        )
+
+    def validate_aggregate(
+        self,
+        actor: RequestContext,
+        org: UUID,
+        workspace: UUID,
+        query: SubmissionAggregateQuery,
+    ) -> None:
+        """Recheck scope, pinned form version and field policy without reading submissions."""
+        form = self.forms.form(actor, org, workspace, query.form_id)
+        self.forms.require(actor, org, workspace, form.project_id, "submission.read")
+        _, version = self.forms.version(actor, org, workspace, form.id, query.form_number)
+        if version.state != "published":
+            raise ServiceError(409, "aggregate_form_version_not_published")
+        today = datetime.now(UTC).date()
+        if (today - query.start_date).days > 365 or query.end_date > today:
+            raise ServiceError(422, "aggregate_window_out_of_bounds")
+        fields = {
+            field.key: field
+            for field in components(version.definition)
+            if field.kind not in {"table", "repeating_group"}
+        }
+        referenced = [query.time_field]
+        if query.source_field:
+            referenced.append(query.source_field)
+        if query.group_field:
+            referenced.append(query.group_field)
+        if any(key not in fields for key in referenced):
+            raise ServiceError(422, "aggregate_field_not_in_published_form")
+        time_component = fields[query.time_field]
+        if time_component.kind not in {"date", "datetime"}:
+            raise ServiceError(422, "aggregate_time_field_must_be_date")
+        if query.metric in {"sum", "average"} and (
+            query.source_field is None
+            or fields[query.source_field].kind
+            not in {
+                "integer",
+                "decimal",
+            }
+        ):
+            raise ServiceError(422, "aggregate_source_field_must_be_numeric")
+        for key in referenced:
+            if fields[key].permissions.read == "owner":
+                raise ServiceError(422, "aggregate_owner_only_field_not_allowed")
+        if query.group_field and fields[query.group_field].kind == "user":
+            raise ServiceError(422, "aggregate_user_group_not_allowed")
 
     def create(
         self, actor: RequestContext, org: UUID, workspace: UUID, form_id: UUID, number: int

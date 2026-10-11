@@ -1,0 +1,56 @@
+{
+  "artifact_id": "operator-review",
+  "artifact_version": 1,
+  "definition": {
+    "form_id": {
+      "$artifact_ref": {
+        "artifact_id": "daily-drilling-report",
+        "kind": "form",
+        "pack_id": "org.example.oil-gas",
+        "pack_version": "1.0.0",
+        "version": 1
+      }
+    },
+    "form_number": 1,
+    "nodes": [
+      {
+        "key": "start",
+        "kind": "start",
+        "name": "Start"
+      },
+      {
+        "assignments": [
+          {
+            "kind": "project_role",
+            "role": "supervisor"
+          }
+        ],
+        "key": "approval",
+        "kind": "approval",
+        "name": "Supervisor review",
+        "policy": {
+          "mode": "one"
+        }
+      },
+      {
+        "key": "end",
+        "kind": "end",
+        "name": "End"
+      }
+    ],
+    "transitions": [
+      {
+        "source": "start",
+        "target": "approval"
+      },
+      {
+        "source": "approval",
+        "target": "end"
+      }
+    ]
+  },
+  "description": "Declarative template only; review and configure before use.",
+  "kind": "workflow",
+  "name": "Operator review",
+  "schema_version": 1
+}

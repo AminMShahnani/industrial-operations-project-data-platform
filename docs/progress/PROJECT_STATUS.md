@@ -1,11 +1,13 @@
 # Project Status
 
-Status: PHASE 8 COMPLETE
-Current phase: Phase 9 - Oil & Gas starter pack (not started)
+Status: PHASE 9 IMPLEMENTATION IN PROGRESS
+Current phase: Phase 9 - Oil & Gas starter pack
 Last updated: 2026-10-11
 Overall completion: 9/11 phases accepted. Phase 0 through Phase 8 each
 satisfy 8/8 criteria. Phase 8: P8-01 through P8-08 PASS.
-No unsupported project-wide percentage is reported.
+No unsupported project-wide percentage is reported. Phase 9 decisions Q-018/Q-019/Q-020
+are resolved. Local implementation/acceptance verification is complete; exact hosted
+CI is the remaining P9-08 gate. Phase 9 is not accepted until it passes.
 
 ## Completed: Phase 8
 P8-01 through P8-08 are defined in the Phase Log. The phase delivers typed
@@ -18,16 +20,24 @@ resolved. Manifest/SDK validation, curated registry, dependency resolution,
 organization lifecycle service, persistence and API are implemented as a working
 slice, including review-only typed migration validation under ADR-0036. All 8/8
 criteria pass locally and on exact hosted commit `d87d3a76` (run 38141929240).
-Q-017 is resolved under accepted ADR-0037: template-specific
-semantic validation waits for stable pack artifact schemas/reference conventions,
-currently planned with the Phase 9 starter pack. Phase 9 has not started.
+Q-017 is resolved under accepted ADR-0037. Phase 9 implementation has started with
+typed pack artifact envelopes, a curated Oil & Gas 1.0.0 release, exact references
+and package-level validation.
 
 ## Next 5 tasks
-1. Read Phase 9 source-of-truth requirements and confirm its acceptance criteria.
-2. Identify Oil & Gas artifacts as declarative Domain Pack content; keep Core neutral.
-3. Define stable Phase 9 artifact schemas/references that resolve ADR-0037's deferral.
-4. Add Phase 9 contracts/migrations and tests before implementation.
-5. Begin Phase 9 implementation only after its preparation and any required ADRs.
+1. Complete exact-commit hosted CI for Phase 9.
+2. Review hosted results and update P9-08 evidence.
+3. If a hosted job fails, fix it and repeat local and hosted gates on the exact commit.
+
+## In progress: Phase 9 final gate
+P9-01 through P9-07 are implemented. Q-018/Q-019/Q-020 are resolved under ADR-0038
+through ADR-0040; ADR-0041 records KPI materialization as private saved reports.
+Preview-bound workspace/project imports use owning services. KPI reports pin a
+published form version and require scoped `submission.read`; aggregates omit
+submitter identity and are limited to 366 days. Automation templates remain inert;
+mapping profiles are internal typed metadata. Local API, browser, backend, frontend,
+migration, contract, lint and type checks are being finalized. Exact hosted CI remains
+the sole phase acceptance gate. Core remains industry-neutral.
 
 ## Completed modules
 - Foundation, infrastructure, observability, CI and module boundaries.

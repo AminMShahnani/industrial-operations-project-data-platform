@@ -1,0 +1,16 @@
+{
+  "artifact_id": "wellbore",
+  "artifact_version": 1,
+  "definition": {
+    "code": "og_wellbore",
+    "definition": {
+      "fields": []
+    },
+    "name": "Wellbore",
+    "registry": "custom"
+  },
+  "description": "Suggested type definition; no customer records included.",
+  "kind": "master_data_type",
+  "name": "Wellbore",
+  "schema_version": 1
+}

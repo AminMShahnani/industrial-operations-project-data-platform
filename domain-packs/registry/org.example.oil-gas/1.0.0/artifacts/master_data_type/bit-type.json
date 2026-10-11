@@ -1,0 +1,16 @@
+{
+  "artifact_id": "bit-type",
+  "artifact_version": 1,
+  "definition": {
+    "code": "og_bit_type",
+    "definition": {
+      "fields": []
+    },
+    "name": "Bit Type",
+    "registry": "custom"
+  },
+  "description": "Suggested type definition; no customer records included.",
+  "kind": "master_data_type",
+  "name": "Bit Type",
+  "schema_version": 1
+}

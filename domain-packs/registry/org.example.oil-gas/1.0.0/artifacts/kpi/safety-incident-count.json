@@ -1,0 +1,25 @@
+{
+  "artifact_id": "safety-incident-count",
+  "artifact_version": 1,
+  "definition": {
+    "group_field": "severity",
+    "metric": "count",
+    "source_field": null,
+    "source_form": {
+      "$artifact_ref": {
+        "artifact_id": "hse-incident-report",
+        "kind": "form",
+        "pack_id": "org.example.oil-gas",
+        "pack_version": "1.0.0",
+        "version": 1
+      }
+    },
+    "time_field": "incident_date",
+    "unit": "incidents",
+    "window_days": 30
+  },
+  "description": "Declarative template only; review and configure before use.",
+  "kind": "kpi",
+  "name": "Safety incident count",
+  "schema_version": 1
+}

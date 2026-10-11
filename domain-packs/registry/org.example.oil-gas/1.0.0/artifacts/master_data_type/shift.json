@@ -1,0 +1,16 @@
+{
+  "artifact_id": "shift",
+  "artifact_version": 1,
+  "definition": {
+    "code": "og_shift",
+    "definition": {
+      "fields": []
+    },
+    "name": "Shift",
+    "registry": "custom"
+  },
+  "description": "Suggested type definition; no customer records included.",
+  "kind": "master_data_type",
+  "name": "Shift",
+  "schema_version": 1
+}

@@ -1,0 +1,13 @@
+{
+  "artifact_id": "overdue-daily-report-escalation",
+  "artifact_version": 1,
+  "definition": {
+    "action": "notify_manager",
+    "threshold_hours": 24,
+    "trigger": "task.overdue"
+  },
+  "description": "Inactive declarative example; importing never creates or activates a rule.",
+  "kind": "automation_template",
+  "name": "Overdue daily report escalation",
+  "schema_version": 1
+}

@@ -14,7 +14,7 @@ import { invitationPath, invitationRequestId, invitationTargetFromState, readInv
 type Me = components['schemas']['Me'];
 type Workspace = components['schemas']['Workspace'];
 type Role = components['schemas']['Role'];
-type ReportColumn = components['schemas']['SavedReportDefinition']['columns'][number];
+type ReportColumn = NonNullable<components['schemas']['SavedReportDefinition']['columns']>[number];
 
 const reportColumnChoices: { value: ReportColumn; label: string }[] = [
   { value: 'id', label: 'Task ID' },
@@ -184,7 +184,7 @@ export function Administration() {
     setReportState(report.definition.filters?.find(filter => filter.field === 'state')?.value ?? '');
     setReportSortDirection(report.definition.sort_direction);
     setReportGroupBy(report.definition.group_by);
-    setReportColumns(report.definition.columns);
+    setReportColumns(report.definition.columns ?? []);
   }
 
   function clearReportEditor() {
@@ -515,6 +515,14 @@ export function Administration() {
         <thead><tr><th scope="col">Task state</th><th scope="col">Task count</th></tr></thead>
         <tbody>{savedResults.groups.map(group => <tr key={group.state}><th scope="row">{group.state}</th><td>{group.count}</td></tr>)}</tbody>
       </table>}
+      {savedResults?.kpi_result && <section aria-label="Saved KPI results">
+        <h3>KPI results · {savedResults.kpi_result.unit}</h3>
+        {savedResults.kpi_result.groups.length > 0 && <table>
+          <caption>KPI groups · {savedResults.kpi_result.unit}</caption>
+          <thead><tr><th scope="col">Group</th><th scope="col">Value ({savedResults.kpi_result.unit})</th></tr></thead>
+          <tbody>{savedResults.kpi_result.groups.map(group => <tr key={group.group}><th scope="row">{group.group}</th><td>{group.value}</td></tr>)}</tbody>
+        </table>}
+      </section>}
       {savedResults && savedResults.items.length > 0 && <table>
         <caption>Saved report results</caption>
         <thead><tr><th scope="col">Task</th><th scope="col">Type</th><th scope="col">Due</th><th scope="col">Status</th></tr></thead>
@@ -530,7 +538,7 @@ export function Administration() {
           {savedReports.length === 0 ? <option value="">Save a report first</option> : savedReports.map(report => <option key={report.id} value={report.id}>{report.name}</option>)}
         </select></label>
         <label>Widget title<input name="dashboard_title" required maxLength={80} defaultValue="Overdue work" /></label>
-        <label>Widget shape<select name="dashboard_kind"><option value="table">Table</option><option value="overdue_list">Overdue list</option><option value="status_distribution">Status distribution (requires a state-grouped report)</option><option value="bar">Bar chart (task count by state)</option><option value="trend">Trend (overdue count by due-date week)</option><option value="line">Line chart (overdue count by due-date week)</option><option value="metric">Overdue task count (requires a state-grouped report)</option></select></label>
+        <label>Widget shape<select name="dashboard_kind"><option value="table">Table</option><option value="overdue_list">Overdue list</option><option value="status_distribution">Status distribution (requires a state-grouped report)</option><option value="bar">Bar chart (task states or grouped KPI)</option><option value="trend">Trend (overdue count by due-date week)</option><option value="line">Line chart (overdue count by due-date week)</option><option value="metric">Metric (overdue task count or ungrouped KPI)</option></select></label>
         <button disabled={busy || savedReports.length === 0}>Create dashboard</button>
       </form>
       {dashboardMessage && <p role="status">{dashboardMessage}</p>}
@@ -544,14 +552,18 @@ export function Administration() {
         <h3>Dashboard results</h3>
         {result.widgets.map((widget, index) => widget.kind === 'metric'
           ? <div key={`${result.dashboard_id}-${index}`} aria-label={widget.title}>
-            <h4>{widget.title}</h4><output>{widget.metric_value ?? 0}</output><span> overdue tasks</span>
+            <h4>{widget.title}</h4><output>{widget.metric_value ?? 0}</output><span>{widget.report.kpi_result ? ` ${widget.report.kpi_result.unit}` : ' overdue tasks'}</span>
           </div>
           : widget.kind === 'bar'
             ? <figure key={`${result.dashboard_id}-${index}`} aria-label={widget.title}>
               <figcaption>{widget.title}</figcaption>
-              <ul>{widget.report.groups.map(group => <li key={group.state}>
-                <span>{group.state}</span>{' '}<meter min={0} max={Math.max(...widget.report.groups.map(item => item.count))} value={group.count}>{group.count}</meter>{' '}{group.count}
-              </li>)}</ul>
+              {widget.report.kpi_result
+                ? <ul>{widget.report.kpi_result.groups.map(group => <li key={group.group}>
+                  <span>{group.group ?? 'All'}</span>{' '}<meter min={0} max={Math.max(1, ...widget.report.kpi_result!.groups.map(item => item.value))} value={group.value}>{group.value}</meter>{' '}{group.value} {widget.report.kpi_result!.unit}
+                </li>)}</ul>
+                : <ul>{widget.report.groups.map(group => <li key={group.state}>
+                  <span>{group.state}</span>{' '}<meter min={0} max={Math.max(...widget.report.groups.map(item => item.count))} value={group.count}>{group.count}</meter>{' '}{group.count}
+                </li>)}</ul>}
             </figure>
             : widget.kind === 'trend' || widget.kind === 'line'
               ? (() => {
@@ -606,7 +618,7 @@ export function Administration() {
     {organization && permissions.includes('organization.manage') && <EmailRecovery key={'email' + organization} api={api} organization={organization}/>}
     {organization && (permissions.includes('integration.manage') || permissions.includes('organization.manage')) && <WebhookRecovery key={'webhook-recovery' + organization} api={api} organization={organization}/>}
     {organization && (permissions.includes('integration.manage') || permissions.includes('organization.manage') || (workspace && permissions.includes('workspace.manage'))) && <WebhookEndpoints key={'webhook' + organization + workspace} api={api} organization={organization} workspace={workspace || undefined}/>}
-    {organization && permissions.includes('organization.read') && <DomainPacks key={'domain-packs' + organization} api={api} organization={organization} canManage={permissions.includes('domain_pack.install')}/>}
+    {organization && permissions.includes('organization.read') && <DomainPacks key={'domain-packs' + organization + workspace} api={api} organization={organization} {...(workspace ? { workspace } : {})} permissions={permissions} canManage={permissions.includes('domain_pack.install')}/>}
     {organization && workspace && <Notifications key={'notifications' + organization + workspace} api={api} organization={organization} workspace={workspace} />}
     {organization && workspace && <ProjectAdministration key={organization + workspace} api={api} organization={organization} workspace={workspace} userId={me?.memberships.find(item=>item.organization_id===organization)?.user_id??''} />}
     <section><h2>Accept an invitation</h2><form onSubmit={event => void acceptInvitation(event)}>

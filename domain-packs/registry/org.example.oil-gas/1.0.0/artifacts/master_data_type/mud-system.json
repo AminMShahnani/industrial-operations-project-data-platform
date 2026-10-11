@@ -1,0 +1,16 @@
+{
+  "artifact_id": "mud-system",
+  "artifact_version": 1,
+  "definition": {
+    "code": "og_mud_system",
+    "definition": {
+      "fields": []
+    },
+    "name": "Mud System",
+    "registry": "custom"
+  },
+  "description": "Suggested type definition; no customer records included.",
+  "kind": "master_data_type",
+  "name": "Mud System",
+  "schema_version": 1
+}

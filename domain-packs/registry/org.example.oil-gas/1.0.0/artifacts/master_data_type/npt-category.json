@@ -1,0 +1,16 @@
+{
+  "artifact_id": "npt-category",
+  "artifact_version": 1,
+  "definition": {
+    "code": "og_npt_category",
+    "definition": {
+      "fields": []
+    },
+    "name": "Npt Category",
+    "registry": "custom"
+  },
+  "description": "Suggested type definition; no customer records included.",
+  "kind": "master_data_type",
+  "name": "Npt Category",
+  "schema_version": 1
+}

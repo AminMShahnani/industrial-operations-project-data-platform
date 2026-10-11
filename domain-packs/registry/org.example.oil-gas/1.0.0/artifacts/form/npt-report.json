@@ -1,0 +1,48 @@
+{
+  "artifact_id": "npt-report",
+  "artifact_version": 1,
+  "definition": {
+    "sections": [
+      {
+        "components": [
+          {
+            "key": "report_date",
+            "kind": "date",
+            "label": "Report date",
+            "required": true
+          },
+          {
+            "key": "well_name",
+            "kind": "text",
+            "label": "Well name",
+            "required": true
+          },
+          {
+            "key": "npt_category",
+            "kind": "text",
+            "label": "NPT category",
+            "required": true
+          },
+          {
+            "key": "npt_hours",
+            "kind": "decimal",
+            "label": "NPT hours",
+            "required": true
+          },
+          {
+            "key": "description",
+            "kind": "textarea",
+            "label": "Description",
+            "required": false
+          }
+        ],
+        "key": "operations",
+        "label": "Operations"
+      }
+    ]
+  },
+  "description": "Curated Oil & Gas starter template; review before use.",
+  "kind": "form",
+  "name": "NPT Report",
+  "schema_version": 1
+}

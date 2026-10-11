@@ -1,6 +1,7 @@
 """Bounded, literal-safe tabular report export rendering."""
 
 import csv
+import re
 from collections.abc import Sequence
 from datetime import UTC, datetime
 from io import BytesIO, StringIO
@@ -51,9 +52,14 @@ class TabularReportRenderer:
                 entry = ZipInfo(name, date_time=(1980, 1, 1, 0, 0, 0))
                 entry.compress_type = ZIP_DEFLATED
                 entry.external_attr = 0o600 << 16
-                target.writestr(
-                    entry, source.read(name), compress_type=ZIP_DEFLATED, compresslevel=9
-                )
+                content = source.read(name)
+                if name == "docProps/core.xml":
+                    content = re.sub(
+                        rb"(<dcterms:modified[^>]*>)[^<]+(</dcterms:modified>)",
+                        rb"\g<1>2000-01-01T00:00:00Z\g<2>",
+                        content,
+                    )
+                target.writestr(entry, content, compress_type=ZIP_DEFLATED, compresslevel=9)
         return normalized.getvalue()
 
     @staticmethod

@@ -1,0 +1,25 @@
+{
+  "artifact_id": "completion-count",
+  "artifact_version": 1,
+  "definition": {
+    "group_field": null,
+    "metric": "count",
+    "source_field": null,
+    "source_form": {
+      "$artifact_ref": {
+        "artifact_id": "daily-operations-report",
+        "kind": "form",
+        "pack_id": "org.example.oil-gas",
+        "pack_version": "1.0.0",
+        "version": 1
+      }
+    },
+    "time_field": "report_date",
+    "unit": "submissions",
+    "window_days": 30
+  },
+  "description": "Declarative template only; review and configure before use.",
+  "kind": "kpi",
+  "name": "Submission completion count",
+  "schema_version": 1
+}

@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased - Phase 8 in progress (2026-10-11)
+## Phase 8 complete (2026-10-11)
 
 - Add typed schema-versioned Domain Pack manifests, generated JSON Schema, bounded
   safe package validation, a read-only curated registry adapter, deterministic
@@ -18,6 +18,30 @@
   [38141929240](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/38141929240)
   passes both jobs on `d87d3a76d46449366766a666900fff6f098206f1`; Phase 8 is accepted
   8/8.
+
+## Unreleased - Phase 9 implementation pending hosted acceptance (2026-10-11)
+
+- Define P9-01..08 acceptance criteria for typed Oil & Gas pack artifacts,
+  explicit workspace/project imports, draft-only workflows, governed KPIs and
+  declarative mappings. Q-018 and Q-019 are resolved in ADR-0038/0039. Add typed
+  artifact envelopes, exact cross-artifact references, generated JSON Schema and
+  package-level expression/reference/cycle validation. Publish curated Oil & Gas
+  1.0.0 with 13 form templates, 16 master-data types, four inactive workflow
+  templates, three inactive automation examples, seven KPI definitions and three
+  internal mapping profiles. Add preview-bound workspace imports of forms,
+  master-data types and workflows through owning services, with per-type authorization,
+  idempotency, persisted provenance and audit. Add KPI definitions as private saved
+  reports pinned to exact published form versions; enforce scoped `submission.read`,
+  identity-free aggregate projections and a 366-day maximum. Keep automation examples
+  inert and mapping profiles typed, internal and transform-free. The Admin UI exposes
+  authorized KPI results and dashboard units. Fix nondeterministic XLSX modified-time
+  metadata so repeated exports are byte-identical.
+
+- Phase 9 local verification: 383 backend tests pass (9 opt-in tests skipped), the
+  isolated real OIDC/PKCE browser test passes, and frontend lint/typecheck, 19 tests
+  and production build pass. Strict mypy (333 files), Ruff check/format, OpenAPI and
+  artifact-schema drift, curated package validation, and isolated migration roundtrip/
+  Alembic drift pass. Exact-code hosted CI remains before phase acceptance.
 
 ## Phase 7 complete (2026-10-11)
 

@@ -1,0 +1,16 @@
+{
+  "artifact_id": "unit",
+  "artifact_version": 1,
+  "definition": {
+    "code": "og_unit",
+    "definition": {
+      "fields": []
+    },
+    "name": "Unit",
+    "registry": "custom"
+  },
+  "description": "Suggested type definition; no customer records included.",
+  "kind": "master_data_type",
+  "name": "Unit",
+  "schema_version": 1
+}

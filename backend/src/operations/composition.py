@@ -9,8 +9,12 @@ from operations.modules.automation.application.service import AutomationService,
 from operations.modules.automation.application.timers import TimerService
 from operations.modules.automation.infrastructure.persistence import AutomationRepository
 from operations.modules.automation.infrastructure.timers import TimerRepository
+from operations.modules.domain_packs.application.imports import DomainPackImportService
 from operations.modules.domain_packs.application.service import DomainPackService
-from operations.modules.domain_packs.infrastructure.persistence import PackInstallationRepository
+from operations.modules.domain_packs.infrastructure.persistence import (
+    PackArtifactImportRepository,
+    PackInstallationRepository,
+)
 from operations.modules.domain_packs.infrastructure.registry import CuratedPackRegistry
 from operations.modules.files.application.reconciliation import FileReconciler
 from operations.modules.files.application.service import FileService
@@ -96,6 +100,7 @@ class Services:
     master_transfer: MasterDataTransfer
     reporting: ReportingService
     domain_packs: DomainPackService
+    domain_pack_imports: DomainPackImportService
 
 
 def compose(
@@ -154,7 +159,31 @@ def compose(
     schedules = SchedulingService(ScheduleRepository(session), forms)
     forms.default_context = SchedulingDefaults(schedules.store)
     tasks = TaskService(TaskRepository(session), schedules, submissions)
+    reporting = ReportingService(
+        tasks,
+        SavedReportRepository(session),
+        DashboardRepository(session),
+        TabularReportRenderer(),
+        authorization,
+        workspaces,
+        projects,
+        audit,
+        ReportExportJobRepository(session),
+        submissions=submissions,
+    )
     workflows = WorkflowService(WorkflowRepository(session), forms, AssignmentResolver(schedules))
+    pack_imports = DomainPackImportService(
+        pack_registry,
+        PackInstallationRepository(session, pack_registry),
+        PackArtifactImportRepository(session),
+        authorization,
+        workspaces,
+        projects,
+        forms,
+        master_data,
+        workflows,
+        reporting,
+    )
     workflow_runtime = WorkflowRuntime(RuntimeRepository(session), workflows, submissions)
     workflow_runtime.tasks = tasks
     forms.default_context = WorkflowDefaults(
@@ -217,16 +246,7 @@ def compose(
         projects,
         master_data,
         MasterDataTransfer(master_data, TabularFiles()),
-        ReportingService(
-            tasks,
-            SavedReportRepository(session),
-            DashboardRepository(session),
-            TabularReportRenderer(),
-            authorization,
-            workspaces,
-            projects,
-            audit,
-            ReportExportJobRepository(session),
-        ),
+        reporting,
         pack_service,
+        pack_imports,
     )

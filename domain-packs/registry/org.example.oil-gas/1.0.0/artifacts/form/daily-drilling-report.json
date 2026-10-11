@@ -1,0 +1,60 @@
+{
+  "artifact_id": "daily-drilling-report",
+  "artifact_version": 1,
+  "definition": {
+    "sections": [
+      {
+        "components": [
+          {
+            "key": "report_date",
+            "kind": "date",
+            "label": "Report date",
+            "required": true
+          },
+          {
+            "key": "well_name",
+            "kind": "text",
+            "label": "Well name",
+            "required": true
+          },
+          {
+            "key": "shift",
+            "kind": "text",
+            "label": "Shift",
+            "required": false
+          },
+          {
+            "key": "depth_start",
+            "kind": "decimal",
+            "label": "Start depth",
+            "required": false
+          },
+          {
+            "key": "depth_end",
+            "kind": "decimal",
+            "label": "End depth",
+            "required": false
+          },
+          {
+            "key": "rop",
+            "kind": "decimal",
+            "label": "Rate of penetration",
+            "required": false
+          },
+          {
+            "key": "operations_summary",
+            "kind": "textarea",
+            "label": "Operations summary",
+            "required": false
+          }
+        ],
+        "key": "operations",
+        "label": "Operations"
+      }
+    ]
+  },
+  "description": "Curated Oil & Gas starter template; review before use.",
+  "kind": "form",
+  "name": "Daily Drilling Report",
+  "schema_version": 1
+}

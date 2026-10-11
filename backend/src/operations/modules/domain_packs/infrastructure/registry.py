@@ -1,9 +1,14 @@
 """Read-only adapter for the platform-curated, source-controlled pack registry."""
 
+import json
 from pathlib import Path
 
 from semantic_version import Version  # type: ignore[import-untyped]
 
+from operations.modules.domain_packs.application.artifacts import (
+    ValidatedPackArtifact,
+    validate_artifact,
+)
 from operations.modules.domain_packs.application.dependency_resolution import PackRelease
 from operations.modules.domain_packs.application.registry import RegistryIssue, RegistrySnapshot
 from operations.modules.domain_packs.application.validation import validate_pack_directory
@@ -18,6 +23,34 @@ class CuratedPackRegistry:
 
     def snapshot(self) -> RegistrySnapshot:
         return load_curated_registry(self.registry_root)
+
+    def artifacts(self, pack_id: str, version: str) -> list[ValidatedPackArtifact]:
+        """Read typed artifacts from a currently valid curated immutable release."""
+        snapshot = self.snapshot()
+        release = next(
+            (
+                item
+                for item in snapshot.releases
+                if item.manifest.id == pack_id and item.manifest.version == version
+            ),
+            None,
+        )
+        if not snapshot.valid or release is None:
+            return []
+        package = self.registry_root / release.registry_locator
+        validated = validate_pack_directory(package)
+        if not validated.valid or validated.package_sha256 != release.content_sha256:
+            return []
+        result: list[ValidatedPackArtifact] = []
+        for path in sorted((package / "artifacts").rglob("*.json")):
+            if path.is_symlink() or not path.is_file():
+                return []
+            try:
+                document = json.loads(path.read_text(encoding="utf-8"))
+                result.append(validate_artifact(document))
+            except OSError, UnicodeDecodeError, json.JSONDecodeError, ValueError:
+                return []
+        return result
 
 
 def load_curated_registry(

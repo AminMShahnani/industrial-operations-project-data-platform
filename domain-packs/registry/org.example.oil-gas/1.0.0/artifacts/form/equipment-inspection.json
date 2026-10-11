@@ -1,0 +1,48 @@
+{
+  "artifact_id": "equipment-inspection",
+  "artifact_version": 1,
+  "definition": {
+    "sections": [
+      {
+        "components": [
+          {
+            "key": "inspection_date",
+            "kind": "date",
+            "label": "Inspection date",
+            "required": true
+          },
+          {
+            "key": "equipment_name",
+            "kind": "text",
+            "label": "Equipment",
+            "required": true
+          },
+          {
+            "choices": [
+              "planned",
+              "drilling",
+              "completion",
+              "other"
+            ],
+            "key": "condition",
+            "kind": "select",
+            "label": "Condition",
+            "required": true
+          },
+          {
+            "key": "findings",
+            "kind": "textarea",
+            "label": "Findings",
+            "required": false
+          }
+        ],
+        "key": "operations",
+        "label": "Operations"
+      }
+    ]
+  },
+  "description": "Curated Oil & Gas starter template; review before use.",
+  "kind": "form",
+  "name": "Equipment Inspection",
+  "schema_version": 1
+}

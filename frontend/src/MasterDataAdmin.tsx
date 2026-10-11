@@ -5,7 +5,7 @@ import { recordValues } from './master-data-values';
 
 type DataType = components['schemas']['DataType'];
 type Record = components['schemas']['DataRecord'];
-type Preview = components['schemas']['ImportPreview'];
+type Preview = components['schemas']['operations__modules__master_data__application__contracts__ImportPreview'];
 type DataField = components['schemas']['DataField'];
 type ColumnMapping = components['schemas']['ImportColumnMapping'];
 type Client = ReturnType<typeof apiClient>;

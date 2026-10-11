@@ -1,0 +1,23 @@
+{
+  "artifact_id": "high-severity-incident-escalation",
+  "artifact_version": 1,
+  "definition": {
+    "action": "notify_manager",
+    "condition_equals": "high",
+    "condition_field": "severity",
+    "source_form": {
+      "$artifact_ref": {
+        "artifact_id": "hse-incident-report",
+        "kind": "form",
+        "pack_id": "org.example.oil-gas",
+        "pack_version": "1.0.0",
+        "version": 1
+      }
+    },
+    "trigger": "submission.submitted"
+  },
+  "description": "Inactive declarative example; importing never creates or activates a rule.",
+  "kind": "automation_template",
+  "name": "High severity incident escalation",
+  "schema_version": 1
+}

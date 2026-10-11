@@ -1,0 +1,16 @@
+{
+  "artifact_id": "well",
+  "artifact_version": 1,
+  "definition": {
+    "code": "og_well",
+    "definition": {
+      "fields": []
+    },
+    "name": "Well",
+    "registry": "custom"
+  },
+  "description": "Suggested type definition; no customer records included.",
+  "kind": "master_data_type",
+  "name": "Well",
+  "schema_version": 1
+}

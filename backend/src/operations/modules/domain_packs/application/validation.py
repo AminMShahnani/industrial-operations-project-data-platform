@@ -6,13 +6,21 @@ from pathlib import Path
 
 import yaml
 from pydantic import Field, ValidationError
-from semantic_version import Version  # type: ignore[import-untyped]
+from semantic_version import SimpleSpec, Version  # type: ignore[import-untyped]
 from yaml.constructor import ConstructorError
 from yaml.nodes import MappingNode
 from yaml.tokens import AliasToken, AnchorToken
 
 from operations.contracts import Command
-from operations.modules.domain_packs.application.manifest import PackManifest
+from operations.modules.domain_packs.application.artifacts import (
+    PackArtifactKind,
+    ValidatedPackArtifact,
+    validate_artifact,
+)
+from operations.modules.domain_packs.application.manifest import (
+    PackManifest,
+    normalized_version_spec,
+)
 from operations.modules.domain_packs.application.migrations import (
     MigrationOperation,
     PackMigrationFile,
@@ -40,7 +48,16 @@ class PackValidationResult(Command):
     content_file_count: int = 0
     content_bytes: int = 0
     migration_operations: list[MigrationOperation] = Field(default_factory=list)
+    artifacts: list[PackArtifactSummary] = Field(default_factory=list)
     issues: list[PackValidationIssue]
+
+
+class PackArtifactSummary(Command):
+    artifact_id: str
+    artifact_version: int
+    kind: PackArtifactKind
+    name: str
+    reference_count: int
 
 
 class _UniqueKeySafeLoader(yaml.SafeLoader):
@@ -243,6 +260,15 @@ def validate_pack_directory(
                 )
             )
             continue
+        if relative.casefold().startswith("artifacts/") and path.suffix.lower() != ".json":
+            issues.append(
+                PackValidationIssue(
+                    code="artifact.format_forbidden",
+                    path=relative,
+                    message="Pack artifacts must use typed JSON envelopes",
+                )
+            )
+            continue
         normalized_relative = relative.casefold()
         if normalized_relative in files:
             issues.append(
@@ -299,6 +325,8 @@ def validate_pack_directory(
     digest.update(canonical_manifest)
     content_bytes = 0
     migration_operations: list[MigrationOperation] = []
+    artifacts: list[ValidatedPackArtifact] = []
+    artifact_paths: dict[str, str] = {}
     for key in sorted(set(expected) & set(actual)):
         path = actual[key]
         relative = expected[key].path
@@ -386,15 +414,133 @@ def validate_pack_directory(
             )
         elif path.suffix.lower() == ".json":
             try:
-                _load_json(path, MAX_CONTENT_BYTES)
+                document = _load_json(path, MAX_CONTENT_BYTES)
+                if relative.casefold().startswith("artifacts/"):
+                    validated = validate_artifact(document)
+                    expected_path = (
+                        f"artifacts/{validated.envelope.kind.value}/"
+                        f"{validated.envelope.artifact_id}.json"
+                    )
+                    if relative != expected_path:
+                        issues.append(
+                            PackValidationIssue(
+                                code="artifact.path_mismatch",
+                                path=relative,
+                                message=f"Artifact path must be {expected_path}",
+                            )
+                        )
+                    identity = validated.envelope.artifact_id
+                    if identity in artifact_paths:
+                        issues.append(
+                            PackValidationIssue(
+                                code="artifact.duplicate_id",
+                                path=relative,
+                                message=f"Artifact id is duplicated at {artifact_paths[identity]}",
+                            )
+                        )
+                    else:
+                        artifact_paths[identity] = relative
+                        artifacts.append(validated)
             except OSError, UnicodeDecodeError, json.JSONDecodeError, ValueError:
                 issues.append(
                     PackValidationIssue(
-                        code="content.json_invalid",
+                        code=(
+                            "artifact.invalid"
+                            if relative.casefold().startswith("artifacts/")
+                            else "content.json_invalid"
+                        ),
                         path=relative,
-                        message="JSON content must be bounded, valid and use unique object keys",
+                        message=(
+                            "Artifact must match a typed contract with bounded expressions "
+                            "and references"
+                            if relative.casefold().startswith("artifacts/")
+                            else "JSON content must be bounded, valid and use unique object keys"
+                        ),
                     )
                 )
+
+    artifact_index = {
+        (item.envelope.kind, item.envelope.artifact_id, item.envelope.artifact_version): item
+        for item in artifacts
+    }
+    dependencies = {dependency.id: dependency for dependency in manifest.dependencies}
+    for item in artifacts:
+        for reference in item.references:
+            if reference.pack_id == manifest.id:
+                if reference.pack_version != manifest.version:
+                    issues.append(
+                        PackValidationIssue(
+                            code="artifact.reference_missing",
+                            path=artifact_paths.get(item.envelope.artifact_id),
+                            message="Self-reference must target the current immutable pack release",
+                        )
+                    )
+                elif (
+                    reference.kind,
+                    reference.artifact_id,
+                    reference.version,
+                ) not in artifact_index:
+                    issues.append(
+                        PackValidationIssue(
+                            code="artifact.reference_missing",
+                            path=artifact_paths.get(item.envelope.artifact_id),
+                            message="Artifact references a missing exact-version artifact",
+                        )
+                    )
+            else:
+                dependency = dependencies.get(reference.pack_id)
+                allowed = False
+                if dependency is not None:
+                    allowed = Version(reference.pack_version) in SimpleSpec(
+                        normalized_version_spec(dependency.version_range)
+                    )
+                if not allowed:
+                    issues.append(
+                        PackValidationIssue(
+                            code="artifact.dependency_missing",
+                            path=artifact_paths.get(item.envelope.artifact_id),
+                            message=(
+                                "Cross-pack artifact reference requires a declared dependency "
+                                "whose range includes the referenced version"
+                            ),
+                        )
+                    )
+
+    graph: dict[tuple[PackArtifactKind, str, int], set[tuple[PackArtifactKind, str, int]]] = {}
+    for item in artifacts:
+        artifact_key = (
+            item.envelope.kind,
+            item.envelope.artifact_id,
+            item.envelope.artifact_version,
+        )
+        graph[artifact_key] = {
+            (reference.kind, reference.artifact_id, reference.version)
+            for reference in item.references
+            if reference.pack_id == manifest.id
+        }
+    visiting: set[tuple[PackArtifactKind, str, int]] = set()
+    visited: set[tuple[PackArtifactKind, str, int]] = set()
+
+    def has_cycle(node: tuple[PackArtifactKind, str, int]) -> bool:
+        if node in visiting:
+            return True
+        if node in visited:
+            return False
+        visiting.add(node)
+        if any(has_cycle(target) for target in graph.get(node, set()) if target in graph):
+            return True
+        visiting.remove(node)
+        visited.add(node)
+        return False
+
+    if any(has_cycle(node) for node in graph):
+        issues.append(
+            PackValidationIssue(
+                code="artifact.reference_cycle",
+                path="artifacts/",
+                message="Pack artifact references must not contain cycles",
+            )
+        )
 
     return PackValidationResult(
         valid=not issues,
@@ -403,5 +549,15 @@ def validate_pack_directory(
         content_file_count=len(actual),
         content_bytes=content_bytes,
         migration_operations=migration_operations,
+        artifacts=[
+            PackArtifactSummary(
+                artifact_id=item.envelope.artifact_id,
+                artifact_version=item.envelope.artifact_version,
+                kind=item.envelope.kind,
+                name=item.envelope.name,
+                reference_count=len(item.references),
+            )
+            for item in artifacts
+        ],
         issues=issues,
     )

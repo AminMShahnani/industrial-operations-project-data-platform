@@ -5,6 +5,7 @@ import json
 import sys
 from pathlib import Path
 
+from operations.modules.domain_packs.application.artifacts import artifact_json_schema
 from operations.modules.domain_packs.application.manifest import PackManifest
 from operations.modules.domain_packs.application.validation import validate_pack_directory
 
@@ -16,12 +17,16 @@ def main() -> int:
     validate.add_argument("directory", type=Path)
     validate.add_argument("--core-version", required=True)
     schema = commands.add_parser("schema", help="print the JSON Schema for pack.yaml")
+    schema.add_argument("--artifacts", action="store_true", help="emit artifact JSON Schema")
     schema.add_argument("--output", type=Path)
     schema.add_argument("--check", type=Path)
     arguments = parser.parse_args()
 
     if arguments.command == "schema":
-        content = json.dumps(PackManifest.model_json_schema(), indent=2, sort_keys=True) + "\n"
+        schema_document = (
+            artifact_json_schema() if arguments.artifacts else PackManifest.model_json_schema()
+        )
+        content = json.dumps(schema_document, indent=2, sort_keys=True) + "\n"
         if arguments.check is not None:
             checked_in = (
                 arguments.check.read_text(encoding="utf-8") if arguments.check.exists() else None

@@ -187,6 +187,114 @@
         "title": "ApprovalPolicy",
         "type": "object"
       },
+      "ArtifactImportResult": {
+        "additionalProperties": false,
+        "properties": {
+          "artifact_id": {
+            "title": "Artifact Id",
+            "type": "string"
+          },
+          "artifact_kind": {
+            "title": "Artifact Kind",
+            "type": "string"
+          },
+          "artifact_version": {
+            "title": "Artifact Version",
+            "type": "integer"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "idempotency_key": {
+            "format": "uuid",
+            "title": "Idempotency Key",
+            "type": "string"
+          },
+          "imported_by": {
+            "format": "uuid",
+            "title": "Imported By",
+            "type": "string"
+          },
+          "inert_definition": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PackAutomationTemplateDefinition"
+              },
+              {
+                "$ref": "#/components/schemas/PackMappingProfileDefinition"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Inert Definition"
+          },
+          "organization_id": {
+            "format": "uuid",
+            "title": "Organization Id",
+            "type": "string"
+          },
+          "pack_id": {
+            "title": "Pack Id",
+            "type": "string"
+          },
+          "pack_version": {
+            "title": "Pack Version",
+            "type": "string"
+          },
+          "package_sha256": {
+            "title": "Package Sha256",
+            "type": "string"
+          },
+          "project_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Project Id"
+          },
+          "target_id": {
+            "format": "uuid",
+            "title": "Target Id",
+            "type": "string"
+          },
+          "workspace_id": {
+            "format": "uuid",
+            "title": "Workspace Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "organization_id",
+          "workspace_id",
+          "project_id",
+          "idempotency_key",
+          "pack_id",
+          "pack_version",
+          "package_sha256",
+          "artifact_id",
+          "artifact_version",
+          "artifact_kind",
+          "target_id",
+          "imported_by",
+          "created_at"
+        ],
+        "title": "ArtifactImportResult",
+        "type": "object"
+      },
       "Assignment": {
         "additionalProperties": false,
         "properties": {
@@ -1108,8 +1216,10 @@
           "metric_value": {
             "anyOf": [
               {
-                "minimum": 0.0,
                 "type": "integer"
+              },
+              {
+                "type": "number"
               },
               {
                 "type": "null"
@@ -3423,6 +3533,71 @@
         "title": "Identifier",
         "type": "object"
       },
+      "ImportApplyRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "artifact_id": {
+            "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+            "title": "Artifact Id",
+            "type": "string"
+          },
+          "artifact_version": {
+            "minimum": 1.0,
+            "title": "Artifact Version",
+            "type": "integer"
+          },
+          "expected_preview_sha256": {
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Expected Preview Sha256",
+            "type": "string"
+          },
+          "idempotency_key": {
+            "format": "uuid",
+            "title": "Idempotency Key",
+            "type": "string"
+          },
+          "pack_id": {
+            "maxLength": 180,
+            "minLength": 3,
+            "title": "Pack Id",
+            "type": "string"
+          },
+          "pack_version": {
+            "maxLength": 128,
+            "minLength": 5,
+            "title": "Pack Version",
+            "type": "string"
+          },
+          "project_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Project Id"
+          },
+          "workspace_id": {
+            "format": "uuid",
+            "title": "Workspace Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "pack_id",
+          "pack_version",
+          "artifact_id",
+          "artifact_version",
+          "workspace_id",
+          "idempotency_key",
+          "expected_preview_sha256"
+        ],
+        "title": "ImportApplyRequest",
+        "type": "object"
+      },
       "ImportColumnMapping": {
         "additionalProperties": false,
         "properties": {
@@ -3465,59 +3640,63 @@
         "title": "ImportIssue",
         "type": "object"
       },
-      "ImportPreview": {
+      "ImportPreviewRequest": {
         "additionalProperties": false,
         "properties": {
-          "issues": {
-            "items": {
-              "$ref": "#/components/schemas/ImportIssue"
-            },
-            "title": "Issues",
-            "type": "array"
+          "artifact_id": {
+            "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+            "title": "Artifact Id",
+            "type": "string"
           },
-          "mapping_required": {
-            "default": false,
-            "title": "Mapping Required",
-            "type": "boolean"
+          "artifact_version": {
+            "minimum": 1.0,
+            "title": "Artifact Version",
+            "type": "integer"
           },
-          "mapping_sha256": {
+          "idempotency_key": {
+            "format": "uuid",
+            "title": "Idempotency Key",
+            "type": "string"
+          },
+          "pack_id": {
+            "maxLength": 180,
+            "minLength": 3,
+            "title": "Pack Id",
+            "type": "string"
+          },
+          "pack_version": {
+            "maxLength": 128,
+            "minLength": 5,
+            "title": "Pack Version",
+            "type": "string"
+          },
+          "project_id": {
             "anyOf": [
               {
-                "pattern": "^[0-9a-f]{64}$",
+                "format": "uuid",
                 "type": "string"
               },
               {
                 "type": "null"
               }
             ],
-            "title": "Mapping Sha256"
+            "title": "Project Id"
           },
-          "rows": {
-            "items": {
-              "$ref": "#/components/schemas/DataRecord"
-            },
-            "title": "Rows",
-            "type": "array"
-          },
-          "source_headers": {
-            "items": {
-              "type": "string"
-            },
-            "maxItems": 64,
-            "title": "Source Headers",
-            "type": "array"
-          },
-          "source_sha256": {
-            "title": "Source Sha256",
+          "workspace_id": {
+            "format": "uuid",
+            "title": "Workspace Id",
             "type": "string"
           }
         },
         "required": [
-          "rows",
-          "issues",
-          "source_sha256"
+          "pack_id",
+          "pack_version",
+          "artifact_id",
+          "artifact_version",
+          "workspace_id",
+          "idempotency_key"
         ],
-        "title": "ImportPreview",
+        "title": "ImportPreviewRequest",
         "type": "object"
       },
       "ImportRequest": {
@@ -3817,6 +3996,69 @@
           "value"
         ],
         "title": "KindFilter",
+        "type": "object"
+      },
+      "KpiAggregateGroup": {
+        "additionalProperties": false,
+        "properties": {
+          "group": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Group"
+          },
+          "value": {
+            "title": "Value",
+            "type": "number"
+          }
+        },
+        "required": [
+          "group",
+          "value"
+        ],
+        "title": "KpiAggregateGroup",
+        "type": "object"
+      },
+      "KpiAggregateResult": {
+        "additionalProperties": false,
+        "properties": {
+          "end_date": {
+            "format": "date",
+            "title": "End Date",
+            "type": "string"
+          },
+          "groups": {
+            "items": {
+              "$ref": "#/components/schemas/KpiAggregateGroup"
+            },
+            "maxItems": 100,
+            "title": "Groups",
+            "type": "array"
+          },
+          "start_date": {
+            "format": "date",
+            "title": "Start Date",
+            "type": "string"
+          },
+          "unit": {
+            "maxLength": 40,
+            "minLength": 1,
+            "title": "Unit",
+            "type": "string"
+          }
+        },
+        "required": [
+          "unit",
+          "start_date",
+          "end_date",
+          "groups"
+        ],
+        "title": "KpiAggregateResult",
         "type": "object"
       },
       "LibraryArtifact": {
@@ -5048,6 +5290,16 @@
             "title": "Items",
             "type": "array"
           },
+          "kpi_result": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/KpiAggregateResult"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "next_cursor": {
             "anyOf": [
               {
@@ -5167,6 +5419,161 @@
           "due_at"
         ],
         "title": "OverdueTaskRow",
+        "type": "object"
+      },
+      "PackArtifactCatalogPage": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PackArtifactEnvelope"
+            },
+            "maxItems": 1000,
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "PackArtifactCatalogPage",
+        "type": "object"
+      },
+      "PackArtifactEnvelope": {
+        "additionalProperties": false,
+        "properties": {
+          "artifact_id": {
+            "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$",
+            "title": "Artifact Id",
+            "type": "string"
+          },
+          "artifact_version": {
+            "minimum": 1.0,
+            "title": "Artifact Version",
+            "type": "integer"
+          },
+          "definition": {
+            "$ref": "#/components/schemas/PackJsonObject"
+          },
+          "description": {
+            "default": "",
+            "maxLength": 2000,
+            "title": "Description",
+            "type": "string"
+          },
+          "kind": {
+            "$ref": "#/components/schemas/PackArtifactKind"
+          },
+          "name": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "schema_version": {
+            "const": 1,
+            "default": 1,
+            "title": "Schema Version",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "artifact_id",
+          "artifact_version",
+          "kind",
+          "name",
+          "definition"
+        ],
+        "title": "PackArtifactEnvelope",
+        "type": "object"
+      },
+      "PackArtifactKind": {
+        "enum": [
+          "form",
+          "master_data_type",
+          "workflow",
+          "automation_template",
+          "kpi",
+          "mapping_profile"
+        ],
+        "title": "PackArtifactKind",
+        "type": "string"
+      },
+      "PackAutomationTemplateDefinition": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "enum": [
+              "notify_manager",
+              "create_investigation_task"
+            ],
+            "title": "Action",
+            "type": "string"
+          },
+          "condition_equals": {
+            "anyOf": [
+              {
+                "maxLength": 120,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Condition Equals"
+          },
+          "condition_field": {
+            "anyOf": [
+              {
+                "pattern": "^[a-z][a-z0-9_]{0,59}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Condition Field"
+          },
+          "source_form": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Form"
+          },
+          "threshold_hours": {
+            "anyOf": [
+              {
+                "maximum": 720.0,
+                "minimum": 1.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Threshold Hours"
+          },
+          "trigger": {
+            "enum": [
+              "task.overdue",
+              "submission.submitted"
+            ],
+            "title": "Trigger",
+            "type": "string"
+          }
+        },
+        "required": [
+          "trigger",
+          "action"
+        ],
+        "title": "PackAutomationTemplateDefinition",
         "type": "object"
       },
       "PackCapability": {
@@ -5298,6 +5705,43 @@
         "title": "PackInstallation",
         "type": "object"
       },
+      "PackJsonObject": {
+        "additionalProperties": {
+          "$ref": "#/components/schemas/PackJsonValue"
+        },
+        "type": "object"
+      },
+      "PackJsonValue": {
+        "anyOf": [
+          {
+            "type": "boolean"
+          },
+          {
+            "type": "integer"
+          },
+          {
+            "type": "number"
+          },
+          {
+            "type": "string"
+          },
+          {
+            "items": {
+              "$ref": "#/components/schemas/PackJsonValue"
+            },
+            "type": "array"
+          },
+          {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/PackJsonValue"
+            },
+            "type": "object"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
       "PackManifest": {
         "additionalProperties": false,
         "properties": {
@@ -5381,6 +5825,67 @@
           "publisher"
         ],
         "title": "PackManifest",
+        "type": "object"
+      },
+      "PackMappingField": {
+        "additionalProperties": false,
+        "properties": {
+          "required": {
+            "default": false,
+            "title": "Required",
+            "type": "boolean"
+          },
+          "source_key": {
+            "pattern": "^[a-z][a-z0-9_]{0,59}$",
+            "title": "Source Key",
+            "type": "string"
+          },
+          "target_key": {
+            "pattern": "^[a-z][a-z0-9_]{0,59}$",
+            "title": "Target Key",
+            "type": "string"
+          }
+        },
+        "required": [
+          "source_key",
+          "target_key"
+        ],
+        "title": "PackMappingField",
+        "type": "object"
+      },
+      "PackMappingProfileDefinition": {
+        "additionalProperties": false,
+        "properties": {
+          "fields": {
+            "items": {
+              "$ref": "#/components/schemas/PackMappingField"
+            },
+            "maxItems": 100,
+            "minItems": 1,
+            "title": "Fields",
+            "type": "array"
+          },
+          "source_kind": {
+            "maxLength": 80,
+            "minLength": 1,
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "title": "Source Kind",
+            "type": "string"
+          },
+          "target_kind": {
+            "maxLength": 80,
+            "minLength": 1,
+            "pattern": "^[a-z][a-z0-9_.-]*$",
+            "title": "Target Kind",
+            "type": "string"
+          }
+        },
+        "required": [
+          "source_kind",
+          "target_kind",
+          "fields"
+        ],
+        "title": "PackMappingProfileDefinition",
         "type": "object"
       },
       "PackRelease": {
@@ -7363,6 +7868,81 @@
         "title": "RuntimeResult",
         "type": "object"
       },
+      "SavedKpiDefinition": {
+        "additionalProperties": false,
+        "properties": {
+          "group_field": {
+            "anyOf": [
+              {
+                "pattern": "^[a-z][a-z0-9_]{0,59}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Group Field"
+          },
+          "metric": {
+            "enum": [
+              "count",
+              "sum",
+              "average"
+            ],
+            "title": "Metric",
+            "type": "string"
+          },
+          "source_field": {
+            "anyOf": [
+              {
+                "pattern": "^[a-z][a-z0-9_]{0,59}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Field"
+          },
+          "source_form": {
+            "format": "uuid",
+            "title": "Source Form",
+            "type": "string"
+          },
+          "source_form_number": {
+            "default": 1,
+            "minimum": 1.0,
+            "title": "Source Form Number",
+            "type": "integer"
+          },
+          "time_field": {
+            "pattern": "^[a-z][a-z0-9_]{0,59}$",
+            "title": "Time Field",
+            "type": "string"
+          },
+          "unit": {
+            "maxLength": 40,
+            "minLength": 1,
+            "title": "Unit",
+            "type": "string"
+          },
+          "window_days": {
+            "maximum": 366.0,
+            "minimum": 1.0,
+            "title": "Window Days",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "metric",
+          "source_form",
+          "unit",
+          "time_field",
+          "window_days"
+        ],
+        "title": "SavedKpiDefinition",
+        "type": "object"
+      },
       "SavedReport": {
         "additionalProperties": false,
         "properties": {
@@ -7467,12 +8047,14 @@
               "type": "string"
             },
             "maxItems": 6,
-            "minItems": 1,
             "title": "Columns",
             "type": "array"
           },
           "dataset": {
-            "const": "overdue_tasks",
+            "enum": [
+              "overdue_tasks",
+              "pack_form_kpi"
+            ],
             "title": "Dataset",
             "type": "string"
           },
@@ -7520,6 +8102,16 @@
             "title": "Group By",
             "type": "string"
           },
+          "kpi": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/SavedKpiDefinition"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
           "scope": {
             "default": "personal",
             "enum": [
@@ -7546,8 +8138,7 @@
           }
         },
         "required": [
-          "dataset",
-          "columns"
+          "dataset"
         ],
         "title": "SavedReportDefinition",
         "type": "object"
@@ -10674,6 +11265,170 @@
         "title": "WorkflowAction",
         "type": "object"
       },
+      "operations__modules__domain_packs__application__imports__ImportPreview": {
+        "additionalProperties": false,
+        "properties": {
+          "artifact_id": {
+            "title": "Artifact Id",
+            "type": "string"
+          },
+          "artifact_kind": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PackArtifactKind"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "artifact_version": {
+            "title": "Artifact Version",
+            "type": "integer"
+          },
+          "idempotency_key": {
+            "format": "uuid",
+            "title": "Idempotency Key",
+            "type": "string"
+          },
+          "issues": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Issues",
+            "type": "array"
+          },
+          "name": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Name"
+          },
+          "pack_id": {
+            "title": "Pack Id",
+            "type": "string"
+          },
+          "pack_version": {
+            "title": "Pack Version",
+            "type": "string"
+          },
+          "package_sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Package Sha256"
+          },
+          "preview_sha256": {
+            "anyOf": [
+              {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Preview Sha256"
+          },
+          "project_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Project Id"
+          },
+          "valid": {
+            "title": "Valid",
+            "type": "boolean"
+          },
+          "workspace_id": {
+            "format": "uuid",
+            "title": "Workspace Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "valid",
+          "pack_id",
+          "pack_version",
+          "artifact_id",
+          "artifact_version",
+          "workspace_id",
+          "idempotency_key"
+        ],
+        "title": "ImportPreview",
+        "type": "object"
+      },
+      "operations__modules__master_data__application__contracts__ImportPreview": {
+        "additionalProperties": false,
+        "properties": {
+          "issues": {
+            "items": {
+              "$ref": "#/components/schemas/ImportIssue"
+            },
+            "title": "Issues",
+            "type": "array"
+          },
+          "mapping_required": {
+            "default": false,
+            "title": "Mapping Required",
+            "type": "boolean"
+          },
+          "mapping_sha256": {
+            "anyOf": [
+              {
+                "pattern": "^[0-9a-f]{64}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Mapping Sha256"
+          },
+          "rows": {
+            "items": {
+              "$ref": "#/components/schemas/DataRecord"
+            },
+            "title": "Rows",
+            "type": "array"
+          },
+          "source_headers": {
+            "items": {
+              "type": "string"
+            },
+            "maxItems": 64,
+            "title": "Source Headers",
+            "type": "array"
+          },
+          "source_sha256": {
+            "title": "Source Sha256",
+            "type": "string"
+          }
+        },
+        "required": [
+          "rows",
+          "issues",
+          "source_sha256"
+        ],
+        "title": "ImportPreview",
+        "type": "object"
+      },
       "operations__modules__workflows__application__contracts__WorkflowAction": {
         "additionalProperties": false,
         "properties": {
@@ -11882,6 +12637,455 @@
           }
         ],
         "summary": "Catalog",
+        "tags": [
+          "domain-packs"
+        ]
+      }
+    },
+    "/api/v1/organizations/{organization_id}/domain-packs/catalog/{pack_id}/{version}/artifacts": {
+      "get": {
+        "operationId": "catalog_artifacts_api_v1_organizations__organization_id__domain_packs_catalog__pack_id___version__artifacts_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "organization_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Organization Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "pack_id",
+            "required": true,
+            "schema": {
+              "title": "Pack Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "version",
+            "required": true,
+            "schema": {
+              "title": "Version",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PackArtifactCatalogPage"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Content Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Unprocessable Content"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Catalog Artifacts",
+        "tags": [
+          "domain-packs"
+        ]
+      }
+    },
+    "/api/v1/organizations/{organization_id}/domain-packs/imports": {
+      "post": {
+        "operationId": "import_artifact_api_v1_organizations__organization_id__domain_packs_imports_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "organization_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Organization Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImportApplyRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ArtifactImportResult"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Content Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Unprocessable Content"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Import Artifact",
+        "tags": [
+          "domain-packs"
+        ]
+      }
+    },
+    "/api/v1/organizations/{organization_id}/domain-packs/imports/preview": {
+      "post": {
+        "operationId": "preview_import_api_v1_organizations__organization_id__domain_packs_imports_preview_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "organization_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Organization Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ImportPreviewRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/operations__modules__domain_packs__application__imports__ImportPreview"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Content Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Unprocessable Content"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Preview Import",
         "tags": [
           "domain-packs"
         ]
@@ -14233,7 +15437,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ImportPreview"
+                  "$ref": "#/components/schemas/operations__modules__master_data__application__contracts__ImportPreview"
                 }
               }
             },

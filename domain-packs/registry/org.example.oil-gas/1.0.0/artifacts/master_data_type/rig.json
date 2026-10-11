@@ -1,0 +1,16 @@
+{
+  "artifact_id": "rig",
+  "artifact_version": 1,
+  "definition": {
+    "code": "og_rig",
+    "definition": {
+      "fields": []
+    },
+    "name": "Rig",
+    "registry": "custom"
+  },
+  "description": "Suggested type definition; no customer records included.",
+  "kind": "master_data_type",
+  "name": "Rig",
+  "schema_version": 1
+}

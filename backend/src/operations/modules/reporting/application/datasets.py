@@ -22,6 +22,8 @@ from operations.modules.reporting.application.contracts import (
     DashboardWidgetResult,
     DashboardWrite,
     DueWeekGroup,
+    KpiAggregateGroup,
+    KpiAggregateResult,
     OverdueFilter,
     OverdueTaskPage,
     OverdueTaskRow,
@@ -31,6 +33,7 @@ from operations.modules.reporting.application.contracts import (
     ReportProjectReader,
     ReportRenderer,
     ReportWorkspaceReader,
+    SavedKpiDefinition,
     SavedReport,
     SavedReportDefinition,
     SavedReportPage,
@@ -38,6 +41,8 @@ from operations.modules.reporting.application.contracts import (
     SavedReportWrite,
     TaskStateGroup,
 )
+from operations.modules.submissions.application.contracts import SubmissionAggregateQuery
+from operations.modules.submissions.application.service import SubmissionService
 from operations.modules.tasks.application.contracts import TaskQueryFilter
 from operations.modules.tasks.application.service import TaskService
 
@@ -54,6 +59,7 @@ class ReportingService:
         projects: ReportProjectReader,
         audit: AuditWriter,
         export_jobs: ReportExportJobStore | None = None,
+        submissions: SubmissionService | None = None,
     ) -> None:
         self.tasks, self.reports, self.dashboards, self.renderer = (
             tasks,
@@ -68,6 +74,7 @@ class ReportingService:
             audit,
         )
         self.export_jobs = export_jobs
+        self.submissions = submissions
 
     @staticmethod
     def _scope(organization_id: UUID, workspace_id: UUID) -> Scope:
@@ -292,6 +299,7 @@ class ReportingService:
         workspace_id: UUID,
         project_id: UUID | None,
         body: SavedReportWrite,
+        provenance: AuditDetails | None = None,
     ) -> SavedReport:
         self._access(actor, organization_id, workspace_id, project_id)
         owner_id = self._actor(actor, organization_id)
@@ -329,11 +337,72 @@ class ReportingService:
                     workspace_id=report.workspace_id,
                     project_id=report.project_id,
                     version=report.version,
-                ),
+                ).model_copy(update=provenance.model_dump(exclude_none=True) if provenance else {}),
             )
         )
         self.reports.create(report)
         return report
+
+    def import_pack_kpi(
+        self,
+        actor: RequestContext,
+        organization_id: UUID,
+        workspace_id: UUID,
+        project_id: UUID | None,
+        name: str,
+        definition: SavedKpiDefinition,
+        provenance: AuditDetails,
+    ) -> SavedReport:
+        self.validate_pack_kpi(actor, organization_id, workspace_id, project_id, definition)
+        return self.create_saved(
+            actor,
+            organization_id,
+            workspace_id,
+            project_id,
+            SavedReportWrite(
+                name=name,
+                definition=SavedReportDefinition(
+                    dataset="pack_form_kpi",
+                    scope="aggregate",
+                    columns=[],
+                    kpi=definition,
+                ),
+            ),
+            provenance,
+        )
+
+    def validate_pack_kpi(
+        self,
+        actor: RequestContext,
+        organization_id: UUID,
+        workspace_id: UUID,
+        project_id: UUID | None,
+        definition: SavedKpiDefinition,
+    ) -> None:
+        if self.submissions is None:
+            raise ServiceError(503, "submission_reporting_unavailable")
+        self._access(actor, organization_id, workspace_id, project_id)
+        form = self.submissions.forms.form(
+            actor, organization_id, workspace_id, definition.source_form
+        )
+        if form.project_id != project_id:
+            raise ServiceError(422, "pack_kpi_form_scope_mismatch")
+        end_date = datetime.now(UTC).date()
+        self.submissions.validate_aggregate(
+            actor,
+            organization_id,
+            workspace_id,
+            SubmissionAggregateQuery(
+                form_id=definition.source_form,
+                form_number=definition.source_form_number,
+                time_field=definition.time_field,
+                start_date=end_date - timedelta(days=definition.window_days - 1),
+                end_date=end_date,
+                metric=definition.metric,
+                source_field=definition.source_field,
+                group_field=definition.group_field,
+            ),
+        )
 
     def update_saved(
         self, actor: RequestContext, organization_id: UUID, report_id: UUID, body: SavedReportWrite
@@ -343,6 +412,8 @@ class ReportingService:
         current = self.get_saved(actor, organization_id, report_id)
         if current.version != body.expected_version:
             raise ServiceError(409, "version_conflict")
+        if current.definition.dataset == "pack_form_kpi" and body.definition != current.definition:
+            raise ServiceError(409, "pack_kpi_definition_is_immutable")
         now = datetime.now(UTC)
         changed = current.model_copy(
             update={
@@ -424,6 +495,44 @@ class ReportingService:
         report: SavedReport,
         cursor: UUID | None,
     ) -> OverdueTaskPage:
+        if report.definition.dataset == "pack_form_kpi":
+            if self.submissions is None or report.definition.kpi is None:
+                raise ServiceError(503, "submission_reporting_unavailable")
+            if cursor is not None:
+                raise ServiceError(422, "kpi_reports_do_not_support_cursors")
+            kpi = report.definition.kpi
+            end_date = datetime.now(UTC).date()
+            start_date = end_date - timedelta(days=kpi.window_days - 1)
+            result = self.submissions.aggregate(
+                actor,
+                organization_id,
+                report.workspace_id,
+                SubmissionAggregateQuery(
+                    form_id=kpi.source_form,
+                    form_number=kpi.source_form_number,
+                    time_field=kpi.time_field,
+                    start_date=start_date,
+                    end_date=end_date,
+                    metric=kpi.metric,
+                    source_field=kpi.source_field,
+                    group_field=kpi.group_field,
+                ),
+            )
+            return OverdueTaskPage(
+                items=[],
+                next_cursor=None,
+                groups=[],
+                due_week_groups=[],
+                kpi_result=KpiAggregateResult(
+                    unit=kpi.unit,
+                    start_date=start_date,
+                    end_date=end_date,
+                    groups=[
+                        KpiAggregateGroup(group=item.group, value=float(item.value))
+                        for item in result.groups
+                    ],
+                ),
+            )
         return self._read(
             actor,
             organization_id,
@@ -448,7 +557,13 @@ class ReportingService:
         page = self._run_definition(actor, organization_id, report, None)
         if page.next_cursor is not None:
             raise ServiceError(409, "export_requires_background_job")
-        if report.definition.group_by == "state":
+        if page.kpi_result is not None:
+            columns = ["group", "value", "unit"]
+            rows = [
+                [item.group or "", str(item.value), page.kpi_result.unit]
+                for item in page.kpi_result.groups
+            ]
+        elif report.definition.group_by == "state":
             columns = ["state", "count"]
             rows = [[group.state, str(group.count)] for group in page.groups]
         elif report.definition.group_by == "due_week":
@@ -517,7 +632,17 @@ class ReportingService:
         if job is None or job.owner_id != self._actor(actor, organization_id):
             raise ServiceError(404, "not_found")
         self._access(actor, organization_id, job.workspace_id, job.project_id)
-        self._dataset_access(actor, organization_id, job.workspace_id, job.project_id, job.scope)
+        report = self.reports.get(organization_id, job.report_id)
+        if report is None:
+            raise ServiceError(404, "not_found")
+        self._dataset_access(
+            actor,
+            organization_id,
+            job.workspace_id,
+            job.project_id,
+            job.scope,
+            report.definition.dataset,
+        )
         if job.expires_at <= datetime.now(UTC):
             raise ServiceError(410, "report_export_expired")
         return job
@@ -529,8 +654,15 @@ class ReportingService:
         workspace_id: UUID,
         project_id: UUID | None,
         scope: Literal["personal", "aggregate"],
+        dataset: Literal["overdue_tasks", "pack_form_kpi"] = "overdue_tasks",
     ) -> None:
-        permission = "schedule.manage" if scope == "aggregate" else "task.read"
+        permission = (
+            "submission.read"
+            if dataset == "pack_form_kpi"
+            else "schedule.manage"
+            if scope == "aggregate"
+            else "task.read"
+        )
         if project_id is None:
             self.authorization.require(
                 actor, permission, self._scope(organization_id, workspace_id)
@@ -582,7 +714,12 @@ class ReportingService:
         job = claimed
         try:
             self._dataset_access(
-                actor, organization_id, job.workspace_id, job.project_id, job.scope
+                actor,
+                organization_id,
+                job.workspace_id,
+                job.project_id,
+                job.scope,
+                definition.dataset,
             )
             page = self._run_definition(actor, organization_id, pinned, None)
         except ServiceError as error:
@@ -630,6 +767,11 @@ class ReportingService:
     def _export_matrix(
         report: SavedReport, page: OverdueTaskPage
     ) -> tuple[list[str], list[list[str]]]:
+        if page.kpi_result is not None:
+            return ["group", "value", "unit"], [
+                [item.group or "", str(item.value), page.kpi_result.unit]
+                for item in page.kpi_result.groups
+            ]
         if report.definition.group_by == "state":
             return ["state", "count"], [[item.state, str(item.count)] for item in page.groups]
         if report.definition.group_by == "due_week":
@@ -709,6 +851,16 @@ class ReportingService:
             report = self.get_saved(actor, organization_id, widget.report_id)
             if report.workspace_id != workspace_id or report.owner_id != owner_id:
                 raise ServiceError(404, "not_found")
+            if report.definition.dataset == "pack_form_kpi":
+                if widget.kind not in {"metric", "bar"}:
+                    raise ServiceError(422, "kpi_report_widget_kind_unsupported")
+                if (
+                    widget.kind == "metric"
+                    and report.definition.kpi is not None
+                    and report.definition.kpi.group_field is not None
+                ):
+                    raise ServiceError(422, "grouped_kpi_requires_bar_widget")
+                continue
             state_chart = widget.kind in {"status_distribution", "bar", "metric"}
             time_chart = widget.kind in {"trend", "line"}
             if state_chart and report.definition.group_by != "state":
@@ -798,9 +950,12 @@ class ReportingService:
         widgets: list[DashboardWidgetResult] = []
         for widget in dashboard.definition.widgets:
             report = self.run_saved(actor, organization_id, widget.report_id, None)
-            metric_value = (
-                sum(group.count for group in report.groups) if widget.kind == "metric" else None
-            )
+            metric_value = None
+            if widget.kind == "metric":
+                if report.kpi_result is not None and len(report.kpi_result.groups) == 1:
+                    metric_value = report.kpi_result.groups[0].value
+                elif report.kpi_result is None:
+                    metric_value = sum(group.count for group in report.groups)
             widgets.append(
                 DashboardWidgetResult(
                     title=widget.title,

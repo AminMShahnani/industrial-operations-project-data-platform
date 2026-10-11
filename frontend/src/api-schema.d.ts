@@ -124,6 +124,57 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/organizations/{organization_id}/domain-packs/catalog/{pack_id}/{version}/artifacts": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Catalog Artifacts */
+        get: operations["catalog_artifacts_api_v1_organizations__organization_id__domain_packs_catalog__pack_id___version__artifacts_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/organizations/{organization_id}/domain-packs/imports": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Import Artifact */
+        post: operations["import_artifact_api_v1_organizations__organization_id__domain_packs_imports_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/organizations/{organization_id}/domain-packs/imports/preview": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Preview Import */
+        post: operations["preview_import_api_v1_organizations__organization_id__domain_packs_imports_preview_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/organizations/{organization_id}/domain-packs/installations": {
         parameters: {
             query?: never;
@@ -2157,6 +2208,60 @@ export interface components {
             /** Quorum */
             quorum?: number | null;
         };
+        /** ArtifactImportResult */
+        ArtifactImportResult: {
+            /** Artifact Id */
+            artifact_id: string;
+            /** Artifact Kind */
+            artifact_kind: string;
+            /** Artifact Version */
+            artifact_version: number;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Idempotency Key
+             * Format: uuid
+             */
+            idempotency_key: string;
+            /**
+             * Imported By
+             * Format: uuid
+             */
+            imported_by: string;
+            /** Inert Definition */
+            inert_definition?: components["schemas"]["PackAutomationTemplateDefinition"] | components["schemas"]["PackMappingProfileDefinition"] | null;
+            /**
+             * Organization Id
+             * Format: uuid
+             */
+            organization_id: string;
+            /** Pack Id */
+            pack_id: string;
+            /** Pack Version */
+            pack_version: string;
+            /** Package Sha256 */
+            package_sha256: string;
+            /** Project Id */
+            project_id: string | null;
+            /**
+             * Target Id
+             * Format: uuid
+             */
+            target_id: string;
+            /**
+             * Workspace Id
+             * Format: uuid
+             */
+            workspace_id: string;
+        };
         /** Assignment */
         Assignment: {
             /**
@@ -3331,6 +3436,31 @@ export interface components {
              */
             id: string;
         };
+        /** ImportApplyRequest */
+        ImportApplyRequest: {
+            /** Artifact Id */
+            artifact_id: string;
+            /** Artifact Version */
+            artifact_version: number;
+            /** Expected Preview Sha256 */
+            expected_preview_sha256: string;
+            /**
+             * Idempotency Key
+             * Format: uuid
+             */
+            idempotency_key: string;
+            /** Pack Id */
+            pack_id: string;
+            /** Pack Version */
+            pack_version: string;
+            /** Project Id */
+            project_id?: string | null;
+            /**
+             * Workspace Id
+             * Format: uuid
+             */
+            workspace_id: string;
+        };
         /** ImportColumnMapping */
         ImportColumnMapping: {
             /** Source Header */
@@ -3345,23 +3475,28 @@ export interface components {
             /** Row */
             row: number;
         };
-        /** ImportPreview */
-        ImportPreview: {
-            /** Issues */
-            issues: components["schemas"]["ImportIssue"][];
+        /** ImportPreviewRequest */
+        ImportPreviewRequest: {
+            /** Artifact Id */
+            artifact_id: string;
+            /** Artifact Version */
+            artifact_version: number;
             /**
-             * Mapping Required
-             * @default false
+             * Idempotency Key
+             * Format: uuid
              */
-            mapping_required: boolean;
-            /** Mapping Sha256 */
-            mapping_sha256?: string | null;
-            /** Rows */
-            rows: components["schemas"]["DataRecord"][];
-            /** Source Headers */
-            source_headers?: string[];
-            /** Source Sha256 */
-            source_sha256: string;
+            idempotency_key: string;
+            /** Pack Id */
+            pack_id: string;
+            /** Pack Version */
+            pack_version: string;
+            /** Project Id */
+            project_id?: string | null;
+            /**
+             * Workspace Id
+             * Format: uuid
+             */
+            workspace_id: string;
         };
         /** ImportRequest */
         ImportRequest: {
@@ -3472,6 +3607,30 @@ export interface components {
              * @enum {string}
              */
             value: "form" | "generic";
+        };
+        /** KpiAggregateGroup */
+        KpiAggregateGroup: {
+            /** Group */
+            group: string | null;
+            /** Value */
+            value: number;
+        };
+        /** KpiAggregateResult */
+        KpiAggregateResult: {
+            /**
+             * End Date
+             * Format: date
+             */
+            end_date: string;
+            /** Groups */
+            groups: components["schemas"]["KpiAggregateGroup"][];
+            /**
+             * Start Date
+             * Format: date
+             */
+            start_date: string;
+            /** Unit */
+            unit: string;
         };
         /** LibraryArtifact */
         LibraryArtifact: {
@@ -4009,6 +4168,7 @@ export interface components {
             groups: components["schemas"]["TaskStateGroup"][];
             /** Items */
             items: components["schemas"]["OverdueTaskRow"][];
+            kpi_result?: components["schemas"]["KpiAggregateResult"] | null;
             /** Next Cursor */
             next_cursor: string | null;
         };
@@ -4026,6 +4186,59 @@ export interface components {
             project_id: string | null;
             /** State */
             state: ("open" | "in_progress" | "submitted" | "awaiting_review" | "returned" | "approved" | "cancelled" | "superseded" | "completed") | null;
+        };
+        /** PackArtifactCatalogPage */
+        PackArtifactCatalogPage: {
+            /** Items */
+            items: components["schemas"]["PackArtifactEnvelope"][];
+        };
+        /** PackArtifactEnvelope */
+        PackArtifactEnvelope: {
+            /** Artifact Id */
+            artifact_id: string;
+            /** Artifact Version */
+            artifact_version: number;
+            definition: components["schemas"]["PackJsonObject"];
+            /**
+             * Description
+             * @default
+             */
+            description: string;
+            kind: components["schemas"]["PackArtifactKind"];
+            /** Name */
+            name: string;
+            /**
+             * Schema Version
+             * @default 1
+             * @constant
+             */
+            schema_version: 1;
+        };
+        /**
+         * PackArtifactKind
+         * @enum {string}
+         */
+        PackArtifactKind: "form" | "master_data_type" | "workflow" | "automation_template" | "kpi" | "mapping_profile";
+        /** PackAutomationTemplateDefinition */
+        PackAutomationTemplateDefinition: {
+            /**
+             * Action
+             * @enum {string}
+             */
+            action: "notify_manager" | "create_investigation_task";
+            /** Condition Equals */
+            condition_equals?: string | null;
+            /** Condition Field */
+            condition_field?: string | null;
+            /** Source Form */
+            source_form?: string | null;
+            /** Threshold Hours */
+            threshold_hours?: number | null;
+            /**
+             * Trigger
+             * @enum {string}
+             */
+            trigger: "task.overdue" | "submission.submitted";
         };
         /**
          * PackCapability
@@ -4083,6 +4296,12 @@ export interface components {
             /** Version */
             version: string;
         };
+        PackJsonObject: {
+            [key: string]: components["schemas"]["PackJsonValue"];
+        };
+        PackJsonValue: boolean | number | string | components["schemas"]["PackJsonValue"][] | {
+            [key: string]: components["schemas"]["PackJsonValue"];
+        } | null;
         /** PackManifest */
         PackManifest: {
             /** Capabilities */
@@ -4104,6 +4323,27 @@ export interface components {
             schema_version: string;
             /** Version */
             version: string;
+        };
+        /** PackMappingField */
+        PackMappingField: {
+            /**
+             * Required
+             * @default false
+             */
+            required: boolean;
+            /** Source Key */
+            source_key: string;
+            /** Target Key */
+            target_key: string;
+        };
+        /** PackMappingProfileDefinition */
+        PackMappingProfileDefinition: {
+            /** Fields */
+            fields: components["schemas"]["PackMappingField"][];
+            /** Source Kind */
+            source_kind: string;
+            /** Target Kind */
+            target_kind: string;
         };
         /** PackRelease */
         PackRelease: {
@@ -4916,6 +5156,34 @@ export interface components {
             /** Visible Keys */
             visible_keys: string[];
         };
+        /** SavedKpiDefinition */
+        SavedKpiDefinition: {
+            /** Group Field */
+            group_field?: string | null;
+            /**
+             * Metric
+             * @enum {string}
+             */
+            metric: "count" | "sum" | "average";
+            /** Source Field */
+            source_field?: string | null;
+            /**
+             * Source Form
+             * Format: uuid
+             */
+            source_form: string;
+            /**
+             * Source Form Number
+             * @default 1
+             */
+            source_form_number: number;
+            /** Time Field */
+            time_field: string;
+            /** Unit */
+            unit: string;
+            /** Window Days */
+            window_days: number;
+        };
         /** SavedReport */
         SavedReport: {
             /**
@@ -4971,12 +5239,12 @@ export interface components {
         /** SavedReportDefinition */
         SavedReportDefinition: {
             /** Columns */
-            columns: ("id" | "project_id" | "kind" | "name" | "state" | "due_at")[];
+            columns?: ("id" | "project_id" | "kind" | "name" | "state" | "due_at")[];
             /**
              * Dataset
-             * @constant
+             * @enum {string}
              */
-            dataset: "overdue_tasks";
+            dataset: "overdue_tasks" | "pack_form_kpi";
             /** Filters */
             filters?: (components["schemas"]["StateFilter"] | components["schemas"]["KindFilter"] | components["schemas"]["NameFilter"] | components["schemas"]["DueAtFilter"] | components["schemas"]["ProjectFilter"])[];
             /**
@@ -4985,6 +5253,7 @@ export interface components {
              * @enum {string}
              */
             group_by: "none" | "state" | "due_week";
+            kpi?: components["schemas"]["SavedKpiDefinition"] | null;
             /**
              * Scope
              * @default personal
@@ -6212,6 +6481,58 @@ export interface components {
             /** Workflow Number */
             workflow_number: number;
         };
+        /** ImportPreview */
+        operations__modules__domain_packs__application__imports__ImportPreview: {
+            /** Artifact Id */
+            artifact_id: string;
+            artifact_kind?: components["schemas"]["PackArtifactKind"] | null;
+            /** Artifact Version */
+            artifact_version: number;
+            /**
+             * Idempotency Key
+             * Format: uuid
+             */
+            idempotency_key: string;
+            /** Issues */
+            issues?: string[];
+            /** Name */
+            name?: string | null;
+            /** Pack Id */
+            pack_id: string;
+            /** Pack Version */
+            pack_version: string;
+            /** Package Sha256 */
+            package_sha256?: string | null;
+            /** Preview Sha256 */
+            preview_sha256?: string | null;
+            /** Project Id */
+            project_id?: string | null;
+            /** Valid */
+            valid: boolean;
+            /**
+             * Workspace Id
+             * Format: uuid
+             */
+            workspace_id: string;
+        };
+        /** ImportPreview */
+        operations__modules__master_data__application__contracts__ImportPreview: {
+            /** Issues */
+            issues: components["schemas"]["ImportIssue"][];
+            /**
+             * Mapping Required
+             * @default false
+             */
+            mapping_required: boolean;
+            /** Mapping Sha256 */
+            mapping_sha256?: string | null;
+            /** Rows */
+            rows: components["schemas"]["DataRecord"][];
+            /** Source Headers */
+            source_headers?: string[];
+            /** Source Sha256 */
+            source_sha256: string;
+        };
         /** WorkflowAction */
         operations__modules__workflows__application__contracts__WorkflowAction: {
             /**
@@ -7090,6 +7411,352 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["RegistrySnapshot"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+        };
+    };
+    catalog_artifacts_api_v1_organizations__organization_id__domain_packs_catalog__pack_id___version__artifacts_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                organization_id: string;
+                pack_id: string;
+                version: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PackArtifactCatalogPage"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+        };
+    };
+    import_artifact_api_v1_organizations__organization_id__domain_packs_imports_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                organization_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ImportApplyRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ArtifactImportResult"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+        };
+    };
+    preview_import_api_v1_organizations__organization_id__domain_packs_imports_preview_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                organization_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ImportPreviewRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["operations__modules__domain_packs__application__imports__ImportPreview"];
                 };
             };
             /** @description Unauthorized */
@@ -8930,7 +9597,7 @@ export interface operations {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ImportPreview"];
+                    "application/json": components["schemas"]["operations__modules__master_data__application__contracts__ImportPreview"];
                 };
             };
             /** @description Unauthorized */

@@ -18,6 +18,8 @@ from sqlalchemy.orm import Mapped, Session, mapped_column
 
 from operations.modules.domain_packs.application.contracts import (
     InstallationState,
+    PackArtifactImport,
+    PackArtifactImportStore,
     PackInstallation,
     PackInstallationStore,
     PackRegistryProvider,
@@ -73,6 +75,46 @@ class PackProvenanceRow(Base):
     version: Mapped[str] = mapped_column(String(128))
     package_sha256: Mapped[str] = mapped_column(String(64))
     artifacts: Mapped[list[dict[str, str]]] = mapped_column(JSONB)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+
+
+class PackArtifactImportRow(Base):
+    __tablename__ = "domain_pack_artifact_imports"
+    __table_args__ = (
+        ForeignKeyConstraint(
+            ["organization_id", "pack_id"],
+            ["domain_pack_installations.organization_id", "domain_pack_installations.pack_id"],
+        ),
+        ForeignKeyConstraint(["organization_id"], ["organizations.id"]),
+        ForeignKeyConstraint(
+            ["organization_id", "workspace_id"],
+            ["workspaces.organization_id", "workspaces.id"],
+        ),
+        ForeignKeyConstraint(
+            ["organization_id", "workspace_id", "project_id"],
+            ["projects.organization_id", "projects.workspace_id", "projects.id"],
+        ),
+        ForeignKeyConstraint(
+            ["organization_id", "imported_by"],
+            ["users.organization_id", "users.id"],
+        ),
+        UniqueConstraint("organization_id", "idempotency_key", name="uq_domain_pack_import_key"),
+        Index("ix_domain_pack_import_target", "organization_id", "workspace_id", "created_at"),
+    )
+
+    id: Mapped[UUID] = mapped_column(primary_key=True)
+    organization_id: Mapped[UUID]
+    workspace_id: Mapped[UUID]
+    project_id: Mapped[UUID | None]
+    idempotency_key: Mapped[UUID]
+    pack_id: Mapped[str] = mapped_column(String(180))
+    pack_version: Mapped[str] = mapped_column(String(128))
+    package_sha256: Mapped[str] = mapped_column(String(64))
+    artifact_id: Mapped[str] = mapped_column(String(120))
+    artifact_version: Mapped[int] = mapped_column(Integer)
+    artifact_kind: Mapped[str] = mapped_column(String(40))
+    target_id: Mapped[UUID]
+    imported_by: Mapped[UUID]
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
 
@@ -181,3 +223,52 @@ class PackInstallationRepository(PackInstallationStore):
             ),
             None,
         )
+
+
+class PackArtifactImportRepository(PackArtifactImportStore):
+    def __init__(self, session: Session) -> None:
+        self.session = session
+
+    @staticmethod
+    def _contract(row: PackArtifactImportRow) -> PackArtifactImport:
+        return PackArtifactImport.model_validate(
+            {
+                column.name: getattr(row, column.name)
+                for column in PackArtifactImportRow.__table__.columns
+            }
+        )
+
+    def get_by_key(self, organization_id: UUID, key: UUID) -> PackArtifactImport | None:
+        row = self.session.scalar(
+            select(PackArtifactImportRow).where(
+                PackArtifactImportRow.organization_id == organization_id,
+                PackArtifactImportRow.idempotency_key == key,
+            )
+        )
+        return self._contract(row) if row else None
+
+    def get_source(
+        self,
+        organization_id: UUID,
+        workspace_id: UUID,
+        project_id: UUID | None,
+        pack_id: str,
+        pack_version: str,
+        artifact_id: str,
+        artifact_version: int,
+    ) -> PackArtifactImport | None:
+        query = select(PackArtifactImportRow).where(
+            PackArtifactImportRow.organization_id == organization_id,
+            PackArtifactImportRow.workspace_id == workspace_id,
+            PackArtifactImportRow.project_id == project_id,
+            PackArtifactImportRow.pack_id == pack_id,
+            PackArtifactImportRow.pack_version == pack_version,
+            PackArtifactImportRow.artifact_id == artifact_id,
+            PackArtifactImportRow.artifact_version == artifact_version,
+        )
+        row = self.session.scalar(query.order_by(PackArtifactImportRow.created_at))
+        return self._contract(row) if row else None
+
+    def create(self, result: PackArtifactImport) -> None:
+        self.session.add(PackArtifactImportRow(**result.model_dump(mode="python")))
+        self.session.flush()

@@ -30,7 +30,7 @@ Operator-only review, supervisor approval, operator+client sequential approval, 
 - high-severity HSE incident -> create investigation workflow.
 
 ## Dashboards
-submission completion, overdue reports, ROP trend, NPT hours/category, approval delay, safety incident summary, equipment downtime.
+submission completion, overdue reports, ROP trend, NPT hours/category, approval delay, safety incident summary, equipment downtime. Submission KPIs aggregate only published source forms under scoped `submission.read`; they omit submitter identities and cover at most 366 days. Task overdue counts remain in Core's governed task report.
 
 ## Standards mapping direction
-Provide mapping adapters/profiles for commonly used drilling reporting and well-data standards where useful. Keep standard-specific schemas out of Core.
+Provide version-neutral internal mapping profiles for well/site/rig/wellbore fields. Profiles declare typed source and target fields and scope/version metadata; they contain no executable transforms. No external standard conformance is claimed until a target and version are selected. Keep industry-specific mappings in the pack and standard-specific schemas out of Core.
