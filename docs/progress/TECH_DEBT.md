@@ -15,8 +15,9 @@ not a bypass of the history-preservation requirement.
 
 Phase 8 validation scope: Q-017 / ADR-0037 is resolved and accepted. Pack-local artifact schemas,
 stable IDs and reference conventions are not defined, so template-specific semantic
-expression and cross-artifact reference validation is not claimed. Resolve this
-boundary before accepting P8-07; do not materialize unvalidated template content.
+expression and cross-artifact reference validation is not claimed. Define stable
+artifact schemas/references and corresponding validation with the Phase 9 starter
+pack before materializing template content.
 
 Phase 7 reporting/export (2026-10-11): durable private report export jobs, text-only
 PDF, download-time authorization/integrity checks, idempotent redispatch and

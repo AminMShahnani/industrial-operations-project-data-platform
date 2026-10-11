@@ -14,7 +14,10 @@
 - Phase 8 local acceptance: 362 DB-backed backend tests and 9 browser tests pass;
   frontend tests/build, lint, strict type checks, generated schemas/contracts and
   migration upgrade/rollback/drift checks pass. Populated installation history
-  rollback refusal is covered by API integration. Exact-code hosted CI is pending.
+  rollback refusal is covered by API integration. Exact hosted run
+  [38141929240](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/38141929240)
+  passes both jobs on `d87d3a76d46449366766a666900fff6f098206f1`; Phase 8 is accepted
+  8/8.
 
 ## Phase 7 complete (2026-10-11)
 

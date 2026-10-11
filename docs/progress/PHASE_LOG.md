@@ -62,8 +62,8 @@ Ruff and formatting pass (411 files), strict mypy passes (325 files), OpenAPI an
 manifest schema drift pass, and a fresh disposable PostgreSQL database upgrades,
 round-trips and passes Alembic drift. P8-01 through P8-07 PASS based on the
 implementation, API and package tests, including populated rollback refusal and
-accepted bounded-validation scope. P8-08 local gates PASS; exact hosted CI remains
-pending. Lifecycle semantics are documented with fail-closed uninstall; artifact
+accepted bounded-validation scope. Lifecycle semantics are documented with
+fail-closed uninstall; artifact
 materialization, safe uninstall, signature trust policy, nested scopes and template-
 specific semantic validation remain deferred by accepted decisions. No Phase 9 work.
 
@@ -82,14 +82,17 @@ Phase 8 acceptance evidence (2026-10-11):
 - P8-07 PASS: CLI/schema reject malformed manifests, unsafe package structures,
   checksum drift and disallowed migrations. ADR-0037 explicitly defers semantic
   validation until pack artifact schemas/reference conventions are defined.
-- P8-08 local PASS: 362 DB-backed backend tests; 9/9 real OIDC/Playwright browser
+- P8-08 PASS: 362 DB-backed backend tests; 9/9 real OIDC/Playwright browser
   tests; 19 frontend tests; lint, typecheck, strict mypy (325 source files), Ruff
   and format (411 files), frontend production build, OpenAPI/manifest schema drift,
   migration upgrade/downgrade/re-upgrade and Alembic drift; populated rollback guard
-  test verifies pack rows remain readable after refusal. Exact-code hosted CI pending.
+  test verifies pack rows remain readable after refusal. Exact hosted run
+  [38141929240](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/38141929240)
+  passes both backend and frontend jobs on exact commit
+  `d87d3a76d46449366766a666900fff6f098206f1`.
 
-Overall Phase 8: 7/8 accepted locally; P8-08 awaits exact hosted CI. No Phase 9
-implementation before hosted success.
+Overall Phase 8: 8/8 accepted. Phase 9 may begin; no Phase 9 implementation is
+included in this phase.
 
 ## Phase 6 final acceptance - 2026-10-10
 

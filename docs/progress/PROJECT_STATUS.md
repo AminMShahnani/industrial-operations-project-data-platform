@@ -1,13 +1,13 @@
 # Project Status
 
-Status: PHASE 8 HOSTED VERIFICATION PENDING
-Current phase: Phase 8 - Domain Pack framework
+Status: PHASE 8 COMPLETE
+Current phase: Phase 9 - Oil & Gas starter pack (not started)
 Last updated: 2026-10-11
-Overall completion: 8/11 phases accepted. Phase 0 through Phase 7 each
-satisfy 8/8 criteria. Phase 7: P7-01 through P7-08 PASS.
+Overall completion: 9/11 phases accepted. Phase 0 through Phase 8 each
+satisfy 8/8 criteria. Phase 8: P8-01 through P8-08 PASS.
 No unsupported project-wide percentage is reported.
 
-## In progress: Phase 8
+## Completed: Phase 8
 P8-01 through P8-08 are defined in the Phase Log. The phase delivers typed
 manifest/registry contracts, deterministic dependency and version resolution,
 validated dry-run lifecycle plans, authorized and audited installation, and an SDK
@@ -16,15 +16,18 @@ contents, allowlisted migrations and organization-scoped installs; publisher
 signatures, tenant uploads and workspace/project installs are out of scope. Q-015 is
 resolved. Manifest/SDK validation, curated registry, dependency resolution,
 organization lifecycle service, persistence and API are implemented as a working
-slice, including review-only typed migration validation under ADR-0036. Phase 8
-has 7/8 criteria accepted locally. Q-017 is resolved under accepted ADR-0037: template-specific
+slice, including review-only typed migration validation under ADR-0036. All 8/8
+criteria pass locally and on exact hosted commit `d87d3a76` (run 38141929240).
+Q-017 is resolved under accepted ADR-0037: template-specific
 semantic validation waits for stable pack artifact schemas/reference conventions,
-currently planned with the Phase 9 starter pack. No Phase 9 work has started.
+currently planned with the Phase 9 starter pack. Phase 9 has not started.
 
-## Next tasks
-1. Commit the locally verified Phase 8 implementation and progress evidence.
-2. Push the phase commit and verify exact-code hosted CI.
-3. Mark Phase 8 complete and begin Phase 9 only after hosted CI passes.
+## Next 5 tasks
+1. Read Phase 9 source-of-truth requirements and confirm its acceptance criteria.
+2. Identify Oil & Gas artifacts as declarative Domain Pack content; keep Core neutral.
+3. Define stable Phase 9 artifact schemas/references that resolve ADR-0037's deferral.
+4. Add Phase 9 contracts/migrations and tests before implementation.
+5. Begin Phase 9 implementation only after its preparation and any required ADRs.
 
 ## Completed modules
 - Foundation, infrastructure, observability, CI and module boundaries.
