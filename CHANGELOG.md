@@ -1,13 +1,15 @@
 # Changelog
 
-## Phase 10 hardening in progress (2026-10-11)
+## Phase 10 hardening in progress (2026-10-12)
 
 - Add baseline security headers to API responses and regression assertions. Harden
   the local quality helper to split non-browser and OIDC browser suites and target
   migration checks at the configured isolated test database.
 - Add the Phase 10 runbook and acceptance checklist. Production ingress/static-host
   policy, backup/restore, performance, legacy-data and UAT evidence remain outstanding;
-  no Phase 10 criterion is accepted yet.
+  no Phase 10 criterion is accepted yet. Exact hosted run
+  [38172268074](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/38172268074)
+  passes both jobs on `8a56cf221822ea2981f3b1d17f3e07830702c356`.
 
 ## Phase 8 complete (2026-10-11)
 

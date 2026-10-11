@@ -31,7 +31,7 @@ These criteria distinguish repository-verifiable work from owner/deployment evid
 Existing TD-001 through TD-004 are relevant blockers for P10-02, P10-03, P10-04,
 P10-06 and P10-07. No architecture/domain decision is changed in this preparation.
 
-### Phase 10 implementation checkpoint - 2026-10-11
+### Phase 10 implementation checkpoint - 2026-10-12
 
 P10-01 is in progress. API responses now include `nosniff`, frame denial,
 referrer-policy and restrictive permissions-policy headers with regression tests.
@@ -45,7 +45,10 @@ backend tests, 9 real local OIDC/PKCE browser tests, 19 frontend tests, frontend
 lint/type/build, Ruff check/format, strict mypy (333 files), Alembic upgrade/drift and
 OpenAPI drift pass. The first attempt exposed a stale browser test DB and a helper
 targeting the default dev DB for Alembic; fresh dedicated DBs and the corrected helper
-resolved both setup faults. Hosted CI has not yet run for this checkpoint.
+resolved both setup faults. Exact hosted run
+[38172268074](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/38172268074)
+passes backend and frontend jobs on commit
+`8a56cf221822ea2981f3b1d17f3e07830702c356`.
 
 `docs/operations/PHASE_10_RUNBOOK.md` records deployment and drill procedures. Daily
 encrypted multi-store backups, production-scale performance, real legacy fixtures,
