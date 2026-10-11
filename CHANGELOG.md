@@ -41,7 +41,10 @@
   isolated real OIDC/PKCE browser test passes, and frontend lint/typecheck, 19 tests
   and production build pass. Strict mypy (333 files), Ruff check/format, OpenAPI and
   artifact-schema drift, curated package validation, and isolated migration roundtrip/
-  Alembic drift pass. Exact-code hosted CI remains before phase acceptance.
+  Alembic drift pass. Hosted run [38166147233](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/38166147233)
+  passed frontend but failed the backend test step; authorized logs were unavailable.
+  The same exact source passes the complete Linux/Python 3.14 backend suite locally.
+  A fresh hosted run remains required before phase acceptance.
 
 ## Phase 7 complete (2026-10-11)
 
