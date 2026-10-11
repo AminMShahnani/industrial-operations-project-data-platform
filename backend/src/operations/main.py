@@ -19,6 +19,7 @@ from starlette.exceptions import HTTPException
 from operations.api import router
 from operations.automation_api import router as automation_router
 from operations.contracts import ServiceError
+from operations.domain_pack_api import router as domain_pack_router
 from operations.email_api import router as email_router
 from operations.integrations_api import router as integrations_router
 from operations.modules.identity.application.contracts import TokenVerifier
@@ -217,6 +218,7 @@ def create_app(
     app.include_router(integrations_router)
     app.include_router(webhook_delivery_router)
     app.include_router(email_router)
+    app.include_router(domain_pack_router)
     return app
 
 

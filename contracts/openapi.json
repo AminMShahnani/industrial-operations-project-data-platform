@@ -73,6 +73,57 @@
         "title": "Activate",
         "type": "object"
       },
+      "AddOptionalField": {
+        "additionalProperties": false,
+        "properties": {
+          "artifact_id": {
+            "maxLength": 120,
+            "minLength": 2,
+            "pattern": "^[a-z][a-z0-9_.-]{1,119}$",
+            "title": "Artifact Id",
+            "type": "string"
+          },
+          "artifact_kind": {
+            "enum": [
+              "form",
+              "master_data_type"
+            ],
+            "title": "Artifact Kind",
+            "type": "string"
+          },
+          "field_id": {
+            "maxLength": 80,
+            "minLength": 2,
+            "pattern": "^[a-z][a-z0-9_.-]{1,119}$",
+            "title": "Field Id",
+            "type": "string"
+          },
+          "field_type": {
+            "$ref": "#/components/schemas/MigrationFieldType"
+          },
+          "label": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Label",
+            "type": "string"
+          },
+          "operation": {
+            "const": "add_optional_field",
+            "title": "Operation",
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation",
+          "artifact_kind",
+          "artifact_id",
+          "field_id",
+          "field_type",
+          "label"
+        ],
+        "title": "AddOptionalField",
+        "type": "object"
+      },
       "AnnotationPage": {
         "additionalProperties": false,
         "properties": {
@@ -1787,6 +1838,40 @@
           "object_storage"
         ],
         "title": "DependencyStatus",
+        "type": "object"
+      },
+      "DeprecateArtifact": {
+        "additionalProperties": false,
+        "properties": {
+          "artifact_id": {
+            "maxLength": 120,
+            "minLength": 2,
+            "pattern": "^[a-z][a-z0-9_.-]{1,119}$",
+            "title": "Artifact Id",
+            "type": "string"
+          },
+          "artifact_kind": {
+            "$ref": "#/components/schemas/MigrationArtifactKind"
+          },
+          "operation": {
+            "const": "deprecate_artifact",
+            "title": "Operation",
+            "type": "string"
+          },
+          "reason": {
+            "maxLength": 240,
+            "minLength": 1,
+            "title": "Reason",
+            "type": "string"
+          }
+        },
+        "required": [
+          "operation",
+          "artifact_kind",
+          "artifact_id",
+          "reason"
+        ],
+        "title": "DeprecateArtifact",
         "type": "object"
       },
       "Download": {
@@ -3535,6 +3620,33 @@
         "title": "InboxItem",
         "type": "object"
       },
+      "InstallationPage": {
+        "additionalProperties": false,
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PackInstallation"
+            },
+            "title": "Items",
+            "type": "array"
+          }
+        },
+        "required": [
+          "items"
+        ],
+        "title": "InstallationPage",
+        "type": "object"
+      },
+      "InstallationState": {
+        "enum": [
+          "installed",
+          "enabled",
+          "disabled",
+          "uninstalled"
+        ],
+        "title": "InstallationState",
+        "type": "string"
+      },
       "InstancePage": {
         "additionalProperties": false,
         "properties": {
@@ -3883,6 +3995,57 @@
         "title": "Lifecycle",
         "type": "object"
       },
+      "LifecycleApplyRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "confirm_breaking_change": {
+            "default": false,
+            "title": "Confirm Breaking Change",
+            "type": "boolean"
+          },
+          "expected_plan_sha256": {
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Expected Plan Sha256",
+            "type": "string"
+          },
+          "operation": {
+            "$ref": "#/components/schemas/LifecycleOperation"
+          },
+          "pack_id": {
+            "maxLength": 180,
+            "minLength": 3,
+            "title": "Pack Id",
+            "type": "string"
+          },
+          "reason": {
+            "maxLength": 500,
+            "minLength": 1,
+            "title": "Reason",
+            "type": "string"
+          },
+          "version_range": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version Range"
+          }
+        },
+        "required": [
+          "operation",
+          "pack_id",
+          "expected_plan_sha256",
+          "reason"
+        ],
+        "title": "LifecycleApplyRequest",
+        "type": "object"
+      },
       "LifecycleDefinition": {
         "additionalProperties": false,
         "properties": {
@@ -3975,6 +4138,209 @@
           }
         },
         "title": "LifecycleDefinition",
+        "type": "object"
+      },
+      "LifecycleOperation": {
+        "enum": [
+          "install",
+          "upgrade",
+          "enable",
+          "disable",
+          "uninstall"
+        ],
+        "title": "LifecycleOperation",
+        "type": "string"
+      },
+      "LifecyclePlan": {
+        "additionalProperties": false,
+        "properties": {
+          "issues": {
+            "items": {
+              "$ref": "#/components/schemas/LifecyclePlanIssue"
+            },
+            "title": "Issues",
+            "type": "array"
+          },
+          "operation": {
+            "$ref": "#/components/schemas/LifecycleOperation"
+          },
+          "organization_id": {
+            "format": "uuid",
+            "title": "Organization Id",
+            "type": "string"
+          },
+          "pack_id": {
+            "title": "Pack Id",
+            "type": "string"
+          },
+          "plan_sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Plan Sha256"
+          },
+          "selected_release_summaries": {
+            "items": {
+              "$ref": "#/components/schemas/PackReleaseSummary"
+            },
+            "title": "Selected Release Summaries",
+            "type": "array"
+          },
+          "selected_releases": {
+            "items": {
+              "$ref": "#/components/schemas/PackRelease"
+            },
+            "title": "Selected Releases",
+            "type": "array"
+          },
+          "steps": {
+            "items": {
+              "$ref": "#/components/schemas/LifecyclePlanStep"
+            },
+            "title": "Steps",
+            "type": "array"
+          },
+          "valid": {
+            "title": "Valid",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "organization_id",
+          "operation",
+          "pack_id",
+          "valid"
+        ],
+        "title": "LifecyclePlan",
+        "type": "object"
+      },
+      "LifecyclePlanIssue": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "pack_id": {
+            "title": "Pack Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "pack_id",
+          "message"
+        ],
+        "title": "LifecyclePlanIssue",
+        "type": "object"
+      },
+      "LifecyclePlanRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "operation": {
+            "$ref": "#/components/schemas/LifecycleOperation"
+          },
+          "pack_id": {
+            "maxLength": 180,
+            "minLength": 3,
+            "title": "Pack Id",
+            "type": "string"
+          },
+          "version_range": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Version Range"
+          }
+        },
+        "required": [
+          "operation",
+          "pack_id"
+        ],
+        "title": "LifecyclePlanRequest",
+        "type": "object"
+      },
+      "LifecyclePlanStep": {
+        "additionalProperties": false,
+        "properties": {
+          "action": {
+            "$ref": "#/components/schemas/PlanStepAction"
+          },
+          "content_sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Content Sha256"
+          },
+          "expected_row_version": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Row Version"
+          },
+          "from_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "From Version"
+          },
+          "pack_id": {
+            "title": "Pack Id",
+            "type": "string"
+          },
+          "requires_breaking_review": {
+            "default": false,
+            "title": "Requires Breaking Review",
+            "type": "boolean"
+          },
+          "to_version": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "To Version"
+          }
+        },
+        "required": [
+          "pack_id",
+          "action"
+        ],
+        "title": "LifecyclePlanStep",
         "type": "object"
       },
       "LookupItem": {
@@ -4169,6 +4535,30 @@
         ],
         "title": "MetadataAction",
         "type": "object"
+      },
+      "MigrationArtifactKind": {
+        "enum": [
+          "form",
+          "workflow",
+          "master_data_type",
+          "report",
+          "dashboard",
+          "automation"
+        ],
+        "title": "MigrationArtifactKind",
+        "type": "string"
+      },
+      "MigrationFieldType": {
+        "enum": [
+          "text",
+          "integer",
+          "number",
+          "boolean",
+          "date",
+          "datetime"
+        ],
+        "title": "MigrationFieldType",
+        "type": "string"
       },
       "Milestone": {
         "additionalProperties": false,
@@ -4779,6 +5169,326 @@
         "title": "OverdueTaskRow",
         "type": "object"
       },
+      "PackCapability": {
+        "enum": [
+          "fields",
+          "components",
+          "forms",
+          "master-data",
+          "workflows",
+          "automations",
+          "dashboards",
+          "reports",
+          "roles",
+          "integrations",
+          "import-mappings",
+          "locales"
+        ],
+        "title": "PackCapability",
+        "type": "string"
+      },
+      "PackContentChecksum": {
+        "additionalProperties": false,
+        "properties": {
+          "path": {
+            "maxLength": 240,
+            "minLength": 1,
+            "pattern": "^(?:[A-Za-z0-9_-][A-Za-z0-9._-]*/)*[A-Za-z0-9_-][A-Za-z0-9._-]*\\.(csv|json|md|txt|yaml|yml)$",
+            "title": "Path",
+            "type": "string"
+          },
+          "sha256": {
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Sha256",
+            "type": "string"
+          }
+        },
+        "required": [
+          "path",
+          "sha256"
+        ],
+        "title": "PackContentChecksum",
+        "type": "object"
+      },
+      "PackDependency": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "maxLength": 180,
+            "minLength": 1,
+            "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$",
+            "title": "Id",
+            "type": "string"
+          },
+          "version_range": {
+            "maxLength": 128,
+            "minLength": 1,
+            "pattern": "^[<>=!~^0-9A-Za-z.+,* -]+$",
+            "title": "Version Range",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "version_range"
+        ],
+        "title": "PackDependency",
+        "type": "object"
+      },
+      "PackInstallation": {
+        "additionalProperties": false,
+        "properties": {
+          "content_sha256": {
+            "title": "Content Sha256",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "installed_by": {
+            "format": "uuid",
+            "title": "Installed By",
+            "type": "string"
+          },
+          "organization_id": {
+            "format": "uuid",
+            "title": "Organization Id",
+            "type": "string"
+          },
+          "pack_id": {
+            "title": "Pack Id",
+            "type": "string"
+          },
+          "row_version": {
+            "title": "Row Version",
+            "type": "integer"
+          },
+          "state": {
+            "$ref": "#/components/schemas/InstallationState"
+          },
+          "updated_at": {
+            "format": "date-time",
+            "title": "Updated At",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "organization_id",
+          "pack_id",
+          "version",
+          "content_sha256",
+          "state",
+          "row_version",
+          "created_at",
+          "updated_at",
+          "installed_by"
+        ],
+        "title": "PackInstallation",
+        "type": "object"
+      },
+      "PackManifest": {
+        "additionalProperties": false,
+        "properties": {
+          "capabilities": {
+            "items": {
+              "$ref": "#/components/schemas/PackCapability"
+            },
+            "maxItems": 32,
+            "minItems": 1,
+            "title": "Capabilities",
+            "type": "array"
+          },
+          "content_checksums": {
+            "items": {
+              "$ref": "#/components/schemas/PackContentChecksum"
+            },
+            "maxItems": 1000,
+            "minItems": 1,
+            "title": "Content Checksums",
+            "type": "array"
+          },
+          "core_version_range": {
+            "maxLength": 128,
+            "minLength": 1,
+            "pattern": "^[<>=!~^0-9A-Za-z.+,* -]+$",
+            "title": "Core Version Range",
+            "type": "string"
+          },
+          "dependencies": {
+            "items": {
+              "$ref": "#/components/schemas/PackDependency"
+            },
+            "maxItems": 64,
+            "title": "Dependencies",
+            "type": "array"
+          },
+          "id": {
+            "maxLength": 180,
+            "minLength": 3,
+            "pattern": "^[a-z0-9]+(?:[.-][a-z0-9]+)*$",
+            "title": "Id",
+            "type": "string"
+          },
+          "name": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Name",
+            "type": "string"
+          },
+          "pack_type": {
+            "$ref": "#/components/schemas/PackType"
+          },
+          "publisher": {
+            "maxLength": 120,
+            "minLength": 1,
+            "title": "Publisher",
+            "type": "string"
+          },
+          "schema_version": {
+            "pattern": "^1$",
+            "title": "Schema Version",
+            "type": "string"
+          },
+          "version": {
+            "maxLength": 128,
+            "minLength": 5,
+            "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-([0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*))?(?:\\+([0-9A-Za-z-]+(?:\\.[0-9A-Za-z-]+)*))?$",
+            "title": "Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "schema_version",
+          "id",
+          "name",
+          "version",
+          "pack_type",
+          "core_version_range",
+          "capabilities",
+          "content_checksums",
+          "publisher"
+        ],
+        "title": "PackManifest",
+        "type": "object"
+      },
+      "PackRelease": {
+        "additionalProperties": false,
+        "properties": {
+          "content_sha256": {
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Content Sha256",
+            "type": "string"
+          },
+          "manifest": {
+            "$ref": "#/components/schemas/PackManifest"
+          },
+          "migration_operations": {
+            "items": {
+              "discriminator": {
+                "mapping": {
+                  "add_optional_field": "#/components/schemas/AddOptionalField",
+                  "deprecate_artifact": "#/components/schemas/DeprecateArtifact"
+                },
+                "propertyName": "operation"
+              },
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/DeprecateArtifact"
+                },
+                {
+                  "$ref": "#/components/schemas/AddOptionalField"
+                }
+              ]
+            },
+            "title": "Migration Operations",
+            "type": "array"
+          },
+          "registry_locator": {
+            "maxLength": 240,
+            "minLength": 1,
+            "title": "Registry Locator",
+            "type": "string"
+          }
+        },
+        "required": [
+          "manifest",
+          "content_sha256",
+          "registry_locator"
+        ],
+        "title": "PackRelease",
+        "type": "object"
+      },
+      "PackReleaseSummary": {
+        "additionalProperties": false,
+        "properties": {
+          "content_sha256": {
+            "title": "Content Sha256",
+            "type": "string"
+          },
+          "migration_operations": {
+            "items": {
+              "discriminator": {
+                "mapping": {
+                  "add_optional_field": "#/components/schemas/AddOptionalField",
+                  "deprecate_artifact": "#/components/schemas/DeprecateArtifact"
+                },
+                "propertyName": "operation"
+              },
+              "oneOf": [
+                {
+                  "$ref": "#/components/schemas/DeprecateArtifact"
+                },
+                {
+                  "$ref": "#/components/schemas/AddOptionalField"
+                }
+              ]
+            },
+            "title": "Migration Operations",
+            "type": "array"
+          },
+          "pack_id": {
+            "title": "Pack Id",
+            "type": "string"
+          },
+          "registry_locator": {
+            "title": "Registry Locator",
+            "type": "string"
+          },
+          "version": {
+            "title": "Version",
+            "type": "string"
+          }
+        },
+        "required": [
+          "pack_id",
+          "version",
+          "content_sha256",
+          "registry_locator"
+        ],
+        "title": "PackReleaseSummary",
+        "type": "object"
+      },
+      "PackType": {
+        "enum": [
+          "industry",
+          "functional",
+          "organization_overlay"
+        ],
+        "title": "PackType",
+        "type": "string"
+      },
       "PermissionHints": {
         "additionalProperties": false,
         "properties": {
@@ -4795,6 +5505,18 @@
         ],
         "title": "PermissionHints",
         "type": "object"
+      },
+      "PlanStepAction": {
+        "enum": [
+          "install",
+          "upgrade",
+          "enable",
+          "disable",
+          "uninstall",
+          "noop"
+        ],
+        "title": "PlanStepAction",
+        "type": "string"
       },
       "Presentation": {
         "additionalProperties": false,
@@ -5640,6 +6362,36 @@
         "title": "Recurrence",
         "type": "object"
       },
+      "RegistryIssue": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "locator": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Locator"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "title": "RegistryIssue",
+        "type": "object"
+      },
       "RegistryKind": {
         "enum": [
           "custom",
@@ -5651,6 +6403,34 @@
         ],
         "title": "RegistryKind",
         "type": "string"
+      },
+      "RegistrySnapshot": {
+        "additionalProperties": false,
+        "properties": {
+          "issues": {
+            "items": {
+              "$ref": "#/components/schemas/RegistryIssue"
+            },
+            "title": "Issues",
+            "type": "array"
+          },
+          "releases": {
+            "items": {
+              "$ref": "#/components/schemas/PackRelease"
+            },
+            "title": "Releases",
+            "type": "array"
+          },
+          "valid": {
+            "title": "Valid",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "valid"
+        ],
+        "title": "RegistrySnapshot",
+        "type": "object"
       },
       "Reminder": {
         "additionalProperties": false,
@@ -10820,6 +11600,574 @@
         "summary": "Update Organization",
         "tags": [
           "administration"
+        ]
+      }
+    },
+    "/api/v1/organizations/{organization_id}/domain-packs/apply": {
+      "post": {
+        "operationId": "apply_api_v1_organizations__organization_id__domain_packs_apply_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "organization_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Organization Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LifecycleApplyRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InstallationPage"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Content Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Unprocessable Content"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Apply",
+        "tags": [
+          "domain-packs"
+        ]
+      }
+    },
+    "/api/v1/organizations/{organization_id}/domain-packs/catalog": {
+      "get": {
+        "operationId": "catalog_api_v1_organizations__organization_id__domain_packs_catalog_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "organization_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Organization Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RegistrySnapshot"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Content Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Unprocessable Content"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Catalog",
+        "tags": [
+          "domain-packs"
+        ]
+      }
+    },
+    "/api/v1/organizations/{organization_id}/domain-packs/installations": {
+      "get": {
+        "operationId": "installed_api_v1_organizations__organization_id__domain_packs_installations_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "organization_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Organization Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/InstallationPage"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Content Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Unprocessable Content"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Installed",
+        "tags": [
+          "domain-packs"
+        ]
+      }
+    },
+    "/api/v1/organizations/{organization_id}/domain-packs/plans": {
+      "post": {
+        "operationId": "plan_api_v1_organizations__organization_id__domain_packs_plans_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "organization_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Organization Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LifecyclePlanRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LifecyclePlan"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Conflict"
+          },
+          "413": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Content Too Large"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Unprocessable Content"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ProblemDetails"
+                }
+              },
+              "application/problem+json": {}
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "summary": "Plan",
+        "tags": [
+          "domain-packs"
         ]
       }
     },

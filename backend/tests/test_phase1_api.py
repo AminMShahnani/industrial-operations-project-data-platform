@@ -1,13 +1,20 @@
+import hashlib
+import json
 import os
 from collections.abc import Iterator
+from contextlib import ExitStack
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
+from pathlib import Path
 from unittest.mock import patch
 from uuid import UUID, uuid7
 
 import pytest
 from alembic import command
 from alembic.config import Config
+from alembic.migration import MigrationContext
+from alembic.operations import Operations
+from alembic.script import ScriptDirectory
 from cryptography.hazmat.primitives.asymmetric import rsa
 from fastapi.testclient import TestClient
 from operations.composition import compose
@@ -35,6 +42,7 @@ class Api:
     client: TestClient
     session: Session
     key: rsa.RSAPrivateKey
+    settings: Settings
 
     def headers(
         self, subject: str = "platform", email: str = "platform@example.com"
@@ -125,7 +133,7 @@ def api(signing_key: rsa.RSAPrivateKey, monkeypatch: pytest.MonkeyPatch) -> Iter
             try:
                 with TestClient(app, client=(str(uuid7()), 50000)) as client:
                     app.state.sessions = sessions
-                    yield Api(client, session, signing_key)
+                    yield Api(client, session, signing_key, settings)
             finally:
                 session.close()
                 outer.rollback()
@@ -149,6 +157,160 @@ def test_platform_does_not_bypass_tenant_policy_and_cross_tenant_reads(api: Api)
     me = api.client.get("/api/v1/me", headers=api.headers("admin"))
     assert me.status_code == 200
     assert [entry["organization_id"] for entry in me.json()["memberships"]] == [str(first)]
+
+
+def test_domain_pack_api_enforces_tenant_scope_and_install_permission(api: Api) -> None:
+    first = api.organization("pack-admin")
+    second = api.organization("other-pack-admin")
+    base = f"/api/v1/organizations/{first}/domain-packs"
+
+    catalog = api.client.get(f"{base}/catalog", headers=api.headers("pack-admin"))
+    assert catalog.status_code == 200
+    assert catalog.json() == {"valid": True, "releases": [], "issues": []}
+    installations = api.client.get(f"{base}/installations", headers=api.headers("pack-admin"))
+    assert installations.status_code == 200
+    assert installations.json() == {"items": []}
+
+    cross_tenant = api.client.get(
+        f"/api/v1/organizations/{second}/domain-packs/installations",
+        headers=api.headers("pack-admin"),
+    )
+    assert cross_tenant.status_code == 403
+
+    token = api.invitation(
+        first,
+        api.workspace(first, "pack-admin"),
+        "Viewer",
+        "pack-admin",
+        "pack-viewer@example.com",
+    )
+    api.accept(first, token, "pack-viewer", "pack-viewer@example.com")
+    plan = api.client.post(
+        f"{base}/plans",
+        headers=api.headers("pack-viewer"),
+        json={
+            "operation": "install",
+            "pack_id": "org.example.operations-basics",
+            "version_range": "=1.0.0",
+        },
+    )
+    assert plan.status_code == 403
+
+
+def test_domain_pack_api_installs_reviewed_release_and_audits(api: Api, tmp_path: Path) -> None:
+    organization = api.organization("pack-installer")
+    pack_id = "org.example.operations-basics"
+    release = tmp_path / pack_id / "1.0.0"
+    release.mkdir(parents=True)
+    content = b"Organization-neutral localization metadata\n"
+    (release / "README.md").write_bytes(content)
+    digest = hashlib.sha256(content).hexdigest()
+    manifest = {
+        "schema_version": "1",
+        "id": pack_id,
+        "name": "Operations Basics",
+        "version": "1.0.0",
+        "pack_type": "functional",
+        "core_version_range": ">=0.1.0 <1.0.0",
+        "dependencies": [],
+        "capabilities": ["locales"],
+        "content_checksums": [{"path": "README.md", "sha256": digest}],
+        "publisher": "Platform Curators",
+    }
+    (release / "pack.yaml").write_text(json.dumps(manifest), encoding="utf-8")
+    api.settings.domain_pack_registry_directory = str(tmp_path)
+    base = f"/api/v1/organizations/{organization}/domain-packs"
+
+    planned = api.client.post(
+        f"{base}/plans",
+        headers=api.headers("pack-installer"),
+        json={"operation": "install", "pack_id": pack_id, "version_range": "=1.0.0"},
+    )
+    assert planned.status_code == 200, planned.text
+    plan = planned.json()
+    assert plan["valid"] is True
+    assert plan["selected_release_summaries"][0]["content_sha256"]
+    assert plan["selected_releases"] == []
+
+    applied = api.client.post(
+        f"{base}/apply",
+        headers=api.headers("pack-installer"),
+        json={
+            "operation": "install",
+            "pack_id": pack_id,
+            "version_range": "=1.0.0",
+            "expected_plan_sha256": plan["plan_sha256"],
+            "reason": "Approved organization pack rollout",
+        },
+    )
+    assert applied.status_code == 200, applied.text
+    assert applied.json()["items"][0]["state"] == "installed"
+    audit = api.session.scalar(
+        select(AuditRow).where(
+            AuditRow.organization_id == organization,
+            AuditRow.type == "domain_pack.install",
+        )
+    )
+    assert audit is not None
+    assert audit.payload["pack_id"] == pack_id
+    assert audit.payload["package_sha256"] == plan["steps"][0]["content_sha256"]
+
+
+def test_domain_pack_migration_refuses_populated_rollback(api: Api, tmp_path: Path) -> None:
+    organization = api.organization("pack-rollback-installer")
+    pack_id = "org.example.rollback-check"
+    release = tmp_path / pack_id / "1.0.0"
+    release.mkdir(parents=True)
+    content = b"Rollback guard fixture\n"
+    (release / "README.md").write_bytes(content)
+    manifest = {
+        "schema_version": "1",
+        "id": pack_id,
+        "name": "Rollback Check",
+        "version": "1.0.0",
+        "pack_type": "functional",
+        "core_version_range": ">=0.1.0 <1.0.0",
+        "dependencies": [],
+        "capabilities": ["locales"],
+        "content_checksums": [{"path": "README.md", "sha256": hashlib.sha256(content).hexdigest()}],
+        "publisher": "Platform Curators",
+    }
+    (release / "pack.yaml").write_text(json.dumps(manifest), encoding="utf-8")
+    api.settings.domain_pack_registry_directory = str(tmp_path)
+    base = f"/api/v1/organizations/{organization}/domain-packs"
+    plan_response = api.client.post(
+        f"{base}/plans",
+        headers=api.headers("pack-rollback-installer"),
+        json={"operation": "install", "pack_id": pack_id, "version_range": "=1.0.0"},
+    )
+    assert plan_response.status_code == 200, plan_response.text
+    plan = plan_response.json()
+    applied = api.client.post(
+        f"{base}/apply",
+        headers=api.headers("pack-rollback-installer"),
+        json={
+            "operation": "install",
+            "pack_id": pack_id,
+            "version_range": "=1.0.0",
+            "expected_plan_sha256": plan["plan_sha256"],
+            "reason": "Verify populated-history rollback protection",
+        },
+    )
+    assert applied.status_code == 200, applied.text
+
+    revision = ScriptDirectory.from_config(Config("alembic.ini")).get_revision("2ad7f8e6c301")
+    assert revision is not None
+    with pytest.raises(DBAPIError, match="Pack history prevents rollback"):  # noqa: SIM117
+        with ExitStack() as stack:
+            stack.enter_context(api.session.begin_nested())
+            stack.enter_context(
+                Operations.context(MigrationContext.configure(api.session.connection()))
+            )
+            revision.module.downgrade()
+    installations = api.client.get(
+        f"{base}/installations", headers=api.headers("pack-rollback-installer")
+    )
+    assert installations.status_code == 200
 
 
 def test_invitation_replay_email_binding_revocation_and_history(api: Api) -> None:

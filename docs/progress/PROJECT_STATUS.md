@@ -1,11 +1,30 @@
 # Project Status
 
-Status: PHASE 7 COMPLETE - READY FOR PHASE 8
-Current phase: Phase 8 - integrations foundation (not started)
+Status: PHASE 8 HOSTED VERIFICATION PENDING
+Current phase: Phase 8 - Domain Pack framework
 Last updated: 2026-10-11
 Overall completion: 8/11 phases accepted. Phase 0 through Phase 7 each
 satisfy 8/8 criteria. Phase 7: P7-01 through P7-08 PASS.
 No unsupported project-wide percentage is reported.
+
+## In progress: Phase 8
+P8-01 through P8-08 are defined in the Phase Log. The phase delivers typed
+manifest/registry contracts, deterministic dependency and version resolution,
+validated dry-run lifecycle plans, authorized and audited installation, and an SDK
+validator. ADR-0035 establishes a curated immutable registry, declarative-only pack
+contents, allowlisted migrations and organization-scoped installs; publisher
+signatures, tenant uploads and workspace/project installs are out of scope. Q-015 is
+resolved. Manifest/SDK validation, curated registry, dependency resolution,
+organization lifecycle service, persistence and API are implemented as a working
+slice, including review-only typed migration validation under ADR-0036. Phase 8
+has 7/8 criteria accepted locally. Q-017 is resolved under accepted ADR-0037: template-specific
+semantic validation waits for stable pack artifact schemas/reference conventions,
+currently planned with the Phase 9 starter pack. No Phase 9 work has started.
+
+## Next tasks
+1. Commit the locally verified Phase 8 implementation and progress evidence.
+2. Push the phase commit and verify exact-code hosted CI.
+3. Mark Phase 8 complete and begin Phase 9 only after hosted CI passes.
 
 ## Completed modules
 - Foundation, infrastructure, observability, CI and module boundaries.
@@ -143,9 +162,10 @@ Hosted run [38130020096](https://github.com/AminMShahnani/industrial-operations-
 passed backend and frontend jobs on implementation commit
 `fedb956386855f324fa024f52347fe710c97e6ea`. Phase 8 may begin.
 
-## Next
-Begin Phase 8 according to `docs/27_CODEX_EXECUTION_PLAN.md` after review of the
-Phase 7 completion record.
+## Phase 8 gate status
+Security boundary: Q-015 is resolved in ADR-0035. Phase 8 implementation begins
+with the non-mutating manifest/SDK validator. No Phase 8 schema migration exists yet;
+Phase 7 quality evidence is the latest completed full-suite baseline.
 
 Latest complete backend suite: 328 passed / 9 e2e deselected, including the
 strengthened 101-row durable-export integration test; the real PKCE browser suite

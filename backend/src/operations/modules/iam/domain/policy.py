@@ -42,6 +42,7 @@ PERMISSIONS: dict[Role, frozenset[str]] = {
             "department.manage",
             "master_data.read",
             "master_data.manage",
+            "domain_pack.install",
         }
     ),
     Role.WORKSPACE_OWNER: frozenset(

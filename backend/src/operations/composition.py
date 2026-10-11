@@ -9,6 +9,9 @@ from operations.modules.automation.application.service import AutomationService,
 from operations.modules.automation.application.timers import TimerService
 from operations.modules.automation.infrastructure.persistence import AutomationRepository
 from operations.modules.automation.infrastructure.timers import TimerRepository
+from operations.modules.domain_packs.application.service import DomainPackService
+from operations.modules.domain_packs.infrastructure.persistence import PackInstallationRepository
+from operations.modules.domain_packs.infrastructure.registry import CuratedPackRegistry
 from operations.modules.files.application.reconciliation import FileReconciler
 from operations.modules.files.application.service import FileService
 from operations.modules.files.infrastructure.adapters import ClamScanner, S3Storage
@@ -92,6 +95,7 @@ class Services:
     master_data: MasterDataService
     master_transfer: MasterDataTransfer
     reporting: ReportingService
+    domain_packs: DomainPackService
 
 
 def compose(
@@ -129,6 +133,17 @@ def compose(
     )
     submissions = SubmissionService(SubmissionRepository(session), forms)
     settings = settings or Settings()  # type: ignore[call-arg]
+
+    pack_registry = CuratedPackRegistry(settings.domain_pack_registry_directory)
+
+    pack_service = DomainPackService(
+        pack_registry,
+        PackInstallationRepository(session, pack_registry),
+        authorization,
+        organizations,
+        audit,
+        "0.1.0",
+    )
     files = FileService(
         FileRepository(session),
         submissions,
@@ -213,4 +228,5 @@ def compose(
             audit,
             ReportExportJobRepository(session),
         ),
+        pack_service,
     )

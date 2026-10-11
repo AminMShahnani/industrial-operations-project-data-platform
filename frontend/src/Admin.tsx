@@ -7,6 +7,7 @@ import { Notifications } from './Notifications';
 import { EmailRecovery } from './EmailRecovery';
 import { WebhookEndpoints } from './WebhookEndpoints';
 import { WebhookRecovery } from './WebhookRecovery';
+import { DomainPacks } from './DomainPacks';
 import { InvitationAcceptance } from './InvitationAcceptance';
 import { invitationPath, invitationRequestId, invitationTargetFromState, readInvitationTarget } from './invitation-link';
 
@@ -605,6 +606,7 @@ export function Administration() {
     {organization && permissions.includes('organization.manage') && <EmailRecovery key={'email' + organization} api={api} organization={organization}/>}
     {organization && (permissions.includes('integration.manage') || permissions.includes('organization.manage')) && <WebhookRecovery key={'webhook-recovery' + organization} api={api} organization={organization}/>}
     {organization && (permissions.includes('integration.manage') || permissions.includes('organization.manage') || (workspace && permissions.includes('workspace.manage'))) && <WebhookEndpoints key={'webhook' + organization + workspace} api={api} organization={organization} workspace={workspace || undefined}/>}
+    {organization && permissions.includes('organization.read') && <DomainPacks key={'domain-packs' + organization} api={api} organization={organization} canManage={permissions.includes('domain_pack.install')}/>}
     {organization && workspace && <Notifications key={'notifications' + organization + workspace} api={api} organization={organization} workspace={workspace} />}
     {organization && workspace && <ProjectAdministration key={organization + workspace} api={api} organization={organization} workspace={workspace} userId={me?.memberships.find(item=>item.organization_id===organization)?.user_id??''} />}
     <section><h2>Accept an invitation</h2><form onSubmit={event => void acceptInvitation(event)}>

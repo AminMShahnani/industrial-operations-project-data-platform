@@ -40,6 +40,9 @@ class AuditDetails(Command):
     timer_version_id: UUID | None = None
     reminder_id: UUID | None = None
     source_created_at: datetime | None = None
+    pack_id: str | None = None
+    pack_version: str | None = None
+    package_sha256: str | None = None
 
 
 class AuditEvent(Command):

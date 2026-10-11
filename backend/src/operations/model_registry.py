@@ -5,6 +5,12 @@ from operations.modules.automation.infrastructure.persistence import EventRow as
 from operations.modules.automation.infrastructure.timers import (
     TimerOccurrenceRow as TimerOccurrenceRow,
 )
+from operations.modules.domain_packs.infrastructure.persistence import (
+    PackInstallationRow as PackInstallationRow,
+)
+from operations.modules.domain_packs.infrastructure.persistence import (
+    PackProvenanceRow as PackProvenanceRow,
+)
 from operations.modules.files.infrastructure.persistence import FileRow as FileRow
 from operations.modules.forms.infrastructure.persistence import (
     FormRow as FormRow,

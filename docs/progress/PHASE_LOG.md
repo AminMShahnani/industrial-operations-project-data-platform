@@ -1,5 +1,96 @@
 # Phase Log
 
+## Phase 8 preparation - Domain Pack framework - 2026-10-11
+
+Roadmap scope: manifest, registry, dependency/version/install engine and SDK
+validation. Source requirements are docs/02, docs/03 FR-070..074, docs/13 and
+cross-cutting tenant security, API, testing and operations requirements. Core must
+remain industry-neutral; packs are declarative and retain source/version provenance.
+
+Acceptance criteria before implementation:
+- P8-01: typed, schema-versioned manifest contracts validate identity, semantic
+  version, pack type, Core compatibility, dependencies, capabilities, publisher and
+  content checksums.
+- P8-02: registry entries and package versions are immutable, digest-verified and
+  inspectable; registry provenance is explicit.
+- P8-03: deterministic dependency resolution handles version constraints, missing
+  dependencies, conflicts and cycles with actionable validation errors.
+- P8-04: install and upgrade plans perform compatibility, bounded content/checksum,
+  dependency and typed migration validation, then report dry-run changes without
+  mutating organization state. Template semantic validation is deferred under
+  accepted ADR-0037 until pack artifact schemas and reference conventions exist.
+- P8-05: approved install/upgrade/disable/uninstall lifecycle operations are
+  idempotent, preserve operational history and pack/version provenance, and refuse
+  unsafe removal or override replacement.
+- P8-06: server-side authorization enforces the approved installation scopes and
+  `domain_pack.install`; each operational lifecycle write emits immutable audit.
+- P8-07: SDK validation CLI and contract schemas reject invalid manifests, unsafe
+  package syntax/structure, checksum drift and disallowed migration operations.
+  Template-specific expression/schema/reference validation is explicitly deferred
+  under accepted ADR-0037 until corresponding pack artifact contracts are defined.
+- P8-08: migrations/rollback, tenant isolation, authorization negatives, lifecycle
+  behavior, contract/tests, lint/types and local plus exact-hosted CI pass.
+
+The project owner accepted ADR-0035 on 2026-10-11: use a curated immutable registry,
+declarative pack content with allowlisted migration operations, no tenant upload or
+arbitrary remote fetch, and organization-only installations. Signatures/trust roots
+and workspace/project materialization remain outside this phase. Q-015 is resolved.
+
+The project owner accepted ADR-0036 on 2026-10-11: migration descriptors may contain
+only review-only `deprecate_artifact` and `add_optional_field` operations. Typed
+YAML validation rejects executable/unknown operations and includes valid descriptors
+in the public install/upgrade plan; Phase 8 does not execute them.
+
+The project owner accepted ADR-0037 on 2026-10-11: Phase 8 validates bounded
+syntax/structure, checksums and typed migration descriptors; template-specific
+expression/schema/reference validation is deferred until stable artifact contracts
+are defined (currently planned with the Phase 9 starter pack). Q-017 is resolved.
+
+The initial implementation adds typed manifests, bounded package validation,
+generated JSON Schema and a CLI; duplicate keys, aliases, symlinks, executable files,
+path escapes and digest drift are rejected. A read-only curated registry verifies
+release paths/checksums; deterministic semver dependency resolution rejects missing,
+conflicting, cyclic and Core-incompatible dependencies. The organization lifecycle
+API is plan-bound, server-authorized and audited; release provenance is immutable,
+concurrent state writes use row-version checks, and populated migration downgrade
+refuses before data removal. Uninstall is fail-closed while pack ownership links for
+materialized artifacts are undefined. Focused tests and strict static checks pass.
+The organization administration UI is implemented against the generated OpenAPI
+client. The database-backed backend suite passes 362 tests; the separate real OIDC/
+Playwright suite passes all 9. Frontend passes lint, typecheck, 19 tests and build;
+Ruff and formatting pass (411 files), strict mypy passes (325 files), OpenAPI and
+manifest schema drift pass, and a fresh disposable PostgreSQL database upgrades,
+round-trips and passes Alembic drift. P8-01 through P8-07 PASS based on the
+implementation, API and package tests, including populated rollback refusal and
+accepted bounded-validation scope. P8-08 local gates PASS; exact hosted CI remains
+pending. Lifecycle semantics are documented with fail-closed uninstall; artifact
+materialization, safe uninstall, signature trust policy, nested scopes and template-
+specific semantic validation remain deferred by accepted decisions. No Phase 9 work.
+
+Phase 8 acceptance evidence (2026-10-11):
+- P8-01 PASS: typed schema-versioned manifest, generated schema, identity/version,
+  Core compatibility, capability and checksum validation.
+- P8-02 PASS: curated immutable registry verifies release paths and package digests.
+- P8-03 PASS: deterministic dependency resolver covers missing/conflicting/cyclic
+  dependencies and Core compatibility.
+- P8-04 PASS: organization install/upgrade plans are dry-run, dependency-aware,
+  digest-bound and validate accepted typed migration descriptors.
+- P8-05 PASS: lifecycle is audited/idempotent and preserves provenance; unsafe
+  uninstall is fail-closed because artifact ownership is not yet modeled.
+- P8-06 PASS: server-enforced organization scope and permission, tenant isolation,
+  lifecycle audit, and browser administration view.
+- P8-07 PASS: CLI/schema reject malformed manifests, unsafe package structures,
+  checksum drift and disallowed migrations. ADR-0037 explicitly defers semantic
+  validation until pack artifact schemas/reference conventions are defined.
+- P8-08 local PASS: 362 DB-backed backend tests; 9/9 real OIDC/Playwright browser
+  tests; 19 frontend tests; lint, typecheck, strict mypy (325 source files), Ruff
+  and format (411 files), frontend production build, OpenAPI/manifest schema drift,
+  migration upgrade/downgrade/re-upgrade and Alembic drift; populated rollback guard
+  test verifies pack rows remain readable after refusal. Exact-code hosted CI pending.
+
+Overall Phase 8: 7/8 accepted locally; P8-08 awaits exact hosted CI. No Phase 9
+implementation before hosted success.
+
 ## Phase 6 final acceptance - 2026-10-10
 
 The user confirmed the deployment secret mount and webhook CIDR egress controls

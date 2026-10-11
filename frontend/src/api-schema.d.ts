@@ -90,6 +90,74 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/organizations/{organization_id}/domain-packs/apply": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Apply */
+        post: operations["apply_api_v1_organizations__organization_id__domain_packs_apply_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/organizations/{organization_id}/domain-packs/catalog": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Catalog */
+        get: operations["catalog_api_v1_organizations__organization_id__domain_packs_catalog_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/organizations/{organization_id}/domain-packs/installations": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Installed */
+        get: operations["installed_api_v1_organizations__organization_id__domain_packs_installations_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/organizations/{organization_id}/domain-packs/plans": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Plan */
+        post: operations["plan_api_v1_organizations__organization_id__domain_packs_plans_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/organizations/{organization_id}/email-deliveries": {
         parameters: {
             query?: never;
@@ -2053,6 +2121,26 @@ export interface components {
             /** Expected Sha256 */
             expected_sha256?: string | null;
         };
+        /** AddOptionalField */
+        AddOptionalField: {
+            /** Artifact Id */
+            artifact_id: string;
+            /**
+             * Artifact Kind
+             * @enum {string}
+             */
+            artifact_kind: "form" | "master_data_type";
+            /** Field Id */
+            field_id: string;
+            field_type: components["schemas"]["MigrationFieldType"];
+            /** Label */
+            label: string;
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            operation: "add_optional_field";
+        };
         /** AnnotationPage */
         AnnotationPage: {
             /** Items */
@@ -2593,6 +2681,19 @@ export interface components {
              * @enum {string}
              */
             redis: "up" | "down";
+        };
+        /** DeprecateArtifact */
+        DeprecateArtifact: {
+            /** Artifact Id */
+            artifact_id: string;
+            artifact_kind: components["schemas"]["MigrationArtifactKind"];
+            /**
+             * @description discriminator enum property added by openapi-typescript
+             * @enum {string}
+             */
+            operation: "deprecate_artifact";
+            /** Reason */
+            reason: string;
         };
         /** Download */
         Download: {
@@ -3291,6 +3392,16 @@ export interface components {
             /** Read At */
             read_at: string | null;
         };
+        /** InstallationPage */
+        InstallationPage: {
+            /** Items */
+            items: components["schemas"]["PackInstallation"][];
+        };
+        /**
+         * InstallationState
+         * @enum {string}
+         */
+        InstallationState: "installed" | "enabled" | "disabled" | "uninstalled";
         /** InstancePage */
         InstancePage: {
             /** Items */
@@ -3437,6 +3548,23 @@ export interface components {
              */
             state: "active" | "paused" | "retired";
         };
+        /** LifecycleApplyRequest */
+        LifecycleApplyRequest: {
+            /**
+             * Confirm Breaking Change
+             * @default false
+             */
+            confirm_breaking_change: boolean;
+            /** Expected Plan Sha256 */
+            expected_plan_sha256: string;
+            operation: components["schemas"]["LifecycleOperation"];
+            /** Pack Id */
+            pack_id: string;
+            /** Reason */
+            reason: string;
+            /** Version Range */
+            version_range?: string | null;
+        };
         /** LifecycleDefinition */
         LifecycleDefinition: {
             /**
@@ -3509,6 +3637,70 @@ export interface components {
              * @default 1
              */
             version: number;
+        };
+        /**
+         * LifecycleOperation
+         * @enum {string}
+         */
+        LifecycleOperation: "install" | "upgrade" | "enable" | "disable" | "uninstall";
+        /** LifecyclePlan */
+        LifecyclePlan: {
+            /** Issues */
+            issues?: components["schemas"]["LifecyclePlanIssue"][];
+            operation: components["schemas"]["LifecycleOperation"];
+            /**
+             * Organization Id
+             * Format: uuid
+             */
+            organization_id: string;
+            /** Pack Id */
+            pack_id: string;
+            /** Plan Sha256 */
+            plan_sha256?: string | null;
+            /** Selected Release Summaries */
+            selected_release_summaries?: components["schemas"]["PackReleaseSummary"][];
+            /** Selected Releases */
+            selected_releases?: components["schemas"]["PackRelease"][];
+            /** Steps */
+            steps?: components["schemas"]["LifecyclePlanStep"][];
+            /** Valid */
+            valid: boolean;
+        };
+        /** LifecyclePlanIssue */
+        LifecyclePlanIssue: {
+            /** Code */
+            code: string;
+            /** Message */
+            message: string;
+            /** Pack Id */
+            pack_id: string;
+        };
+        /** LifecyclePlanRequest */
+        LifecyclePlanRequest: {
+            operation: components["schemas"]["LifecycleOperation"];
+            /** Pack Id */
+            pack_id: string;
+            /** Version Range */
+            version_range?: string | null;
+        };
+        /** LifecyclePlanStep */
+        LifecyclePlanStep: {
+            action: components["schemas"]["PlanStepAction"];
+            /** Content Sha256 */
+            content_sha256?: string | null;
+            /** Expected Row Version */
+            expected_row_version?: number | null;
+            /** From Version */
+            from_version?: string | null;
+            /** Pack Id */
+            pack_id: string;
+            /**
+             * Requires Breaking Review
+             * @default false
+             */
+            requires_breaking_review: boolean;
+            /** To Version */
+            to_version?: string | null;
         };
         /** LookupItem */
         LookupItem: {
@@ -3593,6 +3785,16 @@ export interface components {
              */
             kind: "set_metadata";
         };
+        /**
+         * MigrationArtifactKind
+         * @enum {string}
+         */
+        MigrationArtifactKind: "form" | "workflow" | "master_data_type" | "report" | "dashboard" | "automation";
+        /**
+         * MigrationFieldType
+         * @enum {string}
+         */
+        MigrationFieldType: "text" | "integer" | "number" | "boolean" | "date" | "datetime";
         /** Milestone */
         Milestone: {
             /**
@@ -3825,11 +4027,122 @@ export interface components {
             /** State */
             state: ("open" | "in_progress" | "submitted" | "awaiting_review" | "returned" | "approved" | "cancelled" | "superseded" | "completed") | null;
         };
+        /**
+         * PackCapability
+         * @enum {string}
+         */
+        PackCapability: "fields" | "components" | "forms" | "master-data" | "workflows" | "automations" | "dashboards" | "reports" | "roles" | "integrations" | "import-mappings" | "locales";
+        /** PackContentChecksum */
+        PackContentChecksum: {
+            /** Path */
+            path: string;
+            /** Sha256 */
+            sha256: string;
+        };
+        /** PackDependency */
+        PackDependency: {
+            /** Id */
+            id: string;
+            /** Version Range */
+            version_range: string;
+        };
+        /** PackInstallation */
+        PackInstallation: {
+            /** Content Sha256 */
+            content_sha256: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Installed By
+             * Format: uuid
+             */
+            installed_by: string;
+            /**
+             * Organization Id
+             * Format: uuid
+             */
+            organization_id: string;
+            /** Pack Id */
+            pack_id: string;
+            /** Row Version */
+            row_version: number;
+            state: components["schemas"]["InstallationState"];
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+            /** Version */
+            version: string;
+        };
+        /** PackManifest */
+        PackManifest: {
+            /** Capabilities */
+            capabilities: components["schemas"]["PackCapability"][];
+            /** Content Checksums */
+            content_checksums: components["schemas"]["PackContentChecksum"][];
+            /** Core Version Range */
+            core_version_range: string;
+            /** Dependencies */
+            dependencies?: components["schemas"]["PackDependency"][];
+            /** Id */
+            id: string;
+            /** Name */
+            name: string;
+            pack_type: components["schemas"]["PackType"];
+            /** Publisher */
+            publisher: string;
+            /** Schema Version */
+            schema_version: string;
+            /** Version */
+            version: string;
+        };
+        /** PackRelease */
+        PackRelease: {
+            /** Content Sha256 */
+            content_sha256: string;
+            manifest: components["schemas"]["PackManifest"];
+            /** Migration Operations */
+            migration_operations?: (components["schemas"]["DeprecateArtifact"] | components["schemas"]["AddOptionalField"])[];
+            /** Registry Locator */
+            registry_locator: string;
+        };
+        /** PackReleaseSummary */
+        PackReleaseSummary: {
+            /** Content Sha256 */
+            content_sha256: string;
+            /** Migration Operations */
+            migration_operations?: (components["schemas"]["DeprecateArtifact"] | components["schemas"]["AddOptionalField"])[];
+            /** Pack Id */
+            pack_id: string;
+            /** Registry Locator */
+            registry_locator: string;
+            /** Version */
+            version: string;
+        };
+        /**
+         * PackType
+         * @enum {string}
+         */
+        PackType: "industry" | "functional" | "organization_overlay";
         /** PermissionHints */
         PermissionHints: {
             /** Permissions */
             permissions: string[];
         };
+        /**
+         * PlanStepAction
+         * @enum {string}
+         */
+        PlanStepAction: "install" | "upgrade" | "enable" | "disable" | "uninstall" | "noop";
         /** Presentation */
         Presentation: {
             /**
@@ -4201,11 +4514,29 @@ export interface components {
              */
             timezone: string;
         };
+        /** RegistryIssue */
+        RegistryIssue: {
+            /** Code */
+            code: string;
+            /** Locator */
+            locator?: string | null;
+            /** Message */
+            message: string;
+        };
         /**
          * RegistryKind
          * @enum {string}
          */
         RegistryKind: "custom" | "location" | "asset" | "unit" | "currency" | "shift";
+        /** RegistrySnapshot */
+        RegistrySnapshot: {
+            /** Issues */
+            issues?: components["schemas"]["RegistryIssue"][];
+            /** Releases */
+            releases?: components["schemas"]["PackRelease"][];
+            /** Valid */
+            valid: boolean;
+        };
         /** Reminder */
         Reminder: {
             /**
@@ -6531,6 +6862,462 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["Organization"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+        };
+    };
+    apply_api_v1_organizations__organization_id__domain_packs_apply_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                organization_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LifecycleApplyRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InstallationPage"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+        };
+    };
+    catalog_api_v1_organizations__organization_id__domain_packs_catalog_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                organization_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RegistrySnapshot"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+        };
+    };
+    installed_api_v1_organizations__organization_id__domain_packs_installations_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                organization_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["InstallationPage"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Content Too Large */
+            413: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Unprocessable Content */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Too Many Requests */
+            429: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Internal Server Error */
+            500: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+            /** @description Service Unavailable */
+            503: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ProblemDetails"];
+                    "application/problem+json": unknown;
+                };
+            };
+        };
+    };
+    plan_api_v1_organizations__organization_id__domain_packs_plans_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                organization_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["LifecyclePlanRequest"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["LifecyclePlan"];
                 };
             };
             /** @description Unauthorized */

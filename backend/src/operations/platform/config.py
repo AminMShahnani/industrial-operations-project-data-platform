@@ -29,6 +29,7 @@ class Settings(BaseSettings):
     email_profiles_directory: str | None = None
     webhook_private_egress_cidrs: list[str] = Field(default_factory=list)
     webhook_secrets_directory: str | None = None
+    domain_pack_registry_directory: str = "domain-packs/registry"
 
     @model_validator(mode="after")
     def validate_trust(self) -> Settings:

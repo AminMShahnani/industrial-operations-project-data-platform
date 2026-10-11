@@ -1,5 +1,36 @@
 # Open Questions
 
+## Q-015: Phase 8 package trust, migration execution and install scope (resolved)
+
+The Domain Pack architecture requires publisher metadata, checksums, a constrained
+migration format and organization-admin installation. Signature metadata is marked
+future enterprise work, but no trust root, registry source, migration operation
+allowlist or nested-scope override/provenance policy is defined. ADR-0035 proposes
+a curated immutable registry, declarative-only packs with allowlisted migration
+operations, no tenant uploads/arbitrary remote fetch, and organization-scoped
+installation only. The project owner selected this recommendation on 2026-10-11;
+ADR-0035 is accepted. Publisher signatures/trust roots remain future work; no
+workspace/project installation or executable migration content is authorized.
+
+## Q-016: Phase 8 declarative migration operations (resolved)
+
+ADR-0035 establishes typed allowlisted migration descriptors but not the v1 operation
+set. On 2026-10-11, the project owner selected the recommended review-only allowlist:
+`deprecate_artifact` and `add_optional_field`. Phase 8 validates and shows these
+operations in previews but does not execute them. ADR-0036 records the schema and
+the deferral until artifact-owning modules expose safe atomic migration services.
+
+## Q-017: Phase 8 template-specific validation scope (resolved)
+
+The pack architecture lists multiple artifact types but does not define pack-local
+artifact schemas, stable IDs or cross-file reference syntax. ADR-0037 proposes that
+Phase 8 validate bounded syntax/checksums and accepted typed migration descriptors,
+while deferring template-specific expression/schema/reference validation until the
+corresponding artifact schema and materialization contract exist. The project owner
+selected this recommendation on 2026-10-11. ADR-0037 is accepted; P8-07 uses the
+resolved bounded-validation scope, and template-specific checks are assigned to the
+phase defining the relevant artifact contracts (currently Phase 9 starter pack).
+
 ## Phase 7 import mapping boundary - 2026-10-11
 
 Resolved by ADR-0032: map source headers one-to-one to declared fields, require

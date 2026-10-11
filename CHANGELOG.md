@@ -1,5 +1,21 @@
 # Changelog
 
+## Unreleased - Phase 8 in progress (2026-10-11)
+
+- Add typed schema-versioned Domain Pack manifests, generated JSON Schema, bounded
+  safe package validation, a read-only curated registry adapter, deterministic
+  dependency resolution, SDK validation, review-only typed migration descriptors
+  (ADR-0036), and organization-scoped plan/apply lifecycle API/UI under ADR-0035.
+  Install/upgrade is preview-bound, permission-checked, audited and provenance
+  preserving. Template artifact materialization and safe uninstall remain deferred;
+  accepted ADR-0037 defers template-specific semantic validation until stable artifact
+  schemas and reference conventions are defined.
+
+- Phase 8 local acceptance: 362 DB-backed backend tests and 9 browser tests pass;
+  frontend tests/build, lint, strict type checks, generated schemas/contracts and
+  migration upgrade/rollback/drift checks pass. Populated installation history
+  rollback refusal is covered by API integration. Exact-code hosted CI is pending.
+
 ## Phase 7 complete (2026-10-11)
 
 - Add creator-private durable report export jobs for CSV/XLSX/PDF. Jobs bind to

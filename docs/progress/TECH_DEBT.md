@@ -1,5 +1,23 @@
 # Technical Debt Register
 
+Phase 8 decision (2026-10-11): Q-015 is resolved under ADR-0035. Curated registry,
+declarative content/allowlisted migration operations and organization-only installs
+are required. Tenant uploads, arbitrary remote fetch, executable migrations,
+publisher trust/signature policy and workspace/project installs are out of scope,
+not accepted technical debt.
+
+Phase 8 lifecycle guard: pack-created artifact ownership/provenance links are not
+defined by the current Forms, Workflows and Master Data schemas. Uninstall is
+therefore blocked for any recorded installation; disable remains supported and no
+operational data or provenance is deleted. Define and migrate complete artifact
+provenance before enabling safe uninstall. This is a documented Phase 8 deferral,
+not a bypass of the history-preservation requirement.
+
+Phase 8 validation scope: Q-017 / ADR-0037 is resolved and accepted. Pack-local artifact schemas,
+stable IDs and reference conventions are not defined, so template-specific semantic
+expression and cross-artifact reference validation is not claimed. Resolve this
+boundary before accepting P8-07; do not materialize unvalidated template content.
+
 Phase 7 reporting/export (2026-10-11): durable private report export jobs, text-only
 PDF, download-time authorization/integrity checks, idempotent redispatch and
 24-hour retention cleanup are implemented under accepted ADR-0034 (Q-014 resolved).
