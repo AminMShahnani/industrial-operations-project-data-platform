@@ -1831,12 +1831,14 @@ Frontend lint, typecheck, 19 tests and production build pass. Ruff check/format 
 strict mypy across 333 files pass. OpenAPI and artifact-schema drift, curated pack
 validation, isolated PostgreSQL migration roundtrip/drift, and `git diff --check` pass.
 Repeated XLSX output is byte-identical after normalizing workbook modified metadata.
-Hosted runs [38166147233](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/38166147233)
-and [38167717835](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/38167717835)
-passed frontend and failed the backend non-e2e test step; logs require repository
-admin access and were unavailable here. The same exact implementation commit passed
-the full 383-test non-e2e suite in a Linux/Python 3.14 container against isolated
-PostgreSQL, Redis and RustFS. To expose only failure node IDs on the next run, CI now
-writes a bounded pytest failure annotation without test output or fixture values.
-Trigger a fresh exact-code hosted run before accepting P9-08. No acceptance
-requirement is deferred.
+Hosted runs [38166147233](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/38166147233),
+[38167717835](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/38167717835),
+and [38168545470](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/38168545470)
+passed frontend but failed backend tests. CI's bounded annotation identified three
+pack validation/API tests. Reproduction from a Git archive on Linux ext4 found that
+artifact hashes had been generated from Windows CRLF worktree files while Git stores
+the pack files as LF blobs. All 46 manifest checksums were regenerated from canonical
+LF bytes; curated package validation and all three failing tests now pass from an
+ext4-extracted Linux archive. The prior full Linux/Python 3.14 suite passed 383 tests
+on content-equivalent code. Trigger a fresh exact-code hosted run before accepting
+P9-08. No acceptance requirement is deferred.

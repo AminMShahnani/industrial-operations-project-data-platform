@@ -13,7 +13,7 @@ Phases are sequential. No later phase starts until the current checklist passes.
 | 6 | Automation, durable outbox processing, notifications | ACCEPTED 8/8; backend/frontend hosted run 38079026238 on b97822e; deployment secret mount and egress verified per owner |
 | 7 | Governed datasets, dashboards, CSV/XLSX/PDF, import wizard | P7-01 through P7-08 defined in PHASE_LOG; generation/download authorization, bounded reads |
 | 8 | Pack contracts, dependency resolution, install/upgrade/uninstall, SDK | Compatibility, provenance, overlay and rollback tests |
-| 9 | Oil & Gas pack forms, registries, workflows, KPIs, mappings | Local verification complete; hosted runs 38166147233 and 38167717835 failed backend tests, while exact-source Linux reproduction passes; CI now reports failing test IDs; fresh P9-08 run pending |
+| 9 | Oil & Gas pack forms, registries, workflows, KPIs, mappings | Hosted run 38168545470 exposed CRLF/LF-sensitive pack hashes; checksums were regenerated from LF blobs and all three affected tests pass on Linux ext4; fresh P9-08 run pending |
 | 10 | Security, performance, restore, legacy migration validation, UAT | Full Definition of Done and operational evidence |
 
 Each phase must add detailed acceptance criteria before implementation, identify

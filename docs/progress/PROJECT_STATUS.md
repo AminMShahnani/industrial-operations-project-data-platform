@@ -6,10 +6,13 @@ Last updated: 2026-10-11
 Overall completion: 9/11 phases accepted. Phase 0 through Phase 8 each
 satisfy 8/8 criteria. Phase 8: P8-01 through P8-08 PASS.
 No unsupported project-wide percentage is reported. Phase 9 decisions Q-018/Q-019/Q-020
-are resolved. Hosted runs 38166147233 and 38167717835 passed frontend but failed the
-backend test step; the same committed source passed all 383 non-e2e tests in a
-Linux/Python 3.14 container. CI now annotates failing pytest node IDs without test
-output. A fresh exact hosted run is required before Phase 9 acceptance.
+are resolved. Hosted runs 38166147233, 38167717835 and 38168545470 passed frontend
+but failed backend tests. The diagnostic annotation identified three Domain Pack
+tests: checksums were generated from Windows CRLF files while GitHub checked out LF
+blobs. All 46 pack checksums now use canonical LF bytes; the three failures pass from
+an ext4-extracted Linux archive. Full Linux/Python 3.14 backend regression also passed
+on the prior content-equivalent source. A fresh exact hosted run is required before
+Phase 9 acceptance.
 
 ## Completed: Phase 8
 P8-01 through P8-08 are defined in the Phase Log. The phase delivers typed
@@ -27,9 +30,9 @@ typed pack artifact envelopes, a curated Oil & Gas 1.0.0 release, exact referenc
 and package-level validation.
 
 ## Next 5 tasks
-1. Push CI diagnostic annotation and trigger a fresh hosted quality run.
-2. Read the failing pytest node ID from the check annotation if backend fails.
-3. Reproduce/fix any specific runner-only failure and rerun local checks.
+1. Push the LF-normalized manifest checksums and trigger a fresh hosted quality run.
+2. Review backend and frontend results on the exact implementation commit.
+3. If it fails again, use the test-ID annotation to reproduce the specific failure.
 4. Update P9-08 evidence after both hosted jobs pass.
 5. Mark Phase 9 accepted only after all eight criteria and gates pass.
 
@@ -41,9 +44,9 @@ published form version and require scoped `submission.read`; aggregates omit
 submitter identity and are limited to 366 days. Automation templates remain inert;
 mapping profiles are internal typed metadata. Local API, browser, backend, frontend,
 migration, contract, lint and type checks pass. Exact hosted CI remains the sole phase
-acceptance gate: runs 38166147233 and 38167717835 failed their backend test steps,
-while exact-source local Linux verification passes. The workflow is updated to surface
-failing test IDs for diagnosis. Core remains industry-neutral.
+acceptance gate: run 38168545470 identified a Windows/Linux line-ending checksum
+mismatch; LF-normalized pack content and all three affected Linux-ext4 tests now pass.
+The workflow reports failing test IDs only. Core remains industry-neutral.
 
 ## Completed modules
 - Foundation, infrastructure, observability, CI and module boundaries.
