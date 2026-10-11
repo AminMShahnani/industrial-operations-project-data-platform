@@ -25,7 +25,26 @@ jobs:
       - run: uv run ruff check .
       - run: uv run ruff format --check .
       - run: uv run mypy
-      - run: uv run pytest -m 'not e2e'
+      - name: Run backend tests
+        shell: bash
+        run: |
+          if uv run pytest -m 'not e2e' --junitxml=/tmp/backend-test-results.xml; then
+            exit 0
+          else
+            test_status=$?
+            python - <<'PY'
+          import xml.etree.ElementTree as ET
+
+          root = ET.parse("/tmp/backend-test-results.xml").getroot()
+          names = []
+          for case in root.iter("testcase"):
+              if case.find("failure") is not None or case.find("error") is not None:
+                  names.append(f"{case.get('classname', '')}.{case.get('name', '')}")
+          failed_tests = ", ".join(names) or "pytest failed before reporting test cases"
+          print(f"::error title=Backend test cases failed::{failed_tests}")
+          PY
+            exit "$test_status"
+          fi
         env:
           IOP_TEST_DATABASE_URL: postgresql+psycopg://operations:operations_dev@127.0.0.1:55432/operations_test
       - run: uv run playwright install --with-deps chromium

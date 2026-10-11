@@ -1831,9 +1831,12 @@ Frontend lint, typecheck, 19 tests and production build pass. Ruff check/format 
 strict mypy across 333 files pass. OpenAPI and artifact-schema drift, curated pack
 validation, isolated PostgreSQL migration roundtrip/drift, and `git diff --check` pass.
 Repeated XLSX output is byte-identical after normalizing workbook modified metadata.
-Hosted run [38166147233](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/38166147233)
-passed frontend and failed the backend non-e2e test step; its logs require repository
-admin access and were unavailable here. The same exact commit then passed the full
-383-test non-e2e suite in a Linux/Python 3.14 container against isolated PostgreSQL,
-Redis and RustFS. This hosted failure is not reproduced locally. Trigger a fresh
-exact-code hosted run before accepting P9-08. No acceptance requirement is deferred.
+Hosted runs [38166147233](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/38166147233)
+and [38167717835](https://github.com/AminMShahnani/industrial-operations-project-data-platform/actions/runs/38167717835)
+passed frontend and failed the backend non-e2e test step; logs require repository
+admin access and were unavailable here. The same exact implementation commit passed
+the full 383-test non-e2e suite in a Linux/Python 3.14 container against isolated
+PostgreSQL, Redis and RustFS. To expose only failure node IDs on the next run, CI now
+writes a bounded pytest failure annotation without test output or fixture values.
+Trigger a fresh exact-code hosted run before accepting P9-08. No acceptance
+requirement is deferred.
