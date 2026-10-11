@@ -144,6 +144,12 @@ def create_app(
         monitoring.record(response.status_code, duration)
         response.headers["X-Request-ID"] = request.state.request_id
         response.headers["X-Correlation-ID"] = correlation_id
+        # These headers are safe for the JSON API. The frontend's CSP must be
+        # configured by its static host because this service does not serve it.
+        response.headers["X-Content-Type-Options"] = "nosniff"
+        response.headers["X-Frame-Options"] = "DENY"
+        response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+        response.headers["Permissions-Policy"] = "camera=(), geolocation=(), microphone=()"
         logging.getLogger("operations.http").info(
             "http.request.completed",
             extra={

@@ -1,5 +1,14 @@
 # Open Questions
 
+## Phase 10 evidence dependencies (not product-policy decisions)
+
+No new domain or authorization choice is being introduced by the local hardening
+slice. Phase completion depends on access to a production-like deployment with its
+ingress/static host, backup/key-management and telemetry configuration; representative
+performance workload; authorized legacy Mongo export; and owner/operational-user UAT.
+Until those exist, report the related P10 criteria as blocked and do not infer a
+security review, restore drill, migration compatibility or user sign-off.
+
 ## Q-018: Phase 9 organization-pack content materialization (resolved)
 
 Phase 8 authorizes organization-scoped pack installs. Forms/workflows are

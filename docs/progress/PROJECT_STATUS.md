@@ -1,12 +1,29 @@
 # Project Status
 
-Status: PHASE 9 COMPLETE
-Current phase: Phase 9 accepted; Phase 10 not started
+Status: PHASE 10 IN PROGRESS
+Current phase: Phase 10 hardening; no Phase 10 criterion accepted yet
 Last updated: 2026-10-11
 Overall completion: 10/11 phases accepted. Phase 0 through Phase 9 each satisfy
-8/8 criteria. No unsupported project-wide percentage is reported. Q-018/Q-019/Q-020
-are resolved. Final exact-code hosted run 38169268123 passed backend and frontend jobs
-on `8ab8690b74db2f16fb792e90f961e8ab623fb558`; Phase 9 is accepted 8/8.
+8/8 criteria. Phase 10 has 0/8 accepted; P10-01 has a local API-header slice but
+production security evidence is incomplete. No unsupported project-wide percentage
+is reported. Q-018/Q-019/Q-020 are resolved. Final Phase 9 exact-code hosted run
+38169268123 passed both jobs on `8ab8690b74db2f16fb792e90f961e8ab623fb558`.
+
+## Phase 10 current checkpoint
+Implemented API security response headers and regression assertions; hardened
+`scripts/check.ps1` to isolate non-browser/browser suites and run migration upgrade/
+drift against the designated test database. Added `docs/operations/PHASE_10_RUNBOOK.md`
+with local gates and explicit backup/restore, deployment, performance, legacy and UAT
+evidence requirements. Focused security tests pass (10); local non-browser suite passes
+383 tests, real local OIDC/PKCE suite passes 9, frontend lint/typecheck/tests/build pass
+(19 tests), Ruff check/format and strict mypy pass (333 files), and isolated Alembic
+upgrade/drift plus OpenAPI checks pass. Exact hosted CI has not yet run for this slice.
+
+Phase 10 cannot be accepted yet. Production ingress/CSP/metrics privacy and restricted
+database roles, production-scale workload evidence, encrypted PostgreSQL+object-store
+backup and restore drill, real legacy Mongo inventory/fixtures and parallel-read
+validation, deployed telemetry/alerts, and product-owner UAT remain unavailable from
+this repository. See TD-001 through TD-004 and P10-01..P10-08 in the Phase Log.
 
 ## Completed: Phase 8
 P8-01 through P8-08 are defined in the Phase Log. The phase delivers typed
@@ -24,11 +41,11 @@ typed pack artifact envelopes, a curated Oil & Gas 1.0.0 release, exact referenc
 and package-level validation.
 
 ## Next 5 tasks
-1. Begin Phase 10 security hardening from its acceptance checklist.
-2. Review production deployment trust, secrets and ingress evidence.
-3. Run performance and tenant-isolation verification at planned scale.
-4. Validate backup/restore and migration rehearsal procedures.
-5. Obtain UAT and legacy migration fixture evidence before cutover.
+1. Review production deployment trust, static-host CSP, metrics privacy and runtime/migration DB roles.
+2. Configure daily encrypted database and object-store backups; execute an isolated restore drill.
+3. Run representative production-scale API/form/task performance and tenant-isolation checks.
+4. Obtain immutable legacy Mongo inventory/fixtures; validate mappings, checksums and parallel reads.
+5. Run deployed-candidate UAT/accessibility review and exact hosted CI for the Phase 10 slice.
 
 ## Completed: Phase 9
 P9-01 through P9-08 pass. The curated Oil & Gas Domain Pack contains 13 forms, 16

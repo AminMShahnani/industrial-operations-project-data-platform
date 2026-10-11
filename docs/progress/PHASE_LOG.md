@@ -1,5 +1,58 @@
 # Phase Log
 
+## Phase 10 preparation - hardening - 2026-10-11
+
+Roadmap scope: security, performance, backup/restore, migration validation and UAT.
+Source requirements are docs/04, docs/19-24 and docs/28. The phase will not be
+accepted using local simulations as evidence of production deployment, production
+scale, real legacy-data compatibility or user acceptance.
+
+Acceptance criteria before Phase 10 implementation:
+- P10-01: security baseline and negative tenant/authorization tests pass; API and
+  frontend delivery security controls are documented and verified at their owning
+  boundaries; no unresolved critical/high finding remains.
+- P10-02: representative production-scale performance tests demonstrate the stated
+  API, form metadata and task inbox targets, with reproducible workload and results.
+- P10-03: scheduled encrypted backups cover PostgreSQL and private object storage;
+  a restore drill verifies integrity, audit history and application readiness,
+  demonstrates the stated RPO and records measured restore duration.
+- P10-04: immutable legacy inventory/fixtures, typed mapping, counts/checksums and
+  parallel-read validation cover every supplied MVP collection before cutover.
+- P10-05: migrations have validated upgrade/rollback or documented forward-restore
+  strategy, and a production-like migration rehearsal passes.
+- P10-06: operational metrics/traces, collectors, infrastructure/job telemetry,
+  alerts and incident/recovery runbooks are exercised.
+- P10-07: owner-approved UAT covers critical browser workflows and accessibility
+  against the deployed candidate.
+- P10-08: reproducible local and exact-hosted quality gates pass; progress, debt,
+  changelog and evidence are current.
+
+These criteria distinguish repository-verifiable work from owner/deployment evidence.
+Existing TD-001 through TD-004 are relevant blockers for P10-02, P10-03, P10-04,
+P10-06 and P10-07. No architecture/domain decision is changed in this preparation.
+
+### Phase 10 implementation checkpoint - 2026-10-11
+
+P10-01 is in progress. API responses now include `nosniff`, frame denial,
+referrer-policy and restrictive permissions-policy headers with regression tests.
+The frontend remains independently hosted, so CSP/HSTS/HTTPS and private operations
+endpoint controls must be verified at the production delivery boundary. No
+production security review is claimed.
+
+The local gate helper now follows CI's split test model and targets migration upgrade
+and drift checks at the explicit isolated test database. Local evidence: 383 non-E2E
+backend tests, 9 real local OIDC/PKCE browser tests, 19 frontend tests, frontend
+lint/type/build, Ruff check/format, strict mypy (333 files), Alembic upgrade/drift and
+OpenAPI drift pass. The first attempt exposed a stale browser test DB and a helper
+targeting the default dev DB for Alembic; fresh dedicated DBs and the corrected helper
+resolved both setup faults. Hosted CI has not yet run for this checkpoint.
+
+`docs/operations/PHASE_10_RUNBOOK.md` records deployment and drill procedures. Daily
+encrypted multi-store backups, production-scale performance, real legacy fixtures,
+deployed telemetry/alerts and owner UAT are not available or verified here. Phase 10
+remains 0/8 accepted; no criterion is waived and no phase completion commit is made.
+
+
 ## Phase 8 preparation - Domain Pack framework - 2026-10-11
 
 Roadmap scope: manifest, registry, dependency/version/install engine and SDK

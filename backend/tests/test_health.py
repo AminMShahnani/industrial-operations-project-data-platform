@@ -31,6 +31,10 @@ def test_health_and_request_ids(settings: Settings) -> None:
         assert live.status_code == 200
         assert live.json()["status"] == "ok"
         assert live.headers["X-Request-ID"] == request_id
+        assert live.headers["X-Content-Type-Options"] == "nosniff"
+        assert live.headers["X-Frame-Options"] == "DENY"
+        assert live.headers["Referrer-Policy"] == "strict-origin-when-cross-origin"
+        assert live.headers["Permissions-Policy"] == "camera=(), geolocation=(), microphone=()"
         UUID(live.headers["X-Correlation-ID"])
         assert client.get("/api/v1/health/ready").json()["status"] == "ready"
 

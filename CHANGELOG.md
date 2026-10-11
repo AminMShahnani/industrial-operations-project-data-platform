@@ -1,5 +1,14 @@
 # Changelog
 
+## Phase 10 hardening in progress (2026-10-11)
+
+- Add baseline security headers to API responses and regression assertions. Harden
+  the local quality helper to split non-browser and OIDC browser suites and target
+  migration checks at the configured isolated test database.
+- Add the Phase 10 runbook and acceptance checklist. Production ingress/static-host
+  policy, backup/restore, performance, legacy-data and UAT evidence remain outstanding;
+  no Phase 10 criterion is accepted yet.
+
 ## Phase 8 complete (2026-10-11)
 
 - Add typed schema-versioned Domain Pack manifests, generated JSON Schema, bounded

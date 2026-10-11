@@ -12,14 +12,26 @@ $qualityCommands = @(
     @('run', 'ruff', 'format', '--check', '.'),
     @('run', 'mypy'),
     @('run', 'mypy', '--platform', 'linux'),
-    @('run', 'pytest'),
-    @('run', 'alembic', 'check'),
+    @('run', 'pytest', '-m', 'not e2e'),
     @('run', 'python', 'scripts/export_openapi.py', '--check')
 )
 foreach ($qualityCommand in $qualityCommands) {
     & uv @qualityCommand
     if ($LASTEXITCODE -ne 0) { throw "Quality gate failed: uv $qualityCommand" }
 }
+$previousDatabaseUrl = $env:IOP_DATABASE_URL
+$env:IOP_DATABASE_URL = $env:IOP_TEST_DATABASE_URL
+try {
+    & uv run alembic upgrade head
+    if ($LASTEXITCODE -ne 0) { throw 'Quality gate failed: uv run alembic upgrade head' }
+    & uv run alembic check
+    if ($LASTEXITCODE -ne 0) { throw 'Quality gate failed: uv run alembic check' }
+}
+finally {
+    $env:IOP_DATABASE_URL = $previousDatabaseUrl
+}
+& uv run pytest -m e2e
+if ($LASTEXITCODE -ne 0) { throw 'Quality gate failed: uv run pytest -m e2e (start the oidc-dev profile first)' }
 foreach ($frontendGate in @('lint', 'typecheck', 'test', 'build')) {
     & npm.cmd run $frontendGate --prefix frontend
     if ($LASTEXITCODE -ne 0) { throw "Frontend gate failed: $frontendGate" }

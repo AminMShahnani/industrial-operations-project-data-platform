@@ -1,5 +1,17 @@
 # Technical Debt Register
 
+## Phase 10 deployment evidence still outstanding (2026-10-11)
+
+Phase 10 local hardening has begun: the API sets baseline browser security headers,
+and the local gate helper now targets isolated test databases and separates browser
+tests. This does not resolve TD-001 through TD-004. Production CSP/HTTPS/HSTS and
+private metrics controls need the actual frontend/ingress deployment; encrypted
+multi-store backup and restore need the deployment's key manager and object-store
+backup mechanism; production-scale performance needs a representative environment;
+legacy migration validation needs an authorized immutable Mongo export; and UAT
+requires product-owner and operational-user participation. Keep Phase 10 open until
+these are evidenced against a deployed candidate and exact hosted CI passes.
+
 Phase 8 decision (2026-10-11): Q-015 is resolved under ADR-0035. Curated registry,
 declarative content/allowlisted migration operations and organization-only installs
 are required. Tenant uploads, arbitrary remote fetch, executable migrations,
